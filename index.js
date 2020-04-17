@@ -1,0 +1,8 @@
+var fs = require('fs')
+var path = require('path')
+var express = require('express')
+var app = express()
+var io = require('socket.io')(server)
+// var cookieParser = require('cookie-parser')
+// var bodyParser = require('body-parser')
+// var server = require('http').createServer(app)

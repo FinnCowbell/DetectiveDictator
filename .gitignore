@@ -1,0 +1,5 @@
+# Cause we use YARN in this house :)
+node_modules/
+.DS_Store
+yarn-error.log
+package-lock.json
