@@ -1,0 +1,19 @@
+{
+  "name": "DetectiveDictator",
+  "version": "1.0.0",
+  "description": "An Online Version of the Mafia-style WWII Electon Game!",
+  "main": "index.js",
+  "repository": "https://github.com/FinnCowbell/DetectiveDictator.git",
+  "author": "Finn Navin <Thomasfnavin@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.3",
+    "socket.io": "^2.3.0"
+  },
+  "scripts": {
+    "nm": "nodemon index.js",
+    "start": "node index.js"
+  }
+}
