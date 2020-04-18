@@ -11,8 +11,11 @@ const lobbyID = window.location.pathname.split("/")[2]; // pathname is /lobby/wo
 socket = io('/'+lobbyID);
 // console.log(socket);
 //Unique Player ID
-document.cookie = document.cookie ? document.cookie : Math.floor(Math.random() * 999999999999);
+if(!document.cookie || document.cookie == "undefined"){ //"undefined for manual resets"
+  document.cookie = Math.floor(Math.random() * 999999999999);;
+}
 var PID = document.cookie;
+console.log("Player ID:" + PID);
 
 setTimeout(function(){
   if(!socket.connected){
@@ -38,5 +41,5 @@ socket.on('lobby found', (theLobby) =>{
 
 newUserConnect.onclick = function(){
   let name = nameField.value;
-  socket.emit("join lobby", (name, PID));
+  socket.emit("join lobby", {"name": name, "PID": PID});
 }
