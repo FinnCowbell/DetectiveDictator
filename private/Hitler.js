@@ -1,11 +1,11 @@
-class Game{
+class Hitler{
   constructor(players,nPlaying){
     this.running = false;
     this.unassignedPlayers = [];
     this.liberals = [];
     this.fascists = [];
     this.hitler = undefined;
-    this.nPlaying = players.length;
+    this.nPlaying = nPlaying;
     this.currentPlayer = 0;
   }
   startGame(){
@@ -24,4 +24,4 @@ class Game{
   }
 }
 
-module.exports = Game;
+module.exports = Hitler;

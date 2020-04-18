@@ -1,30 +1,42 @@
-var returnBox = document.getElementById("return-box");
+var returnBox = document.getElementById("join-lobby");
+var errorBox = document.getElementById("error-box");
 var loadingText = document.getElementById("loading-lobby");
 var lobbyNameField = document.getElementById("lobbyName");
+var lobbyNameField = document.getElementById("lobbyName");
+var newUsersBox = document.getElementById("new-user");
+var availableUsersBox = document.getElementById("available-users");
+var newUserConnect = document.getElementById("new-user-connect");
+var nameField = document.getElementById("name-field");
 const lobbyID = window.location.pathname.split("/")[2]; // pathname is /lobby/words/, so words are in index 2.
-console.log(lobbyID);
-socket = io();
-//Give the user a "unique" Player ID.
-if(!document.cookie){
-  document.cookie = Math.floor(Math.random() * 999999999999);;
-}
+socket = io('/'+lobbyID);
+// console.log(socket);
+//Unique Player ID
+document.cookie = document.cookie ? document.cookie : Math.floor(Math.random() * 999999999999);
 var PID = document.cookie;
-console.log(PID);
 
-lobbyParams = {
-  'PID': PID,
-  'lobbyID': lobbyID
-};
-
-socket.emit("find lobby", lobbyParams);
+setTimeout(function(){
+  if(!socket.connected){
+    loadingText.style.display = "none";
+    errorBox.style.display = "block";
+  }
+},500);
+//If we don't connect in .5 seconds, assume we wont.
 
 socket.on('lobby found', (theLobby) =>{
   loadingText.style.display = "none";
   if(theLobby){
-    lobbyNameField.innerHTML = theLobby.ID;
+    lobbyNameField.innerHTML = theLobby.lobbyID;
     returnBox.style.display = "block";
-  } else{
-    lobbyNameField.innerHTML = "error!";
-    returnBox.style.display = "block";
+    if(theLobby.gameRunning){
+      availableUsersBox.style.display = "block";
+      //Show buttons for each disconnected user, put that logic here.
+    }else{
+      newUsersBox.style.display = "block"
+    }
   }
 })
+
+newUserConnect.onclick = function(){
+  let name = nameField.value;
+  socket.emit("join lobby", (name, PID));
+}
