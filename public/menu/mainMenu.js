@@ -1,6 +1,6 @@
-socket = io();
+socket = io('/menu');
 //Give the user a "unique" Player ID.
-if(!document.cookie){
+if(!document.cookie || document.cookie == "undefined"){ //"undefined for manual resets"
   document.cookie = Math.floor(Math.random() * 999999999999);;
 }
 var PID = document.cookie;

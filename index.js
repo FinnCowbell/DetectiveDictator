@@ -24,19 +24,19 @@ app.get('/socket.io.js', function(req, res){
 
 //Initializing storage for all lobbies
 var lobbies = new Lobbies(io, Game);
-fs.readFile(__dirname + "/private/util/nouns.txt", 'utf8', (err, data) =>{
+fs.readFile(__dirname + "/private/util/wwii.txt", 'utf8', (err, data) =>{
   if(err){
     console.error(err)
     return
   }
-  lobbies.words = data.capitalize().split("\r\n");
+  lobbies.words = data.capitalize().split("\n");
 })
 
-io.on("connection", (socket)=>{//When we get a new connection
+io.of('/menu').on("connection", (socket)=>{//When we get a new connection
 
-  console.log("user connected");
+  console.log("[Menu]: User Connected");
   socket.on("disconnect",()=>{
-    console.log("user disconnect");
+    console.log("[Menu]: User discoonnected");
   });
   socket.on("create game", (arg) =>{
     let lobby = lobbies.createLobby(devMode = true);
