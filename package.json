@@ -10,10 +10,11 @@
   "dependencies": {
     "express": "^4.17.1",
     "nodemon": "^2.0.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "socket.io": "^2.3.0"
   },
   "scripts": {
-    "nm": "nodemon index.js",
-    "start": "node index.js"
+    "nm": "nodemon index.js"
   }
 }

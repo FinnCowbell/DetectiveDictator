@@ -14,19 +14,12 @@ String.prototype.capitalize = function() {
   return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
 };
 
-//Express logic to send necessary files to each user
-app.get('/socket.io.js', function(req,res,next){
+//Express Static File Logic
+app.use('/', express.static(path.join(__dirname, 'public/menu')));
+app.use('/lobby/:roomID/', express.static(path.join(__dirname, 'public/game')));
+app.get('/socket.io.js', function(req, res){
   res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
 })
-app.get('/mainMenu.js', function(req,res,next){
-  res.sendFile(__dirname + "/public/menu/mainMenu.js");
-});
-
-app.get('/', function(req,res, next) {
-  res.sendFile(__dirname + "/public/menu/");
-  // res.sendFile(__dirname + "/public/menu/main.js");
-});
-
 //Initializing storage for all lobbies
 var lobbies = new Lobbies();
 fs.readFile(__dirname + "/private/util/nouns.txt", 'utf8', (err, data) =>{
@@ -34,19 +27,36 @@ fs.readFile(__dirname + "/private/util/nouns.txt", 'utf8', (err, data) =>{
     console.error(err)
     return
   }
-  lobbies.words = data.capitalize().split("\n");
+  lobbies.words = data.capitalize().split("\r\n");
 })
 
 
 io.on("connection", (socket)=>{//When we get a new connection
+
   console.log("user connected");
   socket.on("disconnect",()=>{
     console.log("user disconnect");
   });
+
   socket.on("create game", (arg) =>{
-    let lobby = lobbies.createLobby();
+    let lobby = lobbies.createLobby(devMode = true);
     console.log(lobby);
     socket.emit("game created",{"PID": arg.PID, "ID": lobby.ID});
+  })
+  
+  socket.on("find lobby",(arg)=>{
+    console.log(arg)
+    let lobbyID = arg.lobbyID;
+    console.log("looking for " + lobbyID);
+    let PID = arg.PID;
+    let lobby = lobbies.getLobby(lobbyID);
+    console.log("Lobby:");
+    console.log(lobby);
+    if(lobby){
+      socket.emit("lobby found", lobby);
+    } else{
+      socket.emit("lobby found", lobby);
+    }
   })
 });
 //___Run the server at the end___//

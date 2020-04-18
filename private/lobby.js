@@ -1,24 +1,25 @@
+Game = require('./game');
 class Lobbies {
   constructor(){
     this.lobbies = {};
     this.words = [0,1,2,3,4,5,6,7,8,9];
   }
-  createLobby(){
+  createLobby(devMode=false){
     let lobbyID = this.generateLobbyID();
-    this.lobbies[lobbyID] = new Lobby(lobbyID);
+    this.lobbies[lobbyID] = new Lobby(lobbyID,devMode);
     return this.lobbies[lobbyID];
   }
   getLobby(lobbyID){
     return this.lobbies[lobbyID]
   }
-  generateLobbyID(len = 3){
-    return Math.random().toString(36).substr(2, 4)
-    // str = ""
-    //  while(len > 0){
-    //   nextWord = 
-    //   str += nextWord;
-    // }
-    // return 
+  generateLobbyID(len = 1){
+    let nextWord, str = ""
+     while(len > 0){
+      nextWord = this.words[Math.floor(Math.random()*this.words.length)];
+      str += nextWord;
+      len--;
+    }
+    return str
   }
 }
 
@@ -99,32 +100,7 @@ class Player{
   }
 }
 
-class Game{
-  constructor(players,nPlaying){
-    this.running = false;
-    this.unassignedPlayers = [];
-    this.liberals = [];
-    this.fascists = [];
-    this.hitler = undefined;
-    this.nPlaying = players.length;
-    this.currentPlayer = 0;
-  }
-  startGame(){
-    this.running = true;
-    this.assignRoles();
-  }
-  assignRoles(){
-    /*
-    PLAYERS | 5 | 6 | 7 | 8 | 9 | 10
-    LIBERALS| 3 | 4 | 4 | 5 | 5 | 6
-    FASCISTS| 2 | 2 | 3 | 3 | 4 | 4 (one of which is adolf);
-    */
-   nliberals = Math.ceil((this.nPlaying + 1)/2);
-   nFascists = Math.floor((this.nplaying - 1)/2);
-
-  }
-}
-
+//If i need to check the length of object.
 function getObjectLength(obj){
   return Object.keys(obj).length;
 }
