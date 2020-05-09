@@ -77,7 +77,7 @@ class Hitler{
   }
   getGameInfo(){
     let arg = {
-
+      isRunning: this.running
     }
     return arg;
   }

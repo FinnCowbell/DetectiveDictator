@@ -16,8 +16,12 @@ String.prototype.capitalize = function() {
 };
 
 //Express Static File Logic
-app.use('/', express.static(path.join(__dirname, 'public/menu')));
-app.use('/lobby/:roomID/', express.static(path.join(__dirname, 'public/game')));
+app.use('/', express.static(path.join(__dirname, 'public')));
+app.use('/lobby/:roomID/', express.static(path.join(__dirname, 'public/lobby')));
+
+app.get('/:lobby/:roomID/socket.io.js', function(req, res){
+  res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
+})
 app.get('/socket.io.js', function(req, res){
   res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
 })
@@ -33,16 +37,16 @@ fs.readFile(__dirname + "/private/util/wwii.txt", 'utf8', (err, data) =>{
 })
 
 io.of('/menu').on("connection", (socket)=>{//When we get a new connection
-
   console.log("[Menu]: User Connected");
   socket.on("disconnect",()=>{
-    console.log("[Menu]: User discoonnected");
+    console.log("[Menu]: User disconnected");
   });
-  socket.on("create game", (arg) =>{
+  socket.on("create lobby", (arg) =>{
     let lobby = lobbies.createLobby(devMode = true);
     console.log(lobby);
-    socket.emit("game created",{"ID": lobby.ID});
+    socket.emit("lobby created",{"ID": lobby.ID});
   })
 });
+
 //___Run the server at the end___//
 server.listen(1945);

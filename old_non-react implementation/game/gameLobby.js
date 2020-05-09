@@ -6,7 +6,7 @@ var lobbyNameField = document.getElementById("lobbyName");
 var newUsersBox = document.getElementById("new-user");
 var availableUsersBox = document.getElementById("available-users");
 var newUserConnect = document.getElementById("new-user-connect");
-var nameField = document.getElementById("name-field");
+var usernameField = document.getElementById("name-field");
 const lobbyID = window.location.pathname.split("/")[2]; // pathname is /lobby/words/, so words are in index 2.
 socket = io('/'+lobbyID);
 // console.log(socket);
@@ -39,7 +39,8 @@ socket.on('lobby found', (theLobby) =>{
   }
 })
 
+
 newUserConnect.onclick = function(){
-  let name = nameField.value;
-  socket.emit("join lobby", {"name": name, "PID": PID});
+  let username = usernameField.value;
+  socket.emit("join lobby", {"username": username, "PID": PID});
 }

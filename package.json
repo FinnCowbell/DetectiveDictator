@@ -8,13 +8,21 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "babel-cli": "6",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.1.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-react-app": "3",
     "express": "^4.17.1",
     "nodemon": "^2.0.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-scripts": "^3.4.1",
     "socket.io": "^2.3.0"
   },
   "scripts": {
-    "nm": "nodemon index.js"
-  }
+    "nm": "nodemon index.js",
+    "build": "babel src -d ."
+  },
+  "devDependencies": {}
 }
