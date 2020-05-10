@@ -31,9 +31,12 @@ function LoadingMessage(props) {
     React.createElement(
       "h3",
       { className: "loading-status" },
-      "Connecting to ",
-      props.lobbyID,
-      "..."
+      "Connecting..."
+    ),
+    React.createElement(
+      "button",
+      { onClick: props.leaveLobby },
+      "Return to Menu"
     )
   );
 }
@@ -50,4 +53,37 @@ function StatusBar(props) {
   );
 }
 
-export { Header, LoadingMessage, StatusBar };
+function PlayerList(props) {
+  let yourPID = props.PID;
+  let you = props.you;
+  let listItems = null;
+  if (props.players) {
+    listItems = props.players.map(player => React.createElement(
+      "li",
+      { key: player.username,
+        className: (player.isLeader ? "leader " : "") + (!player.connected ? "disconnected " : "") + (player.PID == yourPID ? "you " : "") },
+      player.username,
+      you && you.isLeader && player.PID != yourPID && React.createElement(
+        "button",
+        { className: "kick-button", onClick: () => props.kickPlayer(player.PID) },
+        "Kick"
+      )
+    ));
+  }
+  return React.createElement(
+    "div",
+    { className: "player-list" },
+    React.createElement(
+      "h3",
+      null,
+      "Connected Players:"
+    ),
+    React.createElement(
+      "ul",
+      null,
+      listItems
+    )
+  );
+}
+
+export { Header, LoadingMessage, StatusBar, PlayerList };

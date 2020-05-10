@@ -27,11 +27,13 @@ class Lobbies {
 
 class Lobby{
   constructor(io, lobbyID,devLobby = false, Game=Hitler,  min = 5, max = 10){
+    let ourio = io.of("/"+lobbyID);
     this.ID = lobbyID
-    this.io = io.of("/"+lobbyID)
+    this.io = io.of("/"+lobbyID);
     this.players = {}
     this.disconnectedPlayers = {}
-    this.game = new Game(this.io, this.players);
+    this.game = new Game(ourio, this.players);
+    // this.chat = new Chat(ourio);
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
     this.MinPlayers = min;
@@ -72,9 +74,11 @@ class Lobby{
     this.log(`${player.username} successfully connected with SID =  ${SID} PID = ${PID}`)
     // return player;
     let arg = {
-      "player": player,
+      "you": player,
+      "lobbyInfo": this.getLobbyInfo()
     }
-    this.io.to(SID).emit('player joined', arg);
+    this.io.to(SID).emit('lobby joined', arg);
+    this.io.emit('lobby update info', arg);
   }
   getPlayerBySocketID(SID){
     let player = this.players[this._sidpid[SID]];
@@ -128,26 +132,39 @@ class Lobby{
       delete this.disconnectedPlayers[PID];
     }
     this.nPlayers--;
+    this.io.to(SID).emit('kick');
+    let arg = {
+      "lobbyInfo": this.getLobbyInfo()
+    }
+    this.io.emit('lobby update info', arg)
     return true;
+  }
+  requestKick(SID, PIDToKick){
+    let player = this.getPlayerBySocketID(SID);
+    if(player.isLeader){
+      this.kickPlayer(PIDtoKick);
+    }else{
+      this.log("Kick request from non leader! Ignoring.")
+    }
   }
   //Reconnects can occur when a player has disconnected but not been kicked.
   //This function:
     //Checks that the player we're connecting to is actually disconnected.
     //Handles changing a player's PID. Handles if the player is different.
     //TODO: use socket to send 
-  reconnectPlayer(currentPID, PID, SID){ 
-    if(!this.disconnectedPlayers[currentPID]){
+  reconnectPlayer(oldPID, PID, SID){ 
+    if(!this.disconnectedPlayers[oldPID]){
       this.error("Reconnect: Player in disconnected list. (were they kicked?)");
       return false;
     }
-    let player = this.disconnectedPlayers[currentPID];
-    delete this.disconnectedPlayers[currentPID];
+    let player = this.disconnectedPlayers[oldPID];
+    delete this.disconnectedPlayers[oldPID];
     this.nConnected++;
     //if a different computer is connecting
-    if(PID != currentPID){
+    if(PID != oldPID){
       //get rid of the old user.
       this.players[PID] = player
-      delete this.players[currentPID];
+      delete this.players[oldPID];
       player.PID = PID; //PID
     }
     player.connected = true;
@@ -156,15 +173,18 @@ class Lobby{
     this._sidpid[SID] = PID
     player.SID = SID;
     this.log(`${player.username} reconnected with SID =  ${SID} PID = ${PID}`)
-    return player;
+    let arg = {
+      "you": player,
+      "lobbyInfo": this.getLobbyInfo()
+    }
+    this.io.to(SID).emit('lobby joined', arg);
+    this.io.emit('lobby update info', arg);
   }
   getLobbyInfo(){
-    //When a player connects to a lobby. They should get lobby info.
-    //If the game isn't running, it will 
-    //If the game is running, it will send disconnected players available for reconnect.
+    //Lobby info compiles some basic information about the lobby to be sent.
     let gameInfo = this.game.getGameInfo();
     let publicPlayers = [];
-    for(player in this.players){
+    for(var player of Object.values(this.players)){
       publicPlayers.push(player.getPublicInfo());
     }
     let args = {
@@ -190,8 +210,11 @@ class Lobby{
           this.disconnectPlayer(socket.id);
         }
       })
+      socket.on('user init request', ()=>socket.emit('lobby init info', this.getLobbyInfo()));
       socket.on('join lobby', (arg) => {this.connectPlayer(arg.username,arg.PID, socket.id)})
-      socket.emit('lobby found', this.getLobbyInfo());
+      socket.on('reconnect request', (arg)=>{this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
+      socket.on('request kick', (arg)=>{requestKick(SID,PIDtoKick);});
+      socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
     })
   }
 }
@@ -212,9 +235,18 @@ class Player{
                "connected": this.connected,
                "PID": this.PID
               }
-    return 
+    return arg;
   }
 }
+
+// class Chat {
+//   constructor(io){
+//     io.on('chat send msg', (arg)=>{
+//       console.log("Chat!");
+//       io.emit('chat recv msg', (arg));
+//     });
+//   }
+// }
 
 //If i need to check the length of object.
 function getObjectLength(obj){

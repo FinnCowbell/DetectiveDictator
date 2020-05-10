@@ -16,7 +16,8 @@ function Header(props){
 function LoadingMessage(props){
   return(
     <div className="loading-message">
-      <h3 className="loading-status">Connecting to {props.lobbyID}...</h3>
+      <h3 className="loading-status">Connecting...</h3>
+      <button onClick={props.leaveLobby}>Return to Menu</button>
     </div>
   )
 }
@@ -29,4 +30,33 @@ function StatusBar(props){
   )
 } 
 
-export {Header, LoadingMessage, StatusBar};
+function PlayerList(props){
+  let yourPID = props.PID;
+  let you = props.you;
+  let listItems = null;
+  if(props.players){
+    listItems = props.players.map((player)=>(
+      <li key={player.username} 
+          className={(player.isLeader ? "leader " : "" )+
+                     (!player.connected ? "disconnected " : "")+
+                     ((player.PID == yourPID) ? "you " : "")}>
+        {player.username}
+        {(you && you.isLeader && player.PID != yourPID) &&
+          <button className="kick-button" onClick={()=>props.kickPlayer(player.PID)}>
+            Kick
+          </button>
+        }
+      </li>
+    ))
+  }
+  return(
+    <div className="player-list">
+      <h3>Connected Players:</h3>
+      <ul>
+        {listItems}
+      </ul>
+    </div>
+  )
+}
+
+export {Header, LoadingMessage, StatusBar, PlayerList};
