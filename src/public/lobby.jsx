@@ -57,7 +57,7 @@ class Lobby extends React.Component{
     console.log("Gonna kick em. gonna do it.")
     if(you.isLeader){
       this.socket.emit('request kick', {
-        PIDtoKick: PID,
+        kickee: PID,
       });
     }
   }
@@ -119,10 +119,10 @@ class NewPlayerForm extends React.Component{
   }
   render(){
     return(
-      <div class="new-player-form">
-        <label for="username">Enter your Name:</label>
-        <input id="username" type="text" onKeyDown={this.handleEnter} onChange={this.handleChange()}></input>
-        <button onClick{this.handleSubmit}>Join</button>
+      <div className="new-player-form">
+        <label>Enter your Name:</label>
+        <input className="username-input" type="text" onKeyDown={this.handleEnter} onChange={this.handleChange}></input>
+        <button onClick={this.handleSubmit}>Join</button>
       </div>
     )
   }

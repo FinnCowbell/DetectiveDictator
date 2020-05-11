@@ -139,10 +139,10 @@ class Lobby{
     this.io.emit('lobby update info', arg)
     return true;
   }
-  requestKick(SID, PIDToKick){
+  requestKick(SID, kickee){
     let player = this.getPlayerBySocketID(SID);
     if(player.isLeader){
-      this.kickPlayer(PIDtoKick);
+      this.kickPlayer(kickee);
     }else{
       this.log("Kick request from non leader! Ignoring.")
     }
@@ -213,7 +213,7 @@ class Lobby{
       socket.on('user init request', ()=>socket.emit('lobby init info', this.getLobbyInfo()));
       socket.on('join lobby', (arg) => {this.connectPlayer(arg.username,arg.PID, socket.id)})
       socket.on('reconnect request', (arg)=>{this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
-      socket.on('request kick', (arg)=>{requestKick(SID,PIDtoKick);});
+      socket.on('request kick', (arg)=>{this.requestKick(socket.id,arg.kickee);});
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
     })
   }

@@ -55,7 +55,7 @@ class Lobby extends React.Component {
     console.log("Gonna kick em. gonna do it.");
     if (you.isLeader) {
       this.socket.emit('request kick', {
-        PIDtoKick: PID
+        kickee: PID
       });
     }
   }
@@ -116,20 +116,16 @@ class NewPlayerForm extends React.Component {
   render() {
     return React.createElement(
       'div',
-      { 'class': 'new-player-form' },
+      { className: 'new-player-form' },
       React.createElement(
         'label',
-        { 'for': 'username' },
+        null,
         'Enter your Name:'
       ),
-      React.createElement('input', { id: 'username', type: 'text', onKeyDown: this.handleEnter, onChange: () => {
-          this.handleChange();
-        } }),
+      React.createElement('input', { className: 'username-input', type: 'text', onKeyDown: this.handleEnter, onChange: this.handleChange }),
       React.createElement(
         'button',
-        { onClick: () => {
-            this.handleSubmit;
-          } },
+        { onClick: this.handleSubmit },
         'Join'
       )
     );
