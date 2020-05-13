@@ -4,8 +4,8 @@ var express = require('express')
 var app = express()
 var server = require('http').createServer(app)
 var io = require('socket.io')(server)
-var Lobbies = require('./private/lobby');
-var Game = require('./private/Hitler');
+var {Lobbies, Lobby, Player} = require('./private/lobby');
+var Game = require('./private/Game/Hitler');
 // var cookieParser = require('cookie-parser') (for Cookies)
 // var bodyParser = require('body-parser') (for Bodies)
 // app.use(express.static(path.join(__dirname + "/public")))

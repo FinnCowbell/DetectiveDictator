@@ -17,7 +17,6 @@ class ChatRoom extends React.Component{
   }
   handleSubmit(e){
     if(e.keyCode == 13){
-      console.log('handling!')
       this.sendChat(this.state.message);
     }
   }
@@ -47,15 +46,22 @@ class ChatRoom extends React.Component{
         <strong>{msg.username}: </strong>{msg.message}
       </p>
     ));
+    let chatStyle = {
+      border: "1px solid black",
+      position: 'fixed',
+      bottom: '0px',
+      right:'20px',
+      width: '400px;',
+    }
     let chatBoxStyle = {
       overflow: 'scroll',
       height: '300px',
     }
     return(
-      <div style={{border: "1px solid black"}}className="chat-room">
-      <h3>Chat</h3>
-      <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit}onChange={this.handleChange}/>
-      <button onClick={this.sendChat}>Send</button>
+      <div style={chatStyle}className="chat-room">
+        <h3>Chat</h3>
+        <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
+        <button onClick={this.sendChat}>Send</button>
         <div style={chatBoxStyle} className="sent-messages">
           {chats}
         </div>

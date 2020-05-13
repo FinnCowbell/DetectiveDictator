@@ -1,5 +1,6 @@
-import {Header, StatusBar, LoadingMessage, PlayerList} from './modules/parts.js';
+import {Header, StatusBar, LoadingMessage, PlayerList} from './modules/MenuParts.js';
 import {ChatRoom} from './modules/ChatRoom.js'
+import {Hitler as Game} from './Hitler.js';
 class Lobby extends React.Component{
   constructor(props){
     super(props);
@@ -15,6 +16,9 @@ class Lobby extends React.Component{
     }
     this.leaveLobby = this.leaveLobby.bind(this);
     this.kickPlayer = this.kickPlayer.bind(this);
+    this.connect = this.connect.bind(this);
+    this.reconnect = this.reconnect.bind(this);
+    this.startGame = this.startGame.bind(this);
   }
   componentDidMount(){
     const socket = this.socket;
@@ -38,6 +42,12 @@ class Lobby extends React.Component{
         players: arg.lobbyInfo.players,
       })
     });
+    socket.on('game starting', (arg)=>{
+      this.setState({
+        gameInfo: arg.gameInfo,
+      })
+      socket.emit('activate game signals');
+    });
     socket.emit('user init request');
   }
   leaveLobby(reason){
@@ -50,7 +60,11 @@ class Lobby extends React.Component{
     });
   }
   reconnect(PID){
-    
+    let arg = {
+      oldPID: PID,
+      PID: this.state.PID
+    }
+    this.socket.emit("rejoin lobby", arg);
   }
   kickPlayer(PID){
     const you = this.state.you;
@@ -61,33 +75,40 @@ class Lobby extends React.Component{
       });
     }
   }
+  startGame(){
+    this.socket.emit('game init');
+  }
   render(){
-    let connectionField;
+    let connectionForm;
     const lobbyID = this.props.lobbyID;
     const lobbyExists = this.state.lobbyExists;
     const inLobby = this.state.inLobby;
     const gameInfo = this.state.gameInfo;
     if(!lobbyID){this.leaveLobby();}
     //If we're just connecting, display the correct connection field.
-    if(gameInfo){
-      connectionField = gameInfo.running ? <ReconnectPlayerForm/> : <NewPlayerForm connect={(username)=>this.connect(username)}/>;
-    }
+    connectionForm = (gameInfo && gameInfo.isRunning) ? <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : <NewPlayerForm connect={this.connect}/>;
     return(
       <div>
-        <Header lobbyID ={lobbyID}/>
-        {!lobbyExists && 
-          <LoadingMessage leaveLobby={this.leaveLobby}/>}
-        {(lobbyExists && !inLobby) && 
-          connectionField}
-        <PlayerList PID={this.state.PID} 
-                    you={this.state.you} 
-                    players={this.state.players}
-                    kickPlayer={this.kickPlayer}
-                    />
-        {inLobby &&(
-        <ChatRoom socket={this.socket}
-                  you={this.state.you}></ChatRoom>
-        )}
+
+        {(!inLobby || !gameInfo.isRunning) && (<div className="Lobby">
+          <Header lobbyID ={lobbyID}/>
+          {!lobbyExists && <LoadingMessage leaveLobby={this.leaveLobby}/>}
+          {(lobbyExists && !inLobby) && connectionForm}
+          <PlayerList PID={this.state.PID} 
+                      you={this.state.you} 
+                      players={this.state.players}
+                      kickPlayer={this.kickPlayer}
+                      />
+          {(this.state.you && this.state.you.isLeader) &&(
+            <button className="game-start" 
+                    onClick={this.startGame}>
+              Start Game
+            </button>)}
+        </div>)}
+        {inLobby && (<ChatRoom socket={this.socket} you={this.state.you}/>)}
+        <div>
+          <Game you={this.you} socket={this.socket}/>
+        </div>
       </div>
     )
   }
@@ -126,6 +147,25 @@ class NewPlayerForm extends React.Component{
       </div>
     )
   }
+}
+
+function ReconnectPlayerForm(props){
+  if(!props.players){return null}
+  console.log(props.players);
+  let disconnectedPlayers = props.players.map((player)=>(
+    !player.connected ? (
+      <button onClick={()=>{props.reconnect(player.PID)}}>
+        {player.username}
+      </button>) : null
+  ))
+  return(
+    <div className="rejoin-form">
+      { disconnectedPlayers.length &&
+        <h2>Game in Progress!</h2>}
+        {disconnectedPlayers}
+      <button onClick={props.spectate}>Spectate</button>
+    </div>
+  )
 }
 
 // pathname is /lobby/words/, so words are in index 2.

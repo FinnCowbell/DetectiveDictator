@@ -1,11 +1,11 @@
-var Hitler = require('./Hitler')
+var Hitler = require('./Game/Hitler')
 class Lobbies {
   constructor(io,Game){
-    this.io = io
-    this.Game = Game
+    this.io = io;
+    this.Game = Game;
     this.lobbies = {};
     this.words = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
-  }
+   }
   createLobby(devMode=false){
     let lobbyID = this.generateLobbyID();
     this.lobbies[lobbyID] = new Lobby(this.io,lobbyID,devMode);
@@ -32,7 +32,7 @@ class Lobby{
     this.io = io.of("/"+lobbyID);
     this.players = {}
     this.disconnectedPlayers = {}
-    this.game = new Game(ourio, this.players);
+    this.game = new Game(ourio, this.players, this);
     // this.chat = new Chat(ourio);
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
@@ -102,10 +102,10 @@ class Lobby{
     //If the game isn't running, then we want to skip disconnect logic and just kick.
     let PID = this._sidpid[SID];
 
-    // if(!this.game.running){
-    //   return this.kickPlayer(PID);
-    // }
-    //Unlink socketID to playerID.
+    if(!this.game.running){
+      return this.kickPlayer(PID);
+    }
+    // Unlink socketID to playerID.
     delete this._sidpid[SID];
     this.players[PID].SID = undefined;
     this.disconnectedPlayers[PID] = this.getPlayer(PID);
@@ -177,12 +177,18 @@ class Lobby{
       "you": player,
       "lobbyInfo": this.getLobbyInfo()
     }
+    //If the game's running and the game handles reconnecting, 
+    /*Because gamers are initialized when the game starts, sometimes games need to
+      rerun initialization functions. */
+    if(this.game.reconnectPlayer && this.game.running){
+      this.game.reconnectPlayer(player);
+    }
     this.io.to(SID).emit('lobby joined', arg);
     this.io.emit('lobby update info', arg);
   }
   getLobbyInfo(){
     //Lobby info compiles some basic information about the lobby to be sent.
-    let gameInfo = this.game.getGameInfo();
+    let gameInfo = this.game.getLobbyGameInfo();
     let publicPlayers = [];
     for(var player of Object.values(this.players)){
       publicPlayers.push(player.getPublicInfo());
@@ -212,9 +218,14 @@ class Lobby{
       })
       socket.on('user init request', ()=>socket.emit('lobby init info', this.getLobbyInfo()));
       socket.on('join lobby', (arg) => {this.connectPlayer(arg.username,arg.PID, socket.id)})
-      socket.on('reconnect request', (arg)=>{this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
+      socket.on('rejoin lobby', (arg)=>{console.log(arg); this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
       socket.on('request kick', (arg)=>{this.requestKick(socket.id,arg.kickee);});
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
+      socket.on('game init', ()=>this.initializeGame());
+      socket.on('activate game signals', ()=>this.game.activateGameSignals(socket));
+      if(this.game.running){
+        this.game.activateGameSignals(socket);
+      }
     })
   }
 }
@@ -253,4 +264,4 @@ function getObjectLength(obj){
   return Object.keys(obj).length;
 }
 
-module.exports = Lobbies;
+module.exports = {Lobbies, Lobby, Player};
