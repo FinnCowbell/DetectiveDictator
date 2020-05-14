@@ -1,0 +1,19 @@
+.chat-room{
+  border: 1px black solid;
+  position: fixed;
+  bottom: 0px;
+  right: 20px;
+  width: 400px;
+  .sent-messages{
+    height: 300px;
+  }
+}
+
+.player-list{
+  li.leader{
+    color: goldenrod;
+  }
+  li.you{
+    font-weight: bold;
+  }
+}

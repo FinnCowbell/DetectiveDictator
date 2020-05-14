@@ -1,10 +1,14 @@
-import {Header, StatusBar, LoadingMessage, PlayerList} from './modules/MenuParts.js';
-import {ChatRoom} from './modules/ChatRoom.js'
-import {Hitler as Game} from './Hitler.js';
-class Lobby extends React.Component{
+import React from 'react';
+import io from 'socket.io-client'
+
+import Header from './Lobby/Header.js'
+import ChatRoom from './Lobby/ChatRoom.js'
+import {default as Game} from './Game/Hitler.js';
+
+export default class Lobby extends React.Component{
   constructor(props){
     super(props);
-    this.socket = this.props.io(`/${this.props.lobbyID}`);
+    this.socket = io.connect(this.props.socketURL + "/" + this.props.lobbyID);
     this.state = {
       PID: document.cookie,
       lobbyExists: false,
@@ -51,7 +55,7 @@ class Lobby extends React.Component{
     socket.emit('user init request');
   }
   leaveLobby(reason){
-    window.location.replace("/");
+    this.props.setLobbyID(null);
   }
   connect(username){
     this.socket.emit("join lobby", {
@@ -89,12 +93,11 @@ class Lobby extends React.Component{
     connectionForm = (gameInfo && gameInfo.isRunning) ? <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : <NewPlayerForm connect={this.connect}/>;
     return(
       <div>
-
         {(!inLobby || !gameInfo.isRunning) && (<div className="Lobby">
           <Header lobbyID ={lobbyID}/>
           {!lobbyExists && <LoadingMessage leaveLobby={this.leaveLobby}/>}
           {(lobbyExists && !inLobby) && connectionForm}
-          <PlayerList PID={this.state.PID} 
+          <LobbyPlayerList PID={this.state.PID} 
                       you={this.state.you} 
                       players={this.state.players}
                       kickPlayer={this.kickPlayer}
@@ -168,10 +171,46 @@ function ReconnectPlayerForm(props){
   )
 }
 
-// pathname is /lobby/words/, so words are in index 2.
+function LoadingMessage(props){
+  return(
+    <div className="loading-message">
+      <h3 className="loading-status">Connecting...</h3>
+      <button onClick={props.leaveLobby}>Return to Menu</button>
+    </div>
+  )
+}
+
+function LobbyPlayerList(props){
+  let yourPID = props.PID;
+  let you = props.you;
+  let listItems = null;
+  if(props.players){
+    listItems = props.players.map((player)=>(
+      <li key={player.username} 
+          className={(player.isLeader ? "leader " : "" )+
+                     (!player.connected ? "disconnected " : "")+
+                     ((player.PID == yourPID) ? "you " : "")}>
+        {player.username}
+        {(you && you.isLeader && player.PID != yourPID) &&
+          <button className="kick-button" onClick={()=>props.kickPlayer(player.PID)}>
+            Kick
+          </button>
+        }
+      </li>
+    ))
+  }
+  return(
+    <div className="player-list">
+      <h3>Connected Players:</h3>
+      <ul>
+        {listItems}
+      </ul>
+    </div>
+  )
+}
+
 // If we're in root or 
-const lobbyID = window.location.pathname.split("/")[2]; 
-ReactDOM.render(
-  <Lobby io={io} lobbyID={lobbyID}/>,
-  document.getElementById('root')
-)
+// ReactDOM.render(
+//   <Lobby lobbyID={lobbyID}/>,
+//   document.getElementById('root')
+// )

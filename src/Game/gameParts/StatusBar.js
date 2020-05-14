@@ -1,3 +1,4 @@
+import React from 'react'
 function StatusBar(props){
   //Will be a bunch of Strings with values to fill in based on our event name.
   let gameStatus;

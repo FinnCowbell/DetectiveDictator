@@ -1,4 +1,5 @@
-class ActionBar extends React.Component{
+import React from 'react'
+export default class ActionBar extends React.Component{
   constructor(props){
     super(props)
     this.state={
@@ -168,5 +169,3 @@ function Murder(props){
     </div>
   )
 }
-
-export {ActionBar};
