@@ -2,10 +2,11 @@ var fs = require('fs')
 var path = require('path')
 var express = require('express')
 var app = express()
-var server = require('http').createServer(app)
-var io = require('socket.io')(server)
-var {Lobbies, Lobby, Player} = require('./private/lobby');
-var Game = require('./private/Game/Hitler');
+var http = require('http').Server(app)
+var io = require('socket.io')(http)
+var {Lobbies, Lobby, Player} = require('./lobby');
+var Game = require('./Game/Hitler');
+const port = 1945;
 // var cookieParser = require('cookie-parser') (for Cookies)
 // var bodyParser = require('body-parser') (for Bodies)
 // app.use(express.static(path.join(__dirname + "/public")))
@@ -16,19 +17,19 @@ String.prototype.capitalize = function() {
 };
 
 //Express Static File Logic
-app.use('/', express.static(path.join(__dirname, 'public')));
-app.use('/lobby/:roomID/', express.static(path.join(__dirname, 'public/lobby')));
+// app.use('/menu', express.static(path.join(__dirname, 'dist/Menu')));
+// app.use('/lobby/:roomID/', express.static(path.join(__dirname, 'dist/Lobby')));
 
-app.get('/:lobby/:roomID/socket.io.js', function(req, res){
-  res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
-})
-app.get('/socket.io.js', function(req, res){
-  res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
-})
+// app.get('/:lobby/:roomID/socket.io.js', function(req, res){
+//   res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
+// })
+// app.get('/socket.io.js', function(req, res){
+//   res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
+// })
 
 //Initializing storage for all lobbies
 var lobbies = new Lobbies(io, Game);
-fs.readFile(__dirname + "/private/util/wwii.txt", 'utf8', (err, data) =>{
+fs.readFile(__dirname + "/util/wwii.txt", 'utf8', (err, data) =>{
   if(err){
     console.error(err)
     return
@@ -49,4 +50,6 @@ io.of('/menu').on("connection", (socket)=>{//When we get a new connection
 });
 
 //___Run the server at the end___//
-server.listen(1945);
+http.listen(port, ()=>{
+  console.log(`listening on port ${port}`);
+});

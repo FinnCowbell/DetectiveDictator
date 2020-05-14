@@ -1,5 +1,5 @@
+import React from 'react'
 //Boards don't need a state.
-
 function LibBoard(props){
   return(
     <div className="liberal-board">

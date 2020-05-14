@@ -1,5 +1,12 @@
-import {LibBoard, FasBoard, StatusBar, ActionBar, PlayerSidebar} from './modules/hitlerParts.js';
-class Hitler extends React.Component{
+import React from 'react';
+import io from 'socket.io-client'
+
+import {LibBoard,FasBoard} from './gameParts/Boards.js'
+import ActionBar from './gameParts/ActionBar.js'
+import StatusBar from './gameParts/StatusBar.js'
+import PlayerSidebar from './gameParts/PlayerSidebar.js'
+
+export default class Hitler extends React.Component{
   constructor(props){
    super(props);
    this.socket = this.props.socket;
@@ -30,4 +37,5 @@ class Hitler extends React.Component{
     )
   }
 }
-export {Hitler};
+
+// export default hot(Hitler) //HOT HITLER?!?!
