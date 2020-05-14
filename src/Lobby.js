@@ -92,8 +92,8 @@ export default class Lobby extends React.Component{
     //If we're just connecting, display the correct connection field.
     connectionForm = (gameInfo && gameInfo.isRunning) ? <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : <NewPlayerForm connect={this.connect}/>;
     return(
-      <div>
-        {(!inLobby || !gameInfo.isRunning) && (<div className="Lobby">
+      <div className="window">
+        {(!inLobby || !gameInfo.isRunning) && (<div className="lobby-window">
           <Header lobbyID ={lobbyID}/>
           {!lobbyExists && <LoadingMessage leaveLobby={this.leaveLobby}/>}
           {(lobbyExists && !inLobby) && connectionForm}
@@ -109,9 +109,7 @@ export default class Lobby extends React.Component{
             </button>)}
         </div>)}
         {inLobby && (<ChatRoom socket={this.socket} you={this.state.you}/>)}
-        <div>
-          <Game you={this.you} socket={this.socket}/>
-        </div>
+        <Game you={this.you} socket={this.socket}/>
       </div>
     )
   }

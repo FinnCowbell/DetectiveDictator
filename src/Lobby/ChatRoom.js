@@ -59,7 +59,7 @@ export default class ChatRoom extends React.Component{
     //   height: '300px',
     // }
     return(
-      <div className="chat-room">
+      <div className="chat-window">
         <h3>Chat</h3>
         <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
         <button onClick={this.sendChat}>Send</button>

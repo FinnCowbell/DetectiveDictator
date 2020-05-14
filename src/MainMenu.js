@@ -45,6 +45,11 @@ class LobbyInput extends React.Component{
       lobbyName: ""
     }
   }
+  handleSubmit(e){
+    if(e.keyCode == 13 && this.state.lobbyName != ""){
+      this.props.joinLobby(this.state.lobbyName);
+    }
+  }
   handleChange(e){
     this.setState({lobbyName: e.target.value})
   }
@@ -52,7 +57,7 @@ class LobbyInput extends React.Component{
     return(
       <div className="existing-lobby">
         <h4>Join an Existing Lobby</h4>
-        <input className="lobby-input" value={this.state.lobbyName} onChange={(e)=>this.handleChange(e)}/>
+        <input className="lobby-input" value={this.state.lobbyName} onKeyDown={(e)=>this.handleSubmit(e)} onChange={(e)=>this.handleChange(e)}/>
         <button onClick={()=>this.props.joinLobby(this.state.lobbyName)}>Join</button>
       </div>
     )
