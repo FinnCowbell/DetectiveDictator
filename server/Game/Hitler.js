@@ -17,13 +17,13 @@ class Hitler{
     this.previousPresPID = null;
     this.previousChanPID = null;
     this.currentEvent = "pre game";
-    this.FasBoard = 0; //0-6
-    this.LibBoard = 0; //0-6
+    this.fasBoard = 0; //0-6
+    this.libBoard = 0; //0-6
     this.marker = 0; //0-3. If it turns to 3 it should be set to 0.
     this.nPlaying = 0;
     this.nAlive = 0;
     this.gameStyle = -1; // 0 is 5-6 players, 1 is 7-8, 2 is 9-10
-    this.policies = null;
+    this.policies = new CardDeck([0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1], true, true);;
     this.rounds = [];
   }
   error(msg){
@@ -31,8 +31,9 @@ class Hitler{
   }
   init(){
     this.initPlayers();
-    this.initPolicyCards();
+    this.policies.shuffleCards();
     this.running = true;
+    //Let the lobby know the game is starting. Send the game info to the lobby.
     this.io.emit('lobby game starting', {gameInfo: this.getLobbyGameInfo()});
     this.newRound();
   }
@@ -41,21 +42,22 @@ class Hitler{
     let PID;
     for(PID in this.players){ 
       let player = this.players[PID];
-      console.log(player);
       player.alive = true;
+      //If 0, liberal. If 1, Fascist. If 2, Hitler. -1 is unassigned/spectating (?)
       player.membership = -1;
       this.nPlaying++; //reCalculate player count.
       this.nAlive++;
-      //If 0, liberal. If 1, Fascist. If 2, Hitler. -1 is unassigned/spectating (?)
       this.order.push(PID);
       this.assignRoles();
     }
+    if(this.nPlaying <= 6){
+      this.gameStyle = 0;
+    } else if(this.nPlayer == 7 ||  this.nPlayers == 8){
+      this.gameStyle = 1;
+    } else{
+      this.gameStyle = 2;
+    }
     shuffle(this.order); //Shuffle the order of players.
-  }
-  initPolicyCards(){
-    let policyCards = [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1]
-    this.policies = new CardDeck(policyCards, true, true);
-    this.policies.shuffleCards();
   }
   assignRoles(){
     // PLAYERS | 5 | 6 | 7 | 8 | 9 | 10
@@ -81,13 +83,7 @@ class Hitler{
         if(this.hitler){console.log("ERROR! Hitler already defined");};
         player.membership = 2;
         this.hitler = player;
-        if(this.nPlaying < 7){
-          this.fascists.push(PID);
-        } else{
-          this.liberals.push(PID);
-        }
       }
-      this.joinRoom(player);
     }
   }
   joinRoom(player){
@@ -104,8 +100,12 @@ class Hitler{
     //   }
     // }
   }
-  reconnectPlayer(player){
-    this.joinRoom(player);
+  reconnectPlayer(socket){
+    let PID = this.lobby._sidpid[socket.id];
+    console.log("RECONNECTING PLAYER!");
+    this.activateGameSignals(socket);
+    socket.emit('lobby game starting', {gameInfo: this.getLobbyGameInfo()});
+    socket.emit(('reconnect game', this.getFullGameInfo(PID)))
   }
   getLobbyGameInfo(){
     return {
@@ -113,12 +113,17 @@ class Hitler{
       nRounds: this.rounds.length,
     }
   }
-  getFullPlayerInfo(isFascist){
+  getFullPlayerInfo(theirPID){
     //Constructs players.
+    console.log("Full player info for " + theirPID);
+    let player = this.players[theirPID];
+    let getsMembershipInfo = 0;
+    if(player){
+      let getsMembershipInfo = this.gameStyle ? player.membership % 2 : player.membership;
+    }
     let players = {}
-    let PID;
-    for(PID of this.order){
-      if(isFascist){
+    for(const PID of this.order){
+      if(getsMembershipInfo || PID == theirPID ){
         players[PID] = (this.getFascistInfo(PID));
       }else{
         players[PID] = (this.getLiberalInfo(PID));
@@ -126,9 +131,10 @@ class Hitler{
     }
     return players
   }
-  getFullGameInfo(isFascist){
+  getFullGameInfo(PID){
+    console.log(this.rounds);
     let arg = {
-      players: this.getFullPlayerInfo(isFascist),
+      players: this.getFullPlayerInfo(PID),
       order: this.order,
       rounds: this.rounds,
       isRunning: this.running,
@@ -146,12 +152,10 @@ class Hitler{
   }
   getFascistInfo(PID){
     let info = this.getLiberalInfo(PID);
-    info[membership] = this.players[PID].membership;
+    info.membership = this.players[PID].membership;
     return info;
   }
   newRound(nextPresident = null){
-    this.io.emit('new round'); //I guess....
-    this.rounds.push([]);
     this.previousPresPID = this.presidentPID;
     this.previousChanPID = this.chancellorPID;
     if(nextPresident){ //If the next president has been pre-chosen,
@@ -160,48 +164,100 @@ class Hitler{
       this.presidentPID = this.order[this.currentPlayer];
       this.currentPlayer = (this.currentPlayer + 1) % this.nPlaying;
     }
+    this.rounds.push([this.getStartingRoundEvent()]);
+    this.sendNewRound();
     this.currentEvent="chancellor pick";
     this.buildEvent();
     this.sendLatestEvent();
   }
+  getStartingRoundEvent(){
+    return {
+      name: "new round",
+      details: {
+        presidentPID: this.presidentPID,
+        chancellorPID: this.chancellorPID,
+        previousPresPID: this.previousPresPID,
+        previousChanPID: this.previousChanPID,
+        fasBoard: this.fasBoard,
+        libBoard: this.libBoard,
+        marker: this.marker,
+        nInDiscard: this.policies.getAmountDiscarded(),
+        nInDraw: this.policies.getAmountRemaining(),
+        nVoted: 0,
+        votes: {},
+      }
+    }
+  }
   buildEvent(){
     let eventDetails = {};
+    let eventSecret = {};
     switch(this.currentEvent){
-      case "new round":
+      case "chancellor pick":
+        break;// No extra data to be sent
+      case "chancellor vote": 
         eventDetails = {
-          president: this.presidentPID,
           chancellor: this.chancellorPID,
-          previousPres: this.previousPresPID,
-          previousChan: this.previousChanPID,
-          nInDiscard: this.policies.getAmountDiscarded(),
-          nInDraw: this.policies.getAmountRemaining(),
+        }
+        break;
+      case "president discard":
+        eventSecret = {
+          PID: this.presidentPID,
+          policies: this.policies.draw(3),
+        }
+        eventDetails = {
           nVoted: 0,
           votes: {},
+          marker: this.marker,
+          nInDiscard: this.policies.getAmountDiscarded(),
+          nInDraw: this.policies.getAmountRemaining()
         }
-      case "chancellor picked": 
-        breake
-      case "chancellor vote":
         break;
-      }
+      case "chancellor discard": 
+        eventSecret = {
+          PID: this.chancellorPID,
+          policies: null, /*How where will these cards come from? */
+        }
+        eventDetails = {
+          nInDiscard: this.policies.getAmountDiscarded(),
+          nInDraw: this.policies.getAmountRemaining()
+        }
+      case "policy placed":
+        eventDetails = {
+          fasBoard: this.fasBoard,
+          libBoard: this.libBoard,
+        }
+      case "president peek":
+        eventSecret = {
+          PID: this.presidentPID,
+          policies: this.policies.view(3),
+        }
+        break; //No data changes!
+      case "president pick":
+        break; //Nothing changes!
+      case "president kill":
+        break;
+    }
     let event = {
       name: this.currentEvent,
-      details: eventDetails
+      details: eventDetails,
+      secret: eventSecret
     }
     this.rounds[this.rounds.length - 1].push(event);
+  }
+  sendNewRound(){
+    let round = this.rounds[this.rounds.length -1];
+    this.io.emit("new round", {round: round});
   }
   sendLatestEvent(){
     let round = this.rounds[this.rounds.length - 1];
     let event = round[round.length - 1];
-    this.io.emit("new event", event);
+    this.io.emit("new event", {event: event});
   }
   activateGameSignals(socket){
     socket.on('get player info', (arg)=>{
-      let players = {}
-      let player = this.lobby.getPlayerBySocketID(socket.id)
-      let doWeTreatThePlayerAsAFascistOrAsLiberal = this.nPlaying <= 6 ? player.membership % 2 : player.membership;
-      players = this.getFullPlayerInfo(doWeTreatThePlayerAsAFascistOrAsLiberal)
+      let PID = this.lobby._sidpid[socket.id];
       socket.emit('player info', {
-        players: players,
+        players: this.getFullPlayerInfo(PID),
         order: this.order,
       });
     })
@@ -241,7 +297,7 @@ class Hitler{
           this.marker++;
           this.checkMarker();
         } else{
-          if(this.chancellorPID == this.hitler.PID && this.FasBoard >= 3){
+          if(this.chancellorPID == this.hitler.PID && this.fasBoard >= 3){
             this.endGame(1, 1);
           } else{
             this.currentEvent = "policy pick president"
@@ -251,20 +307,23 @@ class Hitler{
         }
       }
     })
-    socket.emit('game starting');
+    socket.emit('player info', {
+      players: this.getFullPlayerInfo(this.lobby._sidpid[socket.id]),
+      order: this.order,
+    })
   }
   placePolicy(value){
     //Places a policy. Returns 1 if somebody won.
     //Doesn't cause presidential policy events.
     if(value){
-      this.FasBoard++;
-      if(FasBoard == 6){
+      this.fasBoard++;
+      if(fasBoard == 6){
         this.endGame(1,0);
         return 1;
       }
     } else{
-      this.LibBoard++;
-      if(this.LibBoard == 6){
+      this.libBoard++;
+      if(this.libBoard == 6){
         this.endGame(0,0);
         return 1;
       }

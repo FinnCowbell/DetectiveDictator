@@ -5,12 +5,13 @@ import {LibBoard,FasBoard} from './gameParts/Boards.js'
 import ActionBar from './gameParts/ActionBar.js'
 import StatusBar from './gameParts/StatusBar.js'
 import PlayerSidebar from './gameParts/PlayerSidebar.js'
+import PlayerCard from './gameParts/PlayerCard.js'
 
 export default class Hitler extends React.Component{
   constructor(props){
    super(props);
    this.socket = this.props.socket;
-   this.you = this.props.you;
+   this.yourPID = this.props.yourPID;
    this.state = {
     order: [1,2,3,4,5,6],
     players: { 
@@ -23,7 +24,7 @@ export default class Hitler extends React.Component{
       6: {PID: 6, username: "Marco", alive: true, membership: 2},
     },
     rounds: [[{
-       name: "game start",
+       name: "pre game",
        details:{
          LibBoard: 0,
          FasBoard: 0,
@@ -46,9 +47,6 @@ export default class Hitler extends React.Component{
   }
   componentDidMount(){
     let socket = this.props.socket;
-    socket.on('game starting', (arg)=>{
-      socket.emit('get player info')
-    })
     socket.on('player info', (arg)=>{
       this.setState({
         order: arg.order,
@@ -57,26 +55,33 @@ export default class Hitler extends React.Component{
     })
     socket.on('new round',(arg)=>{
       let rounds = this.state.rounds;
+      let newRound = arg.round;
+      console.log("NEW ROUND!");
+      console.log(newRound);
       this.setState({
-        rounds: rounds.concat([[]]),
+        rounds: rounds.concat([newRound]),
       })
     })
     socket.on('new event', (arg)=>{
+      console.log("NEW EVENT!");
+      console.log(arg.event);
       let rounds = this.state.rounds;
       rounds[rounds.length - 1] = rounds[rounds.length - 1].concat([arg.event]);
       this.setState({
         rounds: rounds,
       })
     })
+
   }
   changeSelectedPlayer(PID){
     this.setState({
       selectedPlayer: PID
     });
   }
-  getDetailsAtEvent(roundIndex = null, eventIndex = null){
-    //Individual changes are sent along with events each round.
-    //If we have a bunch of events, we need to get the most modern details.
+  getFullEvent(roundIndex = null, eventIndex = null){
+    /*Events are sent with the changes that have occurred.
+    This function compiles all changes during a round. 
+    Optionally, a specific round or event can be referenced.*/
     if(roundIndex == null){
       roundIndex = this.state.rounds.length-1;
     }
@@ -84,26 +89,35 @@ export default class Hitler extends React.Component{
     if(eventIndex == null){
       eventIndex = round.length - 1;
     }
-    let details = {}
+    console.log("looking at " + roundIndex + "," + eventIndex);
+    console.log(this.state.rounds);
+    let name = round[eventIndex].name;
+    let details = {};
     for(let i = 0; i <= eventIndex; i++){
-      let event = round[i];
+      let event = round[i].details;
       for(const change in event){
         details[change] = event[change]
       }
     }
-    return details;
+    return {
+      name: name,
+      details: details
+    };
   }
   render(){
-    let rounds = this.state.rounds
+    let rounds = this.state.rounds;
+    let players = this.state.players;
+    let yourPID = this.yourPID;
+    let you = this.state.players[yourPID];
     let round = rounds[rounds.length-1];
-    let eventName = round[round.length - 1];
-    let eventDetails = this.getDetailsAtEvent();
+    let event = this.getFullEvent();
     return (
       <div className="game-window">
-
+      <StatusBar lobbyID={this.props.lobbyID} players={players} event={event}/>
+      <PlayerCard PID={yourPID} membership={you ? you.membership : -1}/>
       <PlayerSidebar  order={this.state.order}
-                      players={this.state.players} 
-                      eventDetails={eventDetails}
+                      players={players} 
+                      eventDetails={event.details}
                       selectedPlayer={this.state.selectedPlayer}
                       playersAreSelectable={this.state.playersAreSelectable}
                       changeSelectedPlayer={this.changeSelectedPlayer}

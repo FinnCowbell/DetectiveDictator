@@ -13,11 +13,13 @@ export default class PlayerSidebar extends React.Component{
     let membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
     let sidebarItems = order.map((PID, index)=>{
       let player = players[PID];
+      if(!player){
+        return null;
+      }
       let status =  (!player.alive ? "dead" : 
                     (player.PID == pres ? "president" : 
                     (player.PID == chan ? "chancellor" : "")));
-      let vote = event.votes && event.votes[PID] //Outputs event.votes[PID] if both exist. null otherwise.
-      //More logic should be added here later for different selection situations.
+      let vote = event.votes && event.votes[PID] //Outputs event.votes[PID] if both exist. null/undefined otherwise.
       let selectable = (playersAreSelectable)
       let selected = (player.PID == selectedPlayer);
       return (

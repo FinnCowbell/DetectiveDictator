@@ -4,6 +4,7 @@
   bottom: 0px;
   left: 20px;
   width: 250px;
+  padding: 10px;
   border-top-right-radius: 20px;
   background-color: rgb(194, 183, 255);
   .sent-messages{
@@ -58,6 +59,14 @@
   ". . action . players";
   grid-template-rows: 75px 3fr 3fr 1fr;
   grid-template-columns: 1fr 1fr 1fr 1fr 300px;
+  .status-bar{
+    grid-area: status;
+    background-color: rgb(192, 192, 192);
+    display: inline;
+  }
+  .player-card{
+    grid-area: playercard;
+  }
   .player-sidebar{
     grid-area: players;
     height: initial;
@@ -86,11 +95,21 @@
 
         }
       }
+      .player.liberal .player-content{
+        background-color: aqua;
+      }
+      .player.fascist .player-content{
+        background-color: rgb(250, 124, 124);
+      }
+      .player.hitler .player-content{
+        background-color: rgb(136, 15, 15);
+        color: white;
+      }
       .player-content{
         margin-right: -25px;
         margin-left: 35px;
-        background-color: rgb(223, 0, 0);
         height: 50px;
+        background-color: rgb(215, 255, 255);
         border: 2px solid blue;
         border-bottom-left-radius: 20px;
         margin-bottom: 15px;

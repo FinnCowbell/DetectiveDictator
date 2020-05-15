@@ -79,7 +79,7 @@ export default class Lobby extends React.Component{
       oldPID: PID,
       PID: this.state.PID
     }
-    this.socket.emit("rejoin lobby", arg);
+    this.socket.emit("rejoin game", arg);
   }
   kickPlayer(PID){
     const you = this.state.players[this.state.PID];
@@ -121,7 +121,7 @@ export default class Lobby extends React.Component{
             </button>)}
         </div>)}
         {inLobby && (<ChatRoom socket={this.socket} username={this.state.username}/>)}
-        <Game yourPID={this.state.PID} socket={this.socket}/>
+        <Game lobbyID={lobbyID} yourPID={this.state.PID} socket={this.socket}/>
       </div>
     )
   }
@@ -164,7 +164,6 @@ class NewPlayerForm extends React.Component{
 
 function ReconnectPlayerForm(props){
   if(!props.players){return null}
-  console.log(props.players);
   let disconnectedPlayers = props.players.map((player)=>(
     !player.connected ? (
       <button onClick={()=>{props.reconnect(player.PID)}}>
@@ -173,10 +172,10 @@ function ReconnectPlayerForm(props){
   ))
   return(
     <div className="rejoin-form">
-      { disconnectedPlayers.length &&
-        <h2>Game in Progress!</h2>}
-        {disconnectedPlayers}
-      <button onClick={props.spectate}>Spectate</button>
+      <h2>Game in Progress!</h2>
+      {disconnectedPlayers.length && disconnectedPlayers}
+      )
+      <button className="spectate-button" onClick={props.spectate}>Spectate</button>
     </div>
   )
 }
@@ -184,7 +183,7 @@ function ReconnectPlayerForm(props){
 function LoadingMessage(props){
   return(
     <div className="loading-message">
-      <h3 className="loading-status">Connecting...</h3>
+      <h3 className="loading-status">Connecting... (Lobby might not exist!)</h3>
       <button onClick={props.leaveLobby}>Return to Menu</button>
     </div>
   )

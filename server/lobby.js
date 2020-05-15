@@ -181,7 +181,7 @@ class Lobby{
     /*Because gamers are initialized when the game starts, sometimes games need to
       rerun initialization functions. */
     if(this.game.reconnectPlayer && this.game.running){
-      this.game.reconnectPlayer(player);
+      this.game.reconnectPlayer(this.io.to(SID));
     }
     this.io.to(SID).emit('lobby joined', arg);
     this.io.emit('lobby update info', arg);
@@ -218,9 +218,9 @@ class Lobby{
       })
       socket.on('user init request', ()=>socket.emit('lobby init info', this.getLobbyInfo()));
       socket.on('join lobby', (arg) => {this.connectPlayer(arg.username,arg.PID, socket.id)})
-      socket.on('rejoin lobby', (arg)=>{console.log(arg); this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
       socket.on('request kick', (arg)=>{this.requestKick(socket.id,arg.kickee);});
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
+      socket.on('rejoin game', (arg)=>{this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
       socket.on('game init', ()=>this.initializeGame());
       socket.on('activate game signals', ()=>this.game.activateGameSignals(socket));
       if(this.game.running){
