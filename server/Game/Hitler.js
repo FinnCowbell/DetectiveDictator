@@ -3,7 +3,7 @@ var {Lobbies, Lobby, Player} = require('../Lobby')
 //Generally: 0 = Liberal, >0 = Fascist.
 class Hitler{
   constructor(io, players, lobby){
-    // this.lobby = lobby; //Remove this if possible.
+    this.lobby = lobby; //Remove this if possible.
     this.running = false;
     this.io = io;
     this.players = players;
@@ -33,7 +33,7 @@ class Hitler{
     this.initPlayers();
     this.initPolicyCards();
     this.running = true;
-    this.io.emit('game starting', {gameInfo: this.getLobbyGameInfo()});
+    this.io.emit('lobby game starting', {gameInfo: this.getLobbyGameInfo()});
     this.newRound();
   }
   initPlayers(){
@@ -114,25 +114,40 @@ class Hitler{
     }
   }
   getFullPlayerInfo(isFascist){
-    //Constructs Player Info in the game order.
-    let players = []
+    //Constructs players.
+    let players = {}
     let PID;
     for(PID of this.order){
       if(isFascist){
-        players.append(this.players[PID].getFascistInfo());
+        players[PID] = (this.getFascistInfo(PID));
       }else{
-        players.append(this.players[PID].getLiberalInfo());
+        players[PID] = (this.getLiberalInfo(PID));
       }
     }
     return players
   }
   getFullGameInfo(isFascist){
     let arg = {
-      isRunning: this.running,
-      playersInOrder: this.getFullPlayerInfo(isFascist),
+      players: this.getFullPlayerInfo(isFascist),
+      order: this.order,
       rounds: this.rounds,
+      isRunning: this.running,
     }
     return arg;
+  }
+  getLiberalInfo(PID){
+    let player = this.players[PID];
+    return { 
+      username: player.username,
+      PID: player.PID,
+      membership: -1,
+      alive: player.alive,
+    }
+  }
+  getFascistInfo(PID){
+    let info = this.getLiberalInfo(PID);
+    info[membership] = this.players[PID].membership;
+    return info;
   }
   newRound(nextPresident = null){
     this.io.emit('new round'); //I guess....
@@ -152,26 +167,24 @@ class Hitler{
   buildEvent(){
     let eventDetails = {};
     switch(this.currentEvent){
-      case "chancellor picked": 
-        break;
-      case "chancellor vote":
-        eventDetails.nVoted = 0;
-        eventDetails.votes = {
-
+      case "new round":
+        eventDetails = {
+          president: this.presidentPID,
+          chancellor: this.chancellorPID,
+          previousPres: this.previousPresPID,
+          previousChan: this.previousChanPID,
+          nInDiscard: this.policies.getAmountDiscarded(),
+          nInDraw: this.policies.getAmountRemaining(),
+          nVoted: 0,
+          votes: {},
         }
+      case "chancellor picked": 
+        breake
+      case "chancellor vote":
         break;
       }
-    let eventInfo = {
-      president: this.presidentPID,
-      chancellor: this.chancellorPID,
-      previousPres: this.previousPresPID,
-      previousChan: this.previousChanPID,
-      nInDiscard: this.policies.getAmountDiscarded(),
-      nInDraw: this.policies.getAmountRemaining(),
-    }
     let event = {
       name: this.currentEvent,
-      info: eventInfo,
       details: eventDetails
     }
     this.rounds[this.rounds.length - 1].push(event);
@@ -179,9 +192,19 @@ class Hitler{
   sendLatestEvent(){
     let round = this.rounds[this.rounds.length - 1];
     let event = round[round.length - 1];
-    this.io.emit(event.name, {event: event});
+    this.io.emit("new event", event);
   }
   activateGameSignals(socket){
+    socket.on('get player info', (arg)=>{
+      let players = {}
+      let player = this.lobby.getPlayerBySocketID(socket.id)
+      let doWeTreatThePlayerAsAFascistOrAsLiberal = this.nPlaying <= 6 ? player.membership % 2 : player.membership;
+      players = this.getFullPlayerInfo(doWeTreatThePlayerAsAFascistOrAsLiberal)
+      socket.emit('player info', {
+        players: players,
+        order: this.order,
+      });
+    })
     socket.on('chancellor picked', (arg)=>{
       //arg.PID
       //arg.pickedChancellor
@@ -228,6 +251,7 @@ class Hitler{
         }
       }
     })
+    socket.emit('game starting');
   }
   placePolicy(value){
     //Places a policy. Returns 1 if somebody won.
@@ -278,24 +302,6 @@ Player.prototype.getParty = function(){
   } else{
     return 0;
   }
-}
-
-Player.prototype.getLiberalInfo = function(){
-  return { 
-    username: this.username,
-    PID: this.PID,
-    membership: -1,
-    alive: this.alive,
-    vote: this.vote //If null, displays nothing.
-
-  }
-}
-
-Player.prototype.getFascistInfo = function(){
-  //adds membership information to the Liberal Info.
-  let info = this.getLiberalInfo();
-  info[membership] = this.membership;
-  return info;
 }
 
 function shuffle(a){

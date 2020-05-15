@@ -11,9 +11,9 @@ export default class Lobby extends React.Component{
     this.socket = io.connect(this.props.socketURL + "/" + this.props.lobbyID);
     this.state = {
       PID: document.cookie,
+      username: null,
       lobbyExists: false,
       inLobby: false,
-      you: null,
       players: null,
       name: null,
       gameInfo: null,
@@ -21,6 +21,7 @@ export default class Lobby extends React.Component{
     this.leaveLobby = this.leaveLobby.bind(this);
     this.kickPlayer = this.kickPlayer.bind(this);
     this.connect = this.connect.bind(this);
+    this.changePID = this.changePID.bind(this);
     this.reconnect = this.reconnect.bind(this);
     this.startGame = this.startGame.bind(this);
   }
@@ -34,25 +35,32 @@ export default class Lobby extends React.Component{
       })
     });
     socket.on("lobby joined", (arg)=>{
+      let newPID = arg.newPID ||this.state.PID
       this.setState({
-        you: arg.you,
         inLobby: true,
+        PID: newPID,
         players: arg.lobbyInfo.players,
       })
     });
-    socket.on('kick', ()=>this.leaveLobby('Kick'));
+    socket.on('kick', ()=>this.leaveLobby("You've been Kicked From the Lobby!"));
+    socket.on('end game', ()=>this.leaveLobby("The game has ended."));
     socket.on('lobby update info', (arg)=>{
       this.setState({
         players: arg.lobbyInfo.players,
       })
     });
-    socket.on('game starting', (arg)=>{
+    socket.on('lobby game starting', (arg)=>{
       this.setState({
         gameInfo: arg.gameInfo,
       })
       socket.emit('activate game signals');
     });
     socket.emit('user init request');
+  }
+  changePID(newPID){
+    this.setState({
+      "PID": newPID,
+    })
   }
   leaveLobby(reason){
     this.props.setLobbyID(null);
@@ -62,6 +70,9 @@ export default class Lobby extends React.Component{
       username: username,
       PID: this.state.PID,
     });
+    this.setState({
+      'username': username,
+    })
   }
   reconnect(PID){
     let arg = {
@@ -71,8 +82,7 @@ export default class Lobby extends React.Component{
     this.socket.emit("rejoin lobby", arg);
   }
   kickPlayer(PID){
-    const you = this.state.you;
-    console.log("Gonna kick em. gonna do it.")
+    const you = this.state.players[this.state.PID];
     if(you.isLeader){
       this.socket.emit('request kick', {
         kickee: PID,
@@ -88,6 +98,9 @@ export default class Lobby extends React.Component{
     const lobbyExists = this.state.lobbyExists;
     const inLobby = this.state.inLobby;
     const gameInfo = this.state.gameInfo;
+    const players = this.state.players;
+    const you = this.state.players && this.state.players[this.state.PID];
+    const isLeader = you && you.isLeader;
     if(!lobbyID){this.leaveLobby();}
     //If we're just connecting, display the correct connection field.
     connectionForm = (gameInfo && gameInfo.isRunning) ? <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : <NewPlayerForm connect={this.connect}/>;
@@ -98,18 +111,17 @@ export default class Lobby extends React.Component{
           {!lobbyExists && <LoadingMessage leaveLobby={this.leaveLobby}/>}
           {(lobbyExists && !inLobby) && connectionForm}
           <LobbyPlayerList PID={this.state.PID} 
-                      you={this.state.you} 
                       players={this.state.players}
                       kickPlayer={this.kickPlayer}
                       />
-          {(this.state.you && this.state.you.isLeader) &&(
+          {(isLeader) &&(
             <button className="game-start" 
                     onClick={this.startGame}>
               Start Game
             </button>)}
         </div>)}
-        {inLobby && (<ChatRoom socket={this.socket} you={this.state.you}/>)}
-        <Game you={this.you} socket={this.socket}/>
+        {inLobby && (<ChatRoom socket={this.socket} username={this.state.username}/>)}
+        <Game yourPID={this.state.PID} socket={this.socket}/>
       </div>
     )
   }
@@ -180,7 +192,7 @@ function LoadingMessage(props){
 
 function LobbyPlayerList(props){
   let yourPID = props.PID;
-  let you = props.you;
+  let you = props.players && props.players[yourPID];
   let listItems = null;
   if(props.players){
     listItems = props.players.map((player)=>(
