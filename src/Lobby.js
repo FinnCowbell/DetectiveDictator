@@ -10,36 +10,33 @@ export default class Lobby extends React.Component{
     super(props);
     this.socket = io.connect(this.props.socketURL + "/" + this.props.lobbyID);
     this.state = {
-      PID: document.cookie,
+      PID: null,
       username: null,
       lobbyExists: false,
       inLobby: false,
-      players: null,
-      name: null,
+      players: {},
+      username: null,
       gameInfo: null,
     }
     this.leaveLobby = this.leaveLobby.bind(this);
     this.kickPlayer = this.kickPlayer.bind(this);
     this.connect = this.connect.bind(this);
-    this.changePID = this.changePID.bind(this);
     this.reconnect = this.reconnect.bind(this);
     this.startGame = this.startGame.bind(this);
   }
   componentDidMount(){
     const socket = this.socket;
-    socket.on('lobby init info',(lobbyInfo)=>{
+    socket.on('lobby init info',(arg)=>{
       this.setState({
-        players: lobbyInfo.players,
-        gameInfo: lobbyInfo.gameInfo,
         lobbyExists: true,
+        players: arg.initInfo.players,
+        gameInfo: arg.initInfo.gameInfo,
       })
     });
     socket.on("lobby joined", (arg)=>{
-      let newPID = arg.newPID ||this.state.PID
       this.setState({
         inLobby: true,
-        PID: newPID,
-        players: arg.lobbyInfo.players,
+        PID: arg.PID,
       })
     });
     socket.on('kick', ()=>this.leaveLobby("You've been Kicked From the Lobby!"));
@@ -47,20 +44,13 @@ export default class Lobby extends React.Component{
     socket.on('lobby update info', (arg)=>{
       this.setState({
         players: arg.lobbyInfo.players,
+        gameInfo: arg.lobbyInfo.gameInfo,
       })
     });
-    socket.on('lobby game starting', (arg)=>{
-      this.setState({
-        gameInfo: arg.gameInfo,
-      })
-      socket.emit('activate game signals');
-    });
-    socket.emit('user init request');
+    socket.emit('connection init request');
   }
-  changePID(newPID){
-    this.setState({
-      "PID": newPID,
-    })
+  componentWillUnmount(){
+    this.socket = null;
   }
   leaveLobby(reason){
     this.props.setLobbyID(null);
@@ -68,7 +58,6 @@ export default class Lobby extends React.Component{
   connect(username){
     this.socket.emit("join lobby", {
       username: username,
-      PID: this.state.PID,
     });
     this.setState({
       'username': username,
@@ -76,10 +65,9 @@ export default class Lobby extends React.Component{
   }
   reconnect(PID){
     let arg = {
-      oldPID: PID,
-      PID: this.state.PID
+      PID: PID,
     }
-    this.socket.emit("rejoin game", arg);
+    this.socket.emit("rejoin lobby", arg);
   }
   kickPlayer(PID){
     const you = this.state.players[this.state.PID];
@@ -103,7 +91,9 @@ export default class Lobby extends React.Component{
     const isLeader = you && you.isLeader;
     if(!lobbyID){this.leaveLobby();}
     //If we're just connecting, display the correct connection field.
-    connectionForm = (gameInfo && gameInfo.isRunning) ? <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : <NewPlayerForm connect={this.connect}/>;
+    connectionForm = (gameInfo && gameInfo.isRunning) ? 
+    <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : 
+    <NewPlayerForm connect={this.connect}/>; 
     return(
       <div className="window">
         {(!inLobby || !gameInfo.isRunning) && (<div className="lobby-window">
@@ -164,9 +154,10 @@ class NewPlayerForm extends React.Component{
 
 function ReconnectPlayerForm(props){
   if(!props.players){return null}
-  let disconnectedPlayers = props.players.map((player)=>(
+  let iterablePlayers = Object.values(props.players);
+  let disconnectedPlayers = iterablePlayers.map((player)=>(
     !player.connected ? (
-      <button onClick={()=>{props.reconnect(player.PID)}}>
+      <button key={player.username} onClick={()=>{props.reconnect(player.PID)}}>
         {player.username}
       </button>) : null
   ))
@@ -174,7 +165,6 @@ function ReconnectPlayerForm(props){
     <div className="rejoin-form">
       <h2>Game in Progress!</h2>
       {disconnectedPlayers.length && disconnectedPlayers}
-      )
       <button className="spectate-button" onClick={props.spectate}>Spectate</button>
     </div>
   )
@@ -192,9 +182,10 @@ function LoadingMessage(props){
 function LobbyPlayerList(props){
   let yourPID = props.PID;
   let you = props.players && props.players[yourPID];
+  let iterablePlayers = Object.values(props.players);
   let listItems = null;
   if(props.players){
-    listItems = props.players.map((player)=>(
+    listItems = iterablePlayers.map((player)=>(
       <li key={player.username} 
           className={(player.isLeader ? "leader " : "" )+
                      (!player.connected ? "disconnected " : "")+

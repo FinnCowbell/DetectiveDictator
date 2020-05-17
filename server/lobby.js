@@ -32,6 +32,7 @@ class Lobby{
     this.io = io.of("/"+lobbyID);
     this.players = {}
     this.disconnectedPlayers = {}
+    this.unusedPID = 1;
     this.game = new Game(ourio, this.players, this);
     // this.chat = new Chat(ourio);
     this.nPlayers = 0;
@@ -49,12 +50,96 @@ class Lobby{
     let consoleMessage = "[" + this.ID + "]: " + message
     console.log(consoleMessage);
   }
-
-  connectPlayer(username,PID,SID){
+  //BEGIN NEW FUNCTIONS
+  getNewPID(){
+    let PID = this.unusedPID;
+    this.unusedPID++;
+    return PID;
+    //Every player gets a player ID.
+  }
+  newConnectNewPlayer(username,socket){
+    // Error checking
+    let SID = socket.id
     if(this.nPlayers >= this.MaxPlayers || this.game.running){
       return false;
     }
-    let player = new Player(username,PID,SID);
+    if(this._sidpid[SID] != undefined){
+      this.error(`Player already connected with that Socket ID!`);
+      return false
+    }
+    let PID = this.getNewPID()
+    let player = new Player(username, PID, SID, socket);
+    if(this.nPlayers == 0){
+      player.isLeader = true;
+    }
+    this._sidpid[SID] = PID;
+    this.players[PID] = player;
+    this.nPlayers++;
+    this.log(`${player.username} successfully connected and assigned PID=${PID} SID=${SID}`);
+    //Update the Lobby
+    //Let the player know their PID.
+    socket.emit('lobby joined', {PID: PID})
+    this.emitUpdateLobby();
+  }
+
+  newDisconnectPlayer(socket){
+    //Disconnects a player by socket.
+    //Disconnects occur when the player closes the lobby window. 
+    //The only information we have on disconnect is the socket.
+    //If the game isn't running, disconnects should kick the player.
+    let SID = socket.id;
+    let player = this.getPlayerBySocketID(socket.id);
+    let PID = player.PID;
+    //Should this logic be elsewhere?
+    if(!this.game.running){
+      return this.kickPlayer(PID);
+    }
+    // Unlink socketID to playerID.
+    //We're not using this socket ID again, so we want to get rid of it.
+    delete this._sidpid[socket.id];
+    player.socket = null;
+    player.SID = null;
+    this.disconnectedPlayers[PID] = this.players[PID];
+    player.connected = false;
+    this.nConnected--;
+    this.log(`Player ${player.username} disconnected.}`);
+    this.emitUpdateLobby();
+  }
+
+  newReconnectPlayer(PID, socket){ 
+    //Linking disconnected player PID to socket.
+    if(!this.disconnectedPlayers[PID]){
+      this.error("Reconnect: Player not in disconnected list! (were they kicked?)");
+      return false;
+    }
+    let SID = socket.id
+    let player = this.disconnectedPlayers[PID];
+    delete this.disconnectedPlayers[PID];
+    this._sidpid[SID] = PID
+    player.socket = socket;
+    player.SID = socket.id;
+    player.connected = true;
+    this.nConnected++;
+    this.log(`${player.username} and PID ${PID} reconnected with SID = ${SID}`)
+    //If the game's running and the game handles reconnecting, 
+    /*Because gamers are initialized when the game starts, sometimes games need to
+    rerun initialization functions. */
+    if(this.game.reconnectPlayer && this.game.running){
+      this.game.reconnectPlayer(socket);
+    }
+    let arg = {
+      "PID": PID
+    }
+    socket.emit('lobby joined', arg);
+    this.emitUpdateLobby();
+  }
+  //END NEW FUNCTIONS
+
+  connectPlayer(username,PID,SID, socket){
+    if(this.nPlayers >= this.MaxPlayers || this.game.running){
+      return false;
+    }
+    let player = new Player(username,PID,SID, socket);
     if(this._sidpid[SID] != undefined){
       this.error(`Player already connected with that Socket ID!`);
       return false
@@ -62,22 +147,21 @@ class Lobby{
     //Reconnect the player if they are disconnected.
     //the username field is disregarded, as it will be unused.
     if(this.disconnectedPlayers[PID] != undefined){
-      return this.reconnectPlayer(PID,PID,SID);
+      return this.reconnectPlayer(PID,PID,SID, socket);
     }
     //If theres no players, this player becomes the lobby leader.
     if(this.nPlayers == 0){
       player.isLeader = true;
     }
     this._sidpid[SID] = PID;
-    this.players[PID] = (player);
+    this.players[PID] = player;
     this.nPlayers++;
     this.log(`${player.username} successfully connected with SID =  ${SID} PID = ${PID}`)
-    // return player;
+    let lobbyInfo = this.getLobbyInfo();
     let arg = {
-      "you": player,
       "lobbyInfo": this.getLobbyInfo()
     }
-    this.io.to(SID).emit('lobby joined', arg);
+    socket.emit('lobby joined', arg);
     this.io.emit('lobby update info', arg);
   }
   getPlayerBySocketID(SID){
@@ -90,11 +174,7 @@ class Lobby{
       this.error("Incorrect Player Returned by SID");
     }
     return player
-  }
-  
-  getPlayer(PID){
-    return this.players[PID];
-  }
+  } 
   disconnectPlayer(SID){ 
     //Disconnects a player by socket ID.
     //Disconnects occur when the player closes the lobby window. 
@@ -107,8 +187,9 @@ class Lobby{
     }
     // Unlink socketID to playerID.
     delete this._sidpid[SID];
-    this.players[PID].SID = undefined;
-    this.disconnectedPlayers[PID] = this.getPlayer(PID);
+    this.players[PID].socket = null;
+    this.players[PID].SID = null;
+    this.disconnectedPlayers[PID] = this.players[PID];
     this.players[PID].connected = false;
     this.nConnected--;
 
@@ -118,7 +199,7 @@ class Lobby{
     //Kicking != Disconnecting. 
     //Kicking completely gets rid of a user, as opposed to moving them to this.disconnected.
     //To be safe, kicking should work if a player has been disconnected already.
-    let player = this.getPlayer(PID);
+    let player = this.players[PID];
     if(player == undefined){
       this.error("Kick: Player does not exist.");
       return false;
@@ -132,17 +213,15 @@ class Lobby{
       delete this.disconnectedPlayers[PID];
     }
     this.nPlayers--;
-    this.io.to(SID).emit('kick');
-    let arg = {
-      "lobbyInfo": this.getLobbyInfo()
-    }
-    this.io.emit('lobby update info', arg)
+    this.log(`Player ${player.username} kicked from the lobby.`)
+    player.socket.emit('kick');
+    this.emitUpdateLobby();
     return true;
   }
-  requestKick(SID, kickee){
-    let player = this.getPlayerBySocketID(SID);
+  requestKick(kickeePID, socket){
+    let player = this.getPlayerBySocketID(socket.id);
     if(player.isLeader){
-      this.kickPlayer(kickee);
+      this.kickPlayer(kickeePID);
     }else{
       this.log("Kick request from non leader! Ignoring.")
     }
@@ -152,7 +231,7 @@ class Lobby{
     //Checks that the player we're connecting to is actually disconnected.
     //Handles changing a player's PID. Handles if the player is different.
     //TODO: use socket to send 
-  reconnectPlayer(oldPID, PID, SID){ 
+  reconnectPlayer(oldPID, PID, SID, socket){ 
     if(!this.disconnectedPlayers[oldPID]){
       this.error("Reconnect: Player in disconnected list. (were they kicked?)");
       return false;
@@ -174,24 +253,32 @@ class Lobby{
     player.SID = SID;
     this.log(`${player.username} reconnected with SID =  ${SID} PID = ${PID}`)
     let arg = {
-      "you": player,
+      "newPID": PID,
       "lobbyInfo": this.getLobbyInfo()
     }
     //If the game's running and the game handles reconnecting, 
     /*Because gamers are initialized when the game starts, sometimes games need to
       rerun initialization functions. */
     if(this.game.reconnectPlayer && this.game.running){
-      this.game.reconnectPlayer(this.io.to(SID));
+      this.game.reconnectPlayer(socket);
     }
-    this.io.to(SID).emit('lobby joined', arg);
+    socket.emit('lobby joined', arg);
+    this.io.emit('lobby update info', arg);
+  }
+  emitUpdateLobby(){
+    //Emits that a lobby update has occurred.
+    //Should run when players connect, disconnect, reconnect, ETC.
+    let arg = {
+      "lobbyInfo": this.getLobbyInfo()
+    }
     this.io.emit('lobby update info', arg);
   }
   getLobbyInfo(){
     //Lobby info compiles some basic information about the lobby to be sent.
     let gameInfo = this.game.getLobbyGameInfo();
-    let publicPlayers = [];
-    for(var player of Object.values(this.players)){
-      publicPlayers.push(player.getPublicInfo());
+    let publicPlayers = {};
+    for(var PID in this.players){
+      publicPlayers[PID] = this.players[PID].getPublicInfo();
     }
     let args = {
       "lobbyID": this.ID,
@@ -210,32 +297,32 @@ class Lobby{
     this.io.on('connect', (socket)=>{
       this.log("Connected with SID:" + socket.id)
       socket.on('disconnect',()=>{
-        this.log("Player disconnected");
-        //If a player exists, then we need to disconnect him.
+        //If the player was in the lobby, then we need to disconnect him.
         if(this.getPlayerBySocketID(socket.id)){
-          this.disconnectPlayer(socket.id);
+          this.newDisconnectPlayer(socket);
         }
       })
-      socket.on('user init request', ()=>socket.emit('lobby init info', this.getLobbyInfo()));
-      socket.on('join lobby', (arg) => {this.connectPlayer(arg.username,arg.PID, socket.id)})
-      socket.on('request kick', (arg)=>{this.requestKick(socket.id,arg.kickee);});
+      socket.on('connection init request', ()=>socket.emit('lobby init info', {initInfo: this.getLobbyInfo()}));
+      socket.on('join lobby', (arg) => {this.newConnectNewPlayer(arg.username, socket)})
+      socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
+      socket.on('rejoin lobby', (arg)=>{this.newReconnectPlayer(arg.PID, socket)})
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
-      socket.on('rejoin game', (arg)=>{this.reconnectPlayer(arg.oldPID, arg.PID, socket.id)})
       socket.on('game init', ()=>this.initializeGame());
-      socket.on('activate game signals', ()=>this.game.activateGameSignals(socket));
-      if(this.game.running){
-        this.game.activateGameSignals(socket);
-      }
+      // socket.on('activate game signals', ()=>this.game.activateGameSignals(socket));
+      // if(this.game.running){
+      //   this.game.activateGameSignals(socket);
+      // }
     })
   }
 }
 
 class Player{
-  constructor(username="definitelyLiberal",PID,SID){
+  constructor(username="definitelyLiberal", PID, SID, socket = null){
     this.username = username;
     this.isLeader = false;
     this.PID = PID;
     this.SID = SID;
+    this.socket = socket;
     this.connected = true; //True by default, changes to false on disconnect.
   }
   getPublicInfo(){

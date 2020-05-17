@@ -1,15 +1,17 @@
 import React from 'react'
-export default class PlayerSidebar extends React.Component{
-  render(){
-    let order = this.props.order;
-    let players = this.props.players;
-    let event = this.props.eventDetails;
-    let pres = event.presidentPID;
-    let chan = event.chancellorPID;
-    let prevPres = event.previousPresidentPID;
-    let prevChan = event.previousChancellorPID;
-    let playersAreSelectable = this.props.playersAreSelectable;
-    let selectedPlayer = this.props.selectedPlayer;
+export default function PlayerSidebar(props){
+    let order = props.order;
+    let event = props.event;
+    let yourPID = props.yourPID;
+    let players = props.players;
+    let memberships = props.memberships;
+    let eventDetails = event.details;
+    let pres = eventDetails.presidentPID;
+    let chan = eventDetails.chancellorPID;
+    let prevPres = eventDetails.previousPresidentPID;
+    let prevChan = eventDetails.previousChancellorPID;
+    let playersAreSelectable = props.playersAreSelectable;
+    let selectedPlayer = props.selectedPlayer;
     let membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
     let sidebarItems = order.map((PID, index)=>{
       let player = players[PID];
@@ -17,19 +19,21 @@ export default class PlayerSidebar extends React.Component{
         return null;
       }
       let status =  (!player.alive ? "dead" : 
-                    (player.PID == pres ? "president" : 
-                    (player.PID == chan ? "chancellor" : "")));
-      let vote = event.votes && event.votes[PID] //Outputs event.votes[PID] if both exist. null/undefined otherwise.
+                    (PID == pres ? "president" : 
+                    (PID == chan ? "chancellor" : "")));
+      let isYou = (PID == yourPID) ? "you " : ""; 
+      let membership = membershipClasses[memberships[player.PID]] || "";
+      let vote = eventDetails.votes && eventDetails.votes[PID] //Outputs event.votes[PID] if both exist. null/undefined otherwise.
       let selectable = (playersAreSelectable)
-      let selected = (player.PID == selectedPlayer);
+      let selected = (PID == selectedPlayer);
       return (
-      <div key={index} className={"player " + (membershipClasses[player.membership] || "")}>
+      <div key={index} className={`player ${membership} ${isYou}`}>
         {/* Inserts the Voting results DIV if there is a vote. */}
         <div className={'vote ' + (vote == 1 ? 'ja' : (vote == 0 ? 'nein' : 'hidden'))}>
           {vote}
         </div>
         <div className={"player-content " + (selected ? "selected" : (selectable ? "selectable" : ""))} 
-              onClick={()=>this.props.changeSelectedPlayer(PID)}>
+              onClick={()=>props.changeSelectedPlayer(PID)}>
           <div className={'status ' + status}>
             {status}
           </div>
@@ -46,4 +50,3 @@ export default class PlayerSidebar extends React.Component{
       </div>
     )
   }
-}

@@ -15,11 +15,12 @@ import React from 'react'
 export default function PlayerCard(props){
   //membership and PID
   let cardIMG = "DefaultPlayer";
-  if(props.membership == 0){
+  let membership = props.memberships[props.PID];
+  if(membership == 0){
     cardIMG = `Liberal${(props.PID % 6) + 1}`;
-  } else if(props.membership == 1){
+  } else if(membership == 1){
     cardIMG = `Fascist${(props.PID % 2) + 1}`;
-  } else if(props.membership == 2){
+  } else if(membership == 2){
     cardIMG = 'Hitler';
   }
   return(

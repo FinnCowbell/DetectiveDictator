@@ -2,21 +2,79 @@ import React from 'react'
 export default class ActionBar extends React.Component{
   constructor(props){
     super(props)
-    this.state={
-      
+    this.socket = this.props.socket;
+    this.confirmAction = this.confirmAction.bind(this);
+    this.pickChancellor = this.pickChancellor.bind(this);
+    this.castVote = this.castVote.bind(this);
+  }
+  pickChancellor(){
+    let socket = this.socket;
+    let selectedPlayer = this.props.selectedPlayer;
+    socket.emit('chancellor picked', {
+      pickedChancellor: selectedPlayer,
+    });
+  }
+  castVote(isJa = null){
+    let socket = this.socket;
+    if(isJa == null){
+      return;
+    } else{
+      console.log("voted " + isJa);
+      socket.emit('cast vote', {vote: isJa})
+    }
+  }
+  confirmAction(){
+    switch(this.props.action){
+      case 'your chancellor pick':
+        this.pickChancellor()
+        break;
+      case 'chancellor vote':
+        this.castVote();
+        break;
+      default:
+        console.log("Error: Unimplemented Action Submission.")
     }
   }
   render(){
-    <div className="action-bar">
-      
+    let content;
+    switch(this.props.action){
+      case 'your chancellor pick':
+        let selectedPlayer =  this.props.players[this.props.selectedPlayer] || null;
+        let selectedUsername = selectedPlayer && selectedPlayer.username;
+        content = (<PickChancellor
+          selected={this.props.selectedPlayer}
+          confirm={this.pickChancellor}
+          username={selectedUsername}
+        />)
+        break;
+      case 'chancellor vote':
+        content = (
+          <JaNein confirm={this.castVote} />
+        )
+        break;
+      case 'your president discard':
+        break;
+      case 'your chancellor discard':
+      default:
+        content = (
+          <div className="action empty"></div>
+        )
+        break;
+    }
+    return(
+    <div className="action-bar-container">
+      <div className="action-bar">
+        {content}
+      </div>
     </div>
+    )
   }
 }
 
 function PickChancellor(props){
   return (
     <div className="action pick-chancellor">
-      <button className={!this.props.selected ? "disabled" : ""} onClick={this.props.confirm}>Pick {this.props.selected || ""}</button>
+      <button className={!props.selected ? "disabled" : ""} onClick={props.confirm}>{props.username ? `Pick ${props.username}` : ""}</button>
     </div>
   )
 }
@@ -47,15 +105,16 @@ class JaNein extends React.Component{
     if(isJa === null){
       return;
     } else{
-      this.props.confirm("vote", isJa);
+      this.props.confirm(isJa);
     }
   }
   render(){
+    let isJa = this.state.isJa;
     return (
       <div className="action ja-nein">
-        <button onClick={this.setJa} className={"ja " + isJa ? "selected" : ""}>Ja</button>
-        <button onClick={this.setNein} className={"nein " + !isJa ? "selected" : ""}>Nein</button>
-        <button onClick={this.props.tryConfirm} className="nein">Cast Vote</button>
+        <button onClick={this.setJa} className={"ja " + (isJa ? "selected" : "")}>Ja</button>
+        <button onClick={this.setNein} className={"nein " + (!isJa ? "selected" : "")}>Nein</button>
+        <button onClick={this.tryConfirm} className="nein">Cast Vote</button>
       </div>
     )
   }

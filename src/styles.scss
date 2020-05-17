@@ -56,13 +56,24 @@
   grid-template-areas: "status status status status status" 
   "playercard . gameboards . players" 
   "policies . gameboards . players" 
-  ". . action . players";
+  ". action action action players";
   grid-template-rows: 75px 3fr 3fr 1fr;
   grid-template-columns: 1fr 1fr 1fr 1fr 300px;
   .status-bar{
+    display: grid;
     grid-area: status;
+    text-align: center;
+    grid-template-columns: 300px 1fr 300px;
+    grid-template-rows: 1fr;
+    grid-template-areas: 'id info youare';
     background-color: rgb(192, 192, 192);
-    display: inline;
+    padding: 0px 20px 0px 20px;
+    .lobby-info{
+      grid-area: id;
+    }
+    .you-are{
+      grid-area: youare;
+    }
   }
   .player-card{
     grid-area: playercard;
@@ -95,15 +106,20 @@
 
         }
       }
-      .player.liberal .player-content{
-        background-color: aqua;
-      }
-      .player.fascist .player-content{
-        background-color: rgb(250, 124, 124);
-      }
-      .player.hitler .player-content{
-        background-color: rgb(136, 15, 15);
-        color: white;
+      .player{
+        &.liberal .player-content{
+          background-color: aqua;
+        }
+        &.fascist .player-content{
+          background-color: rgb(250, 124, 124);
+        }
+        &.hitler .player-content{
+          background-color: rgb(136, 15, 15);
+          color: white;
+        }
+        &.you .player-content{
+          font-weight: bold;
+        }
       }
       .player-content{
         margin-right: -25px;
@@ -112,13 +128,26 @@
         background-color: rgb(215, 255, 255);
         border: 2px solid blue;
         border-bottom-left-radius: 20px;
-        margin-bottom: 15px;
+        margin-top: 20px;
         padding: 20px;
         &.selected{
-          border: 2px dashed green;
+          box-shadow: 0px 0px 10px  rgb(255, 0, 0);
         }
       }
       display: inline;
     }
+  }
+  .action-bar-container{
+    padding: 0px;
+    grid-area: action;
+  }
+  .action-bar{
+    background-color: gray;
+    border: outset darkgray 5px;
+    border-radius: 25px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 500px;
+    margin: 10px;
   }
 }
