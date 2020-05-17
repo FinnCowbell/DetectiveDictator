@@ -1,19 +1,153 @@
-.chat-room{
-  border: 1px black solid;
+.chat-window{
+  border: 2px rgb(112, 112, 112) solid;
   position: fixed;
   bottom: 0px;
-  right: 20px;
-  width: 400px;
+  left: 20px;
+  width: 250px;
+  padding: 10px;
+  border-top-right-radius: 20px;
+  background-color: rgb(194, 183, 255);
   .sent-messages{
+    overflow: auto;
     height: 300px;
   }
 }
+.window{
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  .lobby-window{
+    color: rgb(245, 245, 245);
+    position: fixed;
+    width: 100%;
+    height:100%;
+    background-color: rgba(0, 0, 0, 0.671);
+    z-index: 99;
+    .player-list{
 
-.player-list{
-  li.leader{
-    color: goldenrod;
+      .leader{
+        color: goldenrod;
+      }
+
+      .you{
+        font-weight: bold;
+      }
+    }    
   }
-  li.you{
-    font-weight: bold;
+  .game-window{
+    position: fixed;
+    width: 100%;
+    height:100%;
+    
+    z-index: 1;
+    // background-color: rgb(12, 12, 73);
+  }
+  .chat-window{
+    z-index: 100;
+  }
+}
+
+.game-window{
+  display: grid;
+  grid-template-areas: "status status status status status" 
+  "playercard . gameboards . players" 
+  "policies . gameboards . players" 
+  ". action action action players";
+  grid-template-rows: 75px 3fr 3fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 300px;
+  .status-bar{
+    display: grid;
+    grid-area: status;
+    text-align: center;
+    grid-template-columns: 300px 1fr 300px;
+    grid-template-rows: 1fr;
+    grid-template-areas: 'id info youare';
+    background-color: rgb(192, 192, 192);
+    padding: 0px 20px 0px 20px;
+    .lobby-info{
+      grid-area: id;
+    }
+    .you-are{
+      grid-area: youare;
+    }
+  }
+  .player-card{
+    grid-area: playercard;
+  }
+  .player-sidebar{
+    grid-area: players;
+    height: initial;
+    right: 0px;
+    width: inherit;
+    height: inherit;
+    position: relative;
+    overflow: auto;
+    .players{
+      .vote{
+        height: 30px;
+        width: 30px;
+        position: absolute;
+        left: 0px;
+        background-color:gray;
+        margin-top: auto;
+        margin-bottom: auto;
+        &hidden{
+          display: none;
+        }
+        &ja{
+          background-color:green;
+        }
+        &nein{
+          background-color:red;
+
+        }
+      }
+      .player{
+        &.liberal .player-content{
+          background-color: aqua;
+        }
+        &.fascist .player-content{
+          background-color: rgb(250, 124, 124);
+        }
+        &.hitler .player-content{
+          background-color: rgb(136, 15, 15);
+          color: white;
+        }
+        &.you .player-content{
+          font-weight: bold;
+        }
+      }
+      .player-content{
+        margin-right: -25px;
+        margin-left: 35px;
+        height: 50px;
+        background-color: rgb(215, 255, 255);
+        border: 2px solid blue;
+        border-bottom-left-radius: 20px;
+        margin-top: 20px;
+        padding: 20px;
+        &.selected{
+          box-shadow: 0px 0px 10px  rgb(255, 0, 0);
+        }
+      }
+      display: inline;
+    }
+  }
+  .action-bar-container{
+    padding: 0px;
+    grid-area: action;
+  }
+  .action-bar{
+    background-color: gray;
+    border: outset darkgray 5px;
+    border-radius: 25px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 500px;
+    margin: 10px;
   }
 }

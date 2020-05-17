@@ -33,7 +33,7 @@ export default class ChatRoom extends React.Component{
   sendChat(){
     if(this.state.message == ''){return};
     let msg = {
-      username: this.props.you.username,
+      username: this.props.username,
       message: this.state.message,
     }
     this.socket.emit('chat send msg', {msg: msg});
@@ -47,19 +47,8 @@ export default class ChatRoom extends React.Component{
         <strong>{msg.username}: </strong>{msg.message}
       </p>
     ));
-    // let chatStyle = {
-    //   border: "1px solid black",
-    //   position: 'fixed',
-    //   bottom: '0px',
-    //   right:'20px',
-    //   width: '400px',
-    // }
-    // let chatBoxStyle = {
-    //   overflow: 'scroll',
-    //   height: '300px',
-    // }
     return(
-      <div className="chat-room">
+      <div className="chat-window">
         <h3>Chat</h3>
         <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
         <button onClick={this.sendChat}>Send</button>
