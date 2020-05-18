@@ -11,6 +11,21 @@
   src: url(./fonts/SquadaOne.ttf) format('truetype');
 }
 
+@mixin action-bar-button($rotation){
+  font-family: Potsdam;
+  color: #65c4a3;
+  background-color: #2b2b2b;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  h2{
+    transform: rotate($rotation);
+    cursor: pointer;
+    user-select:none;
+    font-size: 2em;
+    text-align:centr;
+  }
+}
 
 .chat-window{
   border: 2px rgb(112, 112, 112) solid;
@@ -25,7 +40,7 @@
     overflow: auto;
     height: 100px;
   }
-  &closed{
+  &.closed{
     bottom: -350px;
   }
 }
@@ -73,7 +88,7 @@
   grid-template-areas: "status status status status status" 
   "playercard . gameboards . players" 
   "policies . gameboards . players" 
-  "action action action action action";
+  ". action action action players";
   grid-template-rows: 75px 3fr 3fr 1fr;
   grid-template-columns: 1fr 1fr 1fr 1fr 300px;
   .status-bar{
@@ -87,6 +102,11 @@
     padding: 0px 20px 0px 20px;
     .lobby-info{
       grid-area: id;
+    }
+    .status-div{
+      grid-area: info;
+      font-family: Germania;
+      font-size: 1.2em;
     }
     .you-are{
       grid-area: youare;
@@ -112,13 +132,13 @@
         background-color:gray;
         margin-top: auto;
         margin-bottom: auto;
-        &hidden{
+        &.hidden{
           display: none;
         }
-        &ja{
+        &.ja{
           background-color:green;
         }
-        &nein{
+        &.nein{
           background-color:red;
 
         }
@@ -147,63 +167,60 @@
         border-bottom-left-radius: 20px;
         margin-top: 20px;
         padding: 20px;
+        transition: .25s;
         &.selected{
-          box-shadow: 0px 0px 10px  rgb(255, 0, 0);
+          margin-left: 15px;
+          border-left-width: 4px;
         }
       }
       display: inline;
     }
   }
-  .action-bar-container{
-    padding: 10px;
-    grid-area: action;
-    margin: auto;
-  }
-  .action-bar{
-    background-color: gray;
-    border: 10px solid transparent;
-    border-image: url(./Game/media/ActionBarBorder.png) 25 round;
-    height: 150px;
-    width: 500px;
-    border-image-outset: 5px;
-    background-color: #65c4a3;
-    margin-left: auto;
-    margin-right: auto;
-    margin: 10px;
-    .action{
-      border: 10px solid #2b2b2b;
-      width: calc(100% - 20px);
-      height: calc(100% - 20px);
-      .policy-cards{
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        .policy{
-          img{
-            height:100%;
-          }
-          filter: grayscale(0%);
-          &.selected{
-            
-            filter: grayscale(100%);
-          }
-        }
-        .discard-button{
-          display: flex;
-          align-items: center;
-          background-color: #2b2b2b;
-          height:100%;
-          font-family: Potsdam;
-          color: #65c4a3;
-          h2{
-            transform: rotate(90deg);
-            text-align: center;
-            font-size: 2em;
-          }
-        }
+}
+
+//ACTION BAR INTERFACE
+.action-bar-container{
+  padding: 10px;
+  grid-area: action;
+  margin: auto;
+}
+.action-bar{
+  background-color: gray;
+  border: 10px solid transparent;
+  border-image: url(./Game/media/ActionBarBorder.png) 25 round;
+  height: 200px;
+  width: 600px;
+  border-image-outset: 5px;
+  background-color: #65c4a3;
+  margin-left: auto;
+  margin-right: auto;
+  margin: 10px;
+}
+.action{
+  $inner-border-width: 15px;
+  border: $inner-border-width solid #2b2b2b;
+  width: calc(100% - #{$inner-border-width * 2});
+  height: calc(100% - #{$inner-border-width * 2});
+  .policy-cards{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    .policy{
+      height: inherit;
+      img{
+        height: inherit;
       }
+      filter: grayscale(0%);
+      &.selected{
+        filter: grayscale(100%);
+      }
+    }
+    .discard-button{
+      @include action-bar-button(90deg);
+      height:100%;
+      margin-right: -5px;
     }
   }
 }

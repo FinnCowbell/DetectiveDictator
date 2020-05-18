@@ -1,7 +1,7 @@
 class CardDeck{
   constructor(cardList, shuffleOnEmpty=true, shuffleIfNotEnough=true){
     this.deck = cardList;
-    this.discard = [];
+    this.discardPile = [];
     this.shuffleIfNotEnough = shuffleIfNotEnough;
     this.shuffleOnEmpty = shuffleOnEmpty;
     this.shuffleCards()
@@ -42,10 +42,10 @@ class CardDeck{
     return topNCards;
   }
   discard(card){
-    this.discard.push(card);
+    this.discardPile.push(card);
   }
   reshuffleCards(){
-    this.deck = this.deck.concat(this.discard);
+    this.deck = this.deck.concat(this.discardPile);
     this.shuffleCards();
   }
   shuffleCards(){
@@ -55,7 +55,7 @@ class CardDeck{
     return this.deck.length;
   }
   getAmountDiscarded(){
-    return this.discard.length;
+    return this.discardPile.length;
   }
 }
 

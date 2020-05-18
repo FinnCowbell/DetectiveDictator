@@ -111,14 +111,28 @@ class Hitler{
 
   getFullGameInfo(PID){
     console.log(this.rounds);
-    let arg = {
+    const arg = {
       order: this.order,
       rounds: this.rounds,
       isRunning: this.running,
     }
-    if(this.knowsMemberships(PID)){
-      arg[memberships] = this.memberships;
-    }
+    //Get rid of secret and membership info that isn't theirs.
+    //SecretInfo.PID is always the PID of the player who gets the info.
+    // We don't want to make a copy of 
+    // for(round of arg.rounds){
+    //   for(event of round.events){
+    //     if(event.details.secret.PID != PID){
+    //       event.details.secret = {};
+    //     }
+    //   }
+    //   if(this.knowsMemberships(PID)){
+    //     round.memberships = this.memberships;
+    //   } else{
+    //     round.memberships = {};
+    //     round.memberships[PID] =  this.membership[PID];
+    //   }
+    // }
+
     return arg;
   }
 
@@ -154,7 +168,11 @@ class Hitler{
       this.presidentPID = this.order[this.currentPlayer];
       this.currentPlayer = (this.currentPlayer + 1) % this.nPlaying;
     }
-    this.rounds.push(this.buildNewRound());
+    this.votes = {}
+    this.nVoted = 0;
+    this.yesCount = 0;
+
+    this.buildNewRound();
     this.sendNewRound();
     this.currentEvent="chancellor pick";
     this.buildEvent();
@@ -163,7 +181,7 @@ class Hitler{
   buildNewRound(){
     //Each round has its players s
     //When the round is sent to Fascists, membership information will be added.
-    return {
+    this.rounds.push({
       players: this.getPlayerInfo(),
       memberships: {},
       events: [{
@@ -180,9 +198,10 @@ class Hitler{
           nInDraw: this.policies.getAmountRemaining(),
           nVoted: 0,
           votes: {},
+          secret: {},
         },
       }]
-    }
+    })
   }
   buildEvent(){
     let eventDetails = {};
@@ -205,23 +224,32 @@ class Hitler{
           votes: this.votes,
           marker: this.marker,
           nInDiscard: this.policies.getAmountDiscarded(),
-          nInDraw: this.policies.getAmountRemaining()
+          nInDraw: this.policies.getAmountRemaining(),
+          secret: eventSecret,
         }
         break;
       case "chancellor discard": 
+        let round = this.rounds[this.rounds.length - 1]
+        let event = round.events[round.events.length - 1];
+        let policies = event.details.secret.policies.slice();
+        console.log("discarded index:" + event.details.secret.discardedIndex);
+        policies.splice(event.details.secret.discardedIndex, 1);
         eventSecret = {
           PID: this.chancellorPID,
-          policies: null, /*How where will these cards come from? */
+          policies: policies,
         }
         eventDetails = {
           nInDiscard: this.policies.getAmountDiscarded(),
-          nInDraw: this.policies.getAmountRemaining()
+          nInDraw: this.policies.getAmountRemaining(),
+          secret: eventSecret,
         }
+        break;
       case "policy placed":
         eventDetails = {
           fasBoard: this.fasBoard,
           libBoard: this.libBoard,
         }
+        break;
       case "president peek":
         eventSecret = {
           PID: this.presidentPID,
@@ -236,7 +264,6 @@ class Hitler{
     let event = {
       name: this.currentEvent,
       details: eventDetails,
-      secret: eventSecret
     }
     this.rounds[this.rounds.length - 1].events.push(event);
   }
@@ -244,7 +271,7 @@ class Hitler{
     //On New Rounds, some players get membership information.
     //Alternatively, players ONLY get thier membership information.
     let newRound = this.rounds[this.rounds.length -1];
-    let player, membership, socket, oneMembership;
+    let player, membership, socket;
     for(const PID in this.players){
       player = this.players[PID];
       socket = player.socket;
@@ -257,11 +284,29 @@ class Hitler{
       }
     }
   }
+
   sendLatestEvent(){
     let events = this.rounds[this.rounds.length - 1].events;
     let event = events[events.length - 1];
-    this.io.emit("new event", {event: event});
+    let player, socket;
+    let secret = event.details.secret;
+    if(secret){
+      console.log("Sending With Secret!");
+      console.log(secret);
+      socket = this.players[secret.PID].socket;
+      socket.emit("new event", {event: event})
+      event.details.secret = {};
+      for(const PID in this.players){
+        if(PID == secret.PID){continue;}
+        socket = this.players[PID].socket;
+        socket.emit("new event", {event: event});
+      }
+      event.details.secret = secret;
+    } else{
+      this.io.emit("new event", {event: event});
+    }
   }
+
   activateGameSignals(socket){
     //Activates game signals for a socket.
     //If this is a  reconnect, it's assumed that this socket is linked to a player.
@@ -287,32 +332,37 @@ class Hitler{
       let event = round.events[round.events.length - 1];
       if(event.name != 'chancellor vote'){
         this.error('Vote cast at invalid time!');
+        return;
       } else if(!player.alive){
         this.error('Dead men tell no tales!');
-      } if(this.votes[theirPID]){
+        return;
+      } if(this.votes[theirPID] == 0 || this.votes[theirPID] == 1){
         this.error('Vote already exists!');
+        return;
       }
       this.votes[theirPID] = arg.vote;
       this.nVoted++;
       if(arg.vote == true){
         this.yesCount++;
       }
-      console.log("Vote Cast!");
-      console.log("nAlive: " + this.nAlive);
-      console.log("nVoted: " + this.nVoted);
+      // console.log("Vote Cast!");
+      // console.log("nAlive: " + this.nAlive);
+      // console.log("nVoted: " + this.nVoted);
       // socket.emit('vote recieved');
       if(this.nVoted >= this.nAlive){
         console.log("Vote Complete!!");
         let yesRatio = this.yesCount / this.nVoted;
-        console.log("YesRatio: " + this.yesRatio);
+        console.log("YesRatio: " + yesRatio);
         if(yesRatio <= .5){
           this.marker++;
           this.checkMarker();
+          this.presidentPID = null;
+          this.chancellorPID = null;
+          this.newRound();
         } else{
-          if(this.chancellorPID == this.hitler.PID && this.fasBoard >= 3){
+          if((this.chancellorPID == (this.hitler && this.hitler.PID)) && this.fasBoard >= 3){
             this.endGame(1, 1);
           } else{
-            console.log("president discard being sent:");
             this.marker = 0;
             this.currentEvent = "president discard"
             this.buildEvent();
@@ -321,6 +371,52 @@ class Hitler{
         }
       }
     })
+    socket.on('president discarding', (arg)=>{
+      let player = this.players[theirPID];
+      let round = this.rounds[this.rounds.length - 1];
+      let event = round.events[round.events.length - 1];
+      if(this.presidentPID != theirPID){
+        this.error("Non-president trying to discard");
+        return;
+      } else if(event.name != 'president discard'){
+        this.error("president discarding during invalid event!");
+        return;
+      }
+      let policyIndex = arg.policyIndex;
+      this.policies.discard(event.details.secret.policies[policyIndex]);
+      event.details.secret.discardedIndex = policyIndex;
+      this.currentEvent = "chancellor discard";
+      this.buildEvent();
+      this.sendLatestEvent();
+    })
+    socket.on('chancellor discarding', (arg)=>{
+      let player = this.players[theirPID];
+      let round = this.rounds[this.rounds.length - 1];
+      let event = round.events[round.events.length - 1];
+      if(this.chancellorPID != theirPID){
+        this.error("Non-chancellor trying to discard");
+        return;
+      } else if(event.name != 'chancellor discard'){
+        this.error("chancellor discarding during invalid event!");
+        return;
+      }
+      let policyIndex = arg.policyIndex;
+      this.policies.discard(event.details.secret.policies[policyIndex]);
+      event.details.secret.discardedIndex = policyIndex;
+      let placedPolicy = event.details.secret.policies.slice().splice(policyIndex,1)[0];
+      this.enactPolicy(placedPolicy);
+    })
+  }
+  enactPolicy(value){
+    let endedGame = this.placePolicy(value);
+    if(!endedGame){
+      if(value){
+        this.checkAction();
+      }
+      else{
+        this.newRound();
+      }
+    }
   }
   placePolicy(value){
     //Places a policy. Returns 1 if somebody won.
@@ -333,7 +429,7 @@ class Hitler{
       }
     } else{
       this.libBoard++;
-      if(this.libBoard == 6){
+      if(this.libBoard == 5){
         this.endGame(0,0);
         return 1;
       }

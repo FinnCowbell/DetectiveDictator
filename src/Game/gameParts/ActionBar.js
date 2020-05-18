@@ -1,10 +1,14 @@
 import React from 'react'
+import liberalPolicy from '../media/liberal-policy.png';
+import fascistPolicy from '../media/fascist-policy.png';
+
 export default class ActionBar extends React.Component{
   constructor(props){
     super(props)
     this.socket = this.props.socket;
-    this.confirmAction = this.confirmAction.bind(this);
+    // this.confirmAction = this.confirmAction.bind(this);
     this.pickChancellor = this.pickChancellor.bind(this);
+    this.discardPolicy = this.discardPolicy.bind(this);
     this.castVote = this.castVote.bind(this);
   }
   pickChancellor(){
@@ -15,26 +19,33 @@ export default class ActionBar extends React.Component{
     });
   }
   castVote(isJa = null){
-    let socket = this.socket;
     if(isJa == null){
       return;
-    } else{
-      console.log("voted " + isJa);
-      socket.emit('cast vote', {vote: isJa})
+    }
+    this.socket.emit('cast vote', {vote: isJa});
+  }
+  discardPolicy(policyIndex){
+    if(policyIndex == null){
+      return;
+    }
+    if(this.props.action == "your president discard"){
+      this.socket.emit('president discarding', {policyIndex : policyIndex});
+    } else if (this.props.action == "your chancellor discard"){
+      this.socket.emit('chancellor discarding', {policyIndex : policyIndex});
     }
   }
-  confirmAction(){
-    switch(this.props.action){
-      case 'your chancellor pick':
-        this.pickChancellor()
-        break;
-      case 'chancellor vote':
-        this.castVote();
-        break;
-      default:
-        console.log("Error: Unimplemented Action Submission.")
-    }
-  }
+  // confirmAction(){
+  //   switch(this.props.action){
+  //     case 'your chancellor pick':
+  //       this.pickChancellor()
+  //       break;
+  //     case 'chancellor vote':
+  //       this.castVote();
+  //       break;
+  //     default:
+  //       console.log("Error: Unimplemented Action Submission.")
+  //   }
+  // }
   render(){
     let content;
     switch(this.props.action){
@@ -53,8 +64,19 @@ export default class ActionBar extends React.Component{
         )
         break;
       case 'your president discard':
+        content = (
+          <DiscardPresident
+            confirm={this.discardPolicy} 
+            policies={this.props.event.details.secret.policies}/>
+        );
         break;
       case 'your chancellor discard':
+        content = (
+          <DiscardChancellor 
+            confirm={this.discardPolicy} 
+            policies={this.props.event.details.secret.policies}/>
+        );
+        break;
       default:
         content = (
           <div className="action empty"></div>
@@ -130,22 +152,35 @@ class DiscardPresident extends React.Component{
     this.trySubmit = this.trySubmit.bind(this);
   }
   selectCard(i){
-    if(i < 0 || i > 2){return;};
+    if(i < 0 || i > this.props.policies.length){return;};
     this.setState({selectedCard: i});
   }
   trySubmit(){
     const selectedCard = this.state.selectedCard
     if(selectedCard !== null){
-      this.props.submit('discard-president',selectedCard)
+      this.props.confirm(selectedCard)
     }
   }
   render(){
+    let policyValues = this.props.policies;
+    let cards = policyValues.map((value, index)=>(
+      <PolicyCard
+        key={index}
+        isSelected={index == this.state.selectedCard}
+        isFascist={value}
+        onClick={()=>this.selectCard(index)}
+      />
+    ))
     return (
       <div className="action discard-president">
-        <div className="three-cards">
-          {/* Map over the cards. Perhaps cards should have a handleClick passed to them.*/}
+        <div className="policy-cards">
+          {cards}
+          <div className="discard-button" onClick={this.trySubmit}>
+            <h2>
+              Discard
+            </h2>
+          </div>
         </div>
-        <button onClick={this.trySubmit}>Discard</button>
       </div>
     )
   }
@@ -161,25 +196,47 @@ class DiscardChancellor extends React.Component{
     this.trySubmit = this.trySubmit.bind(this);
   }
   selectCard(i){
-    if(i < 0 || i > 1){return;};
+    if(i < 0 || i > this.props.policies.length){return;};
     this.setState({selectedCard: i});
   }
   trySubmit(){
     const selectedCard = this.state.selectedCard
     if(selectedCard !== null){
-      this.props.submit('discard-chancellor',selectedCard)
+      this.props.confirm(selectedCard)
     }
   }
   render(){
+    let policyValues = this.props.policies;
+    let cards = policyValues.map((value, index)=>(
+      <PolicyCard
+        key={index}
+        isSelected={index == this.state.selectedCard}
+        isFascist={value}
+        onClick={()=>this.selectCard(index)}
+      />
+    ))
     return (
-      <div className="action discard-chancellor">
-        <div className="two-cards">
-        {/* Map over the cards. */}
+      <div className="action discard-president">
+        <div className="policy-cards">
+          {cards}
+          <div className="discard-button" onClick={this.trySubmit}>
+            <h2>
+              Discard
+            </h2>
+          </div>
         </div>
-        <button onClick={this.trySubmit}>Discard</button>
       </div>
     )
   }
+}
+function PolicyCard(props){
+  //Takes Select, Index, and isFascist.
+  return(
+  <div onClick={props.onClick} className={`policy ${props.isFascist ? "fascist" : "liberal"} ${props.isSelected ? "selected" : ""}`}>
+    <img src={props.isFascist ? fascistPolicy : liberalPolicy}>
+    </img>
+  </div>
+  )
 }
 
 function PickPresident(props){

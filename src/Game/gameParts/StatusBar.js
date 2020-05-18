@@ -4,8 +4,8 @@ export default function StatusBar(props){
   let event = props.event;
   let action = props.action;
   let players = props.players;
-  let you = players[yourPID] || null;
   let yourPID = props.yourPID;
+  let you = players[yourPID] || null;
   let details = event.details;
   presidentPID = details.presidentPID;
   chancellorPID = details.chancellorPID;
@@ -44,8 +44,9 @@ export default function StatusBar(props){
       description = `Discard a Policy.`;
       break;
     case 'chancellor discard':
-      description = `Chancellor ${presidentName} is discarding a policy.`
-    default: 
+      description = `Chancellor ${presidentName} is discarding a policy.`;
+      break;
+    default:
       description = "Unimplemented event name!"
       break;
   }
@@ -58,7 +59,7 @@ export default function StatusBar(props){
       <div className="status-div">
         {event &&(
         <h2 className="status">
-          {description}
+          {description.toUpperCase()}
         </h2>)
         }
       </div>

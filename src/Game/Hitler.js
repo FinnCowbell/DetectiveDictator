@@ -75,7 +75,6 @@ export default class Hitler extends React.Component{
       let knownMemberships = arg.memberships;
       //Put our known memberships in the round.
       newRound.memberships = knownMemberships;
-
       this.setState({
         rounds: rounds.concat([newRound]),
       })
@@ -107,6 +106,7 @@ export default class Hitler extends React.Component{
     let eventName = event.name; 
     let yourPID = this.props.yourPID;
     let presidentPID = event.details.presidentPID;
+    let chancellorPID = event.details.chancellorPID;
     switch(eventName){
       //"your chancellor pick VS chancellor pick"
       case 'chancellor pick':
@@ -123,6 +123,13 @@ export default class Hitler extends React.Component{
           action = 'your president discard'
         } else{
           action = 'president discard'
+        }
+        break;
+      case 'chancellor discard':
+        if(yourPID == chancellorPID){
+          action = 'your chancellor discard'
+        } else{
+          action = 'chancellor discard'
         }
         break;
       default: 
@@ -186,6 +193,7 @@ export default class Hitler extends React.Component{
       />
       <ActionBar      action={action}
                       socket={this.socket}
+                      event={event}
                       selectedPlayer={this.state.selectedPlayer} 
                       players={players}
         
