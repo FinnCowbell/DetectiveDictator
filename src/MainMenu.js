@@ -5,19 +5,20 @@ import Header from './Lobby/Header.js'
 export default class MainMenu extends React.Component{
   constructor(props){
     super(props);
-
-    this.socket = io.connect(this.props.socketURL + "/menu");
     this.joinLobby = this.joinLobby.bind(this);
     this.createLobby = this.createLobby.bind(this);
   }
   componentDidMount(){
-    const socket = this.socket;
+    const socket = this.props.socket;
     socket.on("lobby created", (arg)=>{
       this.joinLobby(arg.ID);
     })
   }
+  componentWillUnmount(){
+    this.props.socket.close();
+  }
   createLobby(){
-    const socket = this.socket;
+    const socket = this.props.socket;
     socket.emit("create lobby");
   }
   joinLobby(lobbyID){

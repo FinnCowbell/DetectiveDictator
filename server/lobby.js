@@ -48,8 +48,14 @@ class Lobby{
     this.log("ERROR! " + message);
   }
   log(message){
-    let consoleMessage = "[" + this.ID + "]: " + message
-    console.log(consoleMessage);
+    if(typeof message == 'string'){
+      let consoleMessage = "[" + this.ID + "]: " + message
+      console.log(consoleMessage);
+    } else{
+      console.log(`[${this.ID}]:`);
+      console.log(message)
+      console.log(`_________`);
+    }
   }
 
   getNewPID(){

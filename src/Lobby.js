@@ -8,7 +8,7 @@ import {default as Game} from './Game/Hitler.js';
 export default class Lobby extends React.Component{
   constructor(props){
     super(props);
-    this.socket = io.connect(this.props.socketURL + "/" + this.props.lobbyID);
+    this.socket = this.props.socket;
     this.state = {
       PID: null,
       username: null,
@@ -47,12 +47,18 @@ export default class Lobby extends React.Component{
         gameInfo: arg.lobbyInfo.gameInfo,
       })
     });
+    socket.on('disconnect', ()=>{
+      this.leaveLobby(`Lost connection to ${this.lobbyID}`);
+    })
+    //establishing lobby connection needs to occur AFTer signals have been triggered.
     socket.emit('connection init request');
   }
   componentWillUnmount(){
-    this.socket = null;
+    this.socket.close();
+    delete this.socket;
   }
   leaveLobby(reason){
+    this.socket.close();
     this.props.setLobbyID(null);
   }
   connect(username){

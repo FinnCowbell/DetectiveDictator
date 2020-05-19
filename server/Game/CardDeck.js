@@ -24,9 +24,10 @@ class CardDeck{
     return cards;
   }
   view(n){
-    //View, but do not change, the top N cards
-    //If there aren't enough cards in the deck and shuffleIfNotEnough is true, we'll reshuffle the cards.
-    //If 
+    /*View, but do not change, the top n cards
+      If there aren't enough cards in the deck and shuffleIfNotEnough is true, we'll reshuffle the cards.
+      The function keeps the cards in order:
+      That is, the highest index card is the topmost card.*/
     if(this.deck.length < n){
       if(this.shuffleIfNotEnough){
         this.reshuffleCards();
