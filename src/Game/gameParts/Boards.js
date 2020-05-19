@@ -9,7 +9,6 @@ function LibBoard(props){
         <div className={props.nCards > 2 ? "filled" : "empty"}>{props.nCards > 2 ? "filled" : "empty"}</div>
         <div className={props.nCards > 3 ? "filled" : "empty"}>{props.nCards > 3 ? "filled" : "empty"}</div>
         <div className={props.nCards > 4 ? "filled" : "empty"}>{props.nCards > 4 ? "filled" : "empty"}</div>
-        <div className={props.nCards > 5 ? "filled" : "empty"}>{props.nCards > 5 ? "filled" : "empty"}</div>
       </div>
       <div className="marker-slots">
         <div className={props.marker == 0 ? "filled" : "empty"}></div>

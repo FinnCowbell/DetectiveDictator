@@ -1,3 +1,4 @@
+import React from 'react'
 export default function PolicyPiles(props){
   return(
     <div className="policies">

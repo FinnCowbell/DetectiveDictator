@@ -6,6 +6,8 @@ import ActionBar from './gameParts/ActionBar.js'
 import StatusBar from './gameParts/StatusBar.js'
 import PlayerSidebar from './gameParts/PlayerSidebar.js'
 import PlayerCard from './gameParts/PlayerCard.js'
+import PolicyPiles from './gameParts/PolicyPiles.js'
+
 
 export default class Hitler extends React.Component{
   constructor(props){
@@ -13,6 +15,14 @@ export default class Hitler extends React.Component{
    this.socket = this.props.socket;
    this.state = {
     order: [1,2,3,4,5,6],
+    memberships: {
+      1: 1,
+      2: 0,
+      3: 2,
+      4: 0,
+      5: 0,
+      6: 0,
+    },
     rounds: [{
       players: { 
         // Testing Players, for now.
@@ -22,14 +32,6 @@ export default class Hitler extends React.Component{
         4: {PID: 4, username: "Liam", alive: true},
         5: {PID: 5, username: "Phil", alive: true},
         6: {PID: 6, username: "Marco", alive: true}
-      },
-      memberships: {
-        1: 1,
-        2: 0,
-        3: 2,
-        4: 0,
-        5: 0,
-        6: 0,
       },
       events: [{
         name: "pre game",
@@ -56,25 +58,32 @@ export default class Hitler extends React.Component{
   }
   componentDidMount(){
     let socket = this.props.socket;
-    socket.on('player info', (arg)=>{
+    // socket.on('player info', (arg)=>{
+    //   this.setState({
+    //     order: arg.order,
+    //     players: arg.players
+    //   })
+    // })
+    // socket.on('reconnect game', (arg)=>{
+    //   console.log('reconnected!');
+    //   this.setState({
+    //     order: arg.order,
+    //     rounds: arg.rounds,
+    //   })
+    // })
+    socket.on('full game info', (arg)=>{
       this.setState({
         order: arg.order,
-        players: arg.players
-      })
-    })
-    socket.on('reconnect game', (arg)=>{
-      console.log('reconnected!');
-      this.setState({
-        order: arg.order,
+        memberships: arg.memberships,
         rounds: arg.rounds,
       })
     })
     socket.on('new round',(arg)=>{
       let rounds = this.state.rounds;
       let newRound = arg.newRound;
-      let knownMemberships = arg.memberships;
-      //Put our known memberships in the round.
-      newRound.memberships = knownMemberships;
+      // let knownMemberships = arg.memberships;
+      // //Put our known memberships in the round.
+      // newRound.memberships = knownMemberships;
       this.setState({
         rounds: rounds.concat([newRound]),
       })
@@ -93,7 +102,9 @@ export default class Hitler extends React.Component{
         selectedPlayer: null,
       })
     })
-
+  }
+  componentWillUnmount(){
+    delete this.socket;
   }
   changeSelectedPlayer(PID){
     this.setState({
@@ -107,30 +118,35 @@ export default class Hitler extends React.Component{
     let yourPID = this.props.yourPID;
     let presidentPID = event.details.presidentPID;
     let chancellorPID = event.details.chancellorPID;
+    let youArePresident = yourPID == presidentPID;
+    let youAreChancellor = yourPID == chancellorPID;
     switch(eventName){
       //"your chancellor pick VS chancellor pick"
       case 'chancellor pick':
-        if(yourPID == presidentPID){
-          action = 'your chancellor pick'
-        } else{
-          action = 'chancellor pick'
-        }
+        action = youArePresident ? 'your chancellor pick' : 'chancellor pick'
         break;
-      //'chancellor vote' vs 'wait chancellor vote'
+      //'chancellor vote' vs 'wait chancellor vote'? (Probably can be done in the action bar.)
       //your president discard vs president discard
       case 'president discard':
-        if(yourPID == presidentPID){
-          action = 'your president discard'
-        } else{
-          action = 'president discard'
-        }
+        action = youArePresident ? 'your president discard' : 'president discard'
         break;
       case 'chancellor discard':
-        if(yourPID == chancellorPID){
-          action = 'your chancellor discard'
-        } else{
-          action = 'chancellor discard'
-        }
+        action = youAreChancellor ? 'your chancellor discard' : 'chancellor discard'
+        break;
+      case 'president peek':
+        action = youArePresident ? 'your president peek' : 'president peek'
+        break;
+      case 'president pick':
+        action = youArePresident ? 'your president pick' : 'president pick'
+        break;
+      case 'president kill':
+        action = youArePresident ? 'your president kill' : 'president kill'
+        break;
+      case 'president investigate':
+        action = youArePresident ? 'your president investigate' : 'president investigate'
+        break;
+      case 'president investigated':
+        action = youArePresident ? 'your president investigated' : 'president investigated'
         break;
       default: 
         action = eventName;
@@ -168,10 +184,12 @@ export default class Hitler extends React.Component{
     let rounds = this.state.rounds;
     let round = rounds[rounds.length-1];
     let players = round.players;
-    let memberships = round.memberships;
+    let order = this.state.order;
+    let memberships = this.state.memberships;
     let event = this.getFullEvent();
     let action = this.getPlayerAction(event);
     let yourPID = this.props.yourPID;
+    let playersAreSelectable = event.details.presidentPID == yourPID ? true : false;
     return (
       <div className="game-window">
       <StatusBar      lobbyID={this.props.lobbyID} 
@@ -182,13 +200,14 @@ export default class Hitler extends React.Component{
                       memberships={memberships}
       />
       <PlayerCard PID={yourPID} memberships={memberships}/>
-      <PlayerSidebar  order={this.state.order}
+      <PolicyPiles draw={event.details.nInDraw} discard={event.details.nInDiscard}/>
+      <PlayerSidebar  order={order}
                       yourPID={yourPID}
                       event={event}
                       players={players}
                       memberships={memberships}
                       selectedPlayer={this.state.selectedPlayer}
-                      playersAreSelectable={this.state.playersAreSelectable}
+                      playersAreSelectable={playersAreSelectable}
                       changeSelectedPlayer={this.changeSelectedPlayer}
       />
       <ActionBar      action={action}

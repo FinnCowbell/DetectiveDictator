@@ -1,6 +1,9 @@
 import React from 'react'
 export default function StatusBar(props){
-  let president, chancellor, presidentName, presidentPID, chancellorName, chancellorPID, description = "";
+  let president, presidentName, presidentPID;
+  let chancellor, chancellorName, chancellorPID; 
+  let investigatee, investigateePID, investigateeName;
+  let description = ""; 
   let event = props.event;
   let action = props.action;
   let players = props.players;
@@ -9,6 +12,7 @@ export default function StatusBar(props){
   let details = event.details;
   presidentPID = details.presidentPID;
   chancellorPID = details.chancellorPID;
+  investigateePID = details.investigatee;
   if(presidentPID){
     president = players[presidentPID];
     presidentName= president.username;
@@ -17,13 +21,16 @@ export default function StatusBar(props){
     chancellor = players[chancellorPID];
     chancellorName = chancellor.username;
   }
-  console.log(action);
+  if(investigateePID){
+    investigatee = players[investigateePID];
+    investigateeName = investigatee.username;
+  }
   switch(action){
     case 'pre game':
       description = `Please wait, the game will begin shortly`
       break;
     case 'new round':
-      description = `a new round has begun.`
+      description = `A new round has begun.`
       break;
     case 'chancellor pick':
       description = `${presidentName} is picking a chancellor`
@@ -32,7 +39,10 @@ export default function StatusBar(props){
       description = `Pick Your Chancellor.`;
       break;
     case 'chancellor vote':
-      description = `Vote for ${presidentName} as President and ${chancellorName} as Chancellor.`;
+      description = `Vote for President ${presidentName} and Chancellor ${chancellorName}.`;
+      break;
+    case 'chancellor not voted':
+      description = `The vote didn't pass.`
       break;
     case 'your president discard':
       description = `Discard a Policy.`;
@@ -44,7 +54,58 @@ export default function StatusBar(props){
       description = `Discard a Policy.`;
       break;
     case 'chancellor discard':
-      description = `Chancellor ${presidentName} is discarding a policy.`;
+      description = `Chancellor ${chancellorName} is discarding a policy.`;
+      break;
+    case 'liberal policy placed':
+      description = `A Liberal policy has been placed.`
+      break;
+    case 'fascist policy placed':
+      description = `A Fascist policy has been placed.`
+      break;
+    case 'president peek':
+      description = `President ${presidentName} is viewing the top 3 policy cards.`
+      break;
+    case 'your president peek':
+      description = `Take a peek. (Rightmost = Topmost Card)`
+      break;
+    case 'president investigate':
+      description = `President ${presidentName} is picking someone to investigate.`
+      break;
+    case 'your president investigate':
+      description = `Pick someone to investigate.`
+      break;
+    case 'president investigated':
+      description = `${presidentName} investigated ${investigateeName}.`
+      break;
+    case 'your president investigated':
+      description = `${presidentName} investigated ${investigateeName}.`
+      break;
+    case 'president pick':
+      description = `President ${presidentName} is selecting the next president.`
+      break;
+    case 'your president pick':
+      description = `Pick the next president.`
+      break;
+      case 'president kill':
+        description = `President ${presidentName} is picking someone to assassinate.`
+        break;
+    case 'your president kill':
+      description = `Pick someone to kill.`
+      break;
+    case 'player killed':
+      description = `${killedPlayer} is Dead`
+      break;
+    case 'end game killed':
+      description = `Hitler has been killed.`
+      break;
+    case 'end game elected':
+      description = `Hitler has been elected.`
+      break;
+    case 'end game fascist':
+      description = `The Fascists have taken control.`
+      break;
+    case 'end game liberal':
+      description = `The Liberals have taken control.`
       break;
     default:
       description = "Unimplemented event name!"

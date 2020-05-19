@@ -1,6 +1,10 @@
 import React from 'react'
 import liberalPolicy from '../media/liberal-policy.png';
 import fascistPolicy from '../media/fascist-policy.png';
+import liberalMembership from '../media/fascist-policy.png';
+import fascistMembership from '../media/fascist-policy.png';
+import jaPic from '../media/ja.png';
+import neinPic from '../media/nein.png';
 
 export default class ActionBar extends React.Component{
   constructor(props){
@@ -10,13 +14,17 @@ export default class ActionBar extends React.Component{
     this.pickChancellor = this.pickChancellor.bind(this);
     this.discardPolicy = this.discardPolicy.bind(this);
     this.castVote = this.castVote.bind(this);
+    this.viewPlayer = this.viewPlayer.bind(this);
+    this.doneViewing = this.doneViewing.bind(this);
   }
   pickChancellor(){
     let socket = this.socket;
     let selectedPlayer = this.props.selectedPlayer;
-    socket.emit('chancellor picked', {
-      pickedChancellor: selectedPlayer,
-    });
+    if(this.props.selectedPlayer != null){
+      socket.emit('chancellor picked', {
+        pickedChancellor: selectedPlayer,
+      });
+    }
   }
   castVote(isJa = null){
     if(isJa == null){
@@ -28,31 +36,30 @@ export default class ActionBar extends React.Component{
     if(policyIndex == null){
       return;
     }
-    if(this.props.action == "your president discard"){
-      this.socket.emit('president discarding', {policyIndex : policyIndex});
-    } else if (this.props.action == "your chancellor discard"){
-      this.socket.emit('chancellor discarding', {policyIndex : policyIndex});
+    let actions = {
+      "your president discard": (()=>this.socket.emit('president discarding', {policyIndex : policyIndex})),
+      "your chancellor discard": (()=>this.socket.emit('chancellor discarding', {policyIndex : policyIndex})),
+    }
+    actions[this.props.action]();
+  }
+  //Executive Actions
+  doneViewing(){
+    this.socket.emit('president done');
+  }
+  viewPlayer(PID){
+    if(PID != null){
+      this.socket.emit('president investigate request', {investigatee: PID})
     }
   }
-  // confirmAction(){
-  //   switch(this.props.action){
-  //     case 'your chancellor pick':
-  //       this.pickChancellor()
-  //       break;
-  //     case 'chancellor vote':
-  //       this.castVote();
-  //       break;
-  //     default:
-  //       console.log("Error: Unimplemented Action Submission.")
-  //   }
-  // }
   render(){
     let content;
+    let details = this.props.event.details;
+    let selectedPlayer =  this.props.players[this.props.selectedPlayer] || null;
+    let selectedUsername = selectedPlayer && selectedPlayer.username;
     switch(this.props.action){
       case 'your chancellor pick':
-        let selectedPlayer =  this.props.players[this.props.selectedPlayer] || null;
-        let selectedUsername = selectedPlayer && selectedPlayer.username;
-        content = (<PickChancellor
+        content = (<PickPlayer
+          verb="Pick"
           selected={this.props.selectedPlayer}
           confirm={this.pickChancellor}
           username={selectedUsername}
@@ -67,15 +74,42 @@ export default class ActionBar extends React.Component{
         content = (
           <DiscardPresident
             confirm={this.discardPolicy} 
-            policies={this.props.event.details.secret.policies}/>
+            policies={details.secret.policies}/>
         );
         break;
       case 'your chancellor discard':
         content = (
           <DiscardChancellor 
             confirm={this.discardPolicy} 
-            policies={this.props.event.details.secret.policies}/>
+            policies={details.secret.policies}/>
         );
+        break;
+      case 'your president peek':
+        content = (
+          <PresidentPeek
+            policies={details.secret.policies}
+            confirm={this.doneViewing}
+          />
+        )
+        break;
+      case 'your president investigate':
+        //Reusing pick chancellor window.
+        content = (
+          <PickPlayer
+            verb="Investigate"
+            username={selectedUsername}
+            selected={this.props.selectedPlayer}
+            confirm={()=>this.viewPlayer(this.props.selectedPlayer)}
+          />
+        )
+        break;
+      case 'your president investigated':
+        content = (
+          <ViewMembership
+            membership={details.secret.membership}
+            confirm={this.doneViewing}
+          />
+        )
         break;
       default:
         content = (
@@ -93,10 +127,16 @@ export default class ActionBar extends React.Component{
   }
 }
 
-function PickChancellor(props){
+function PickPlayer(props){
+  let verb = props.verb;
+  let username = props.username;
   return (
-    <div className="action pick-chancellor">
-      <button className={!props.selected ? "disabled" : ""} onClick={props.confirm}>{props.username ? `Pick ${props.username}` : ""}</button>
+    <div className="action pick-player">
+      <button className={"pick-button " + !props.selected ? "disabled" : ""} onClick={props.confirm}>
+        <h1>
+          {props.username ? `${verb} ${username}` : "Select a player"}
+        </h1>
+      </button>
     </div>
   )
 }
@@ -134,9 +174,19 @@ class JaNein extends React.Component{
     let isJa = this.state.isJa;
     return (
       <div className="action ja-nein">
-        <button onClick={this.setJa} className={"ja " + (isJa ? "selected" : "")}>Ja</button>
-        <button onClick={this.setNein} className={"nein " + (!isJa ? "selected" : "")}>Nein</button>
-        <button onClick={this.tryConfirm} className="nein">Cast Vote</button>
+        <div className="vote-options">
+          <div className={"option"}>
+            <img className={isJa && "selected"} onClick={this.setJa} src={jaPic}/>
+          </div>
+          <div  className={"option"}>
+            <img className={isJa === false && "selected"} onClick={this.setNein} src={neinPic}/>
+          </div>
+        </div>
+        <button onClick={this.tryConfirm} className="vote-button">
+          <h2>
+            Cast Vote
+          </h2>
+        </button>
       </div>
     )
   }
@@ -172,14 +222,14 @@ class DiscardPresident extends React.Component{
       />
     ))
     return (
-      <div className="action discard-president">
+      <div className="action discard">
         <div className="policy-cards">
           {cards}
-          <div className="discard-button" onClick={this.trySubmit}>
-            <h2>
-              Discard
-            </h2>
-          </div>
+        </div>
+        <div className="discard-button" onClick={this.trySubmit}>
+          <h2>
+            Discard
+          </h2>
         </div>
       </div>
     )
@@ -216,19 +266,20 @@ class DiscardChancellor extends React.Component{
       />
     ))
     return (
-      <div className="action discard-president">
+      <div className="action discard">
         <div className="policy-cards">
           {cards}
-          <div className="discard-button" onClick={this.trySubmit}>
-            <h2>
-              Discard
-            </h2>
-          </div>
+        </div>
+        <div className="discard-button" onClick={this.trySubmit}>
+          <h2>
+            Discard
+          </h2>
         </div>
       </div>
     )
   }
 }
+
 function PolicyCard(props){
   //Takes Select, Index, and isFascist.
   return(
@@ -249,28 +300,35 @@ function PickPresident(props){
   )
 }
 
-function ViewTopThree(props){
+function PresidentPeek(props){
+  let policyValues = props.policies;
+  let cards = policyValues.map((value, index)=>(
+    <PolicyCard
+      key={index}
+      isSelected={false}
+      isFascist={value}
+    />
+  ))
   return(
     <div className="action view-three">
-      <div className="three-cards">
-        {/* TODO: add card classes. */}
+      <div className="policy-cards">
+        {cards}
+        <div className="continue-button" onClick={props.confirm}>
+          <h2>Continue</h2>
+        </div>
       </div>
-      <button onClick={this.props.confirm}>Continue</button>
     </div>
   )
 }
-
 function ViewMembership(props){
-  let textClass = "liberal";
-  if(this.props.party == 1){
-    textClass = "fascist"
-  }
   return(
-    <div className="action view-membership">
-      <div className={textClass}>
-        {this.props.party}
+    <div className="action membership">
+      <div className="membership-card">
+        <img src={props.membership ? liberalMembership : fascistMembership}/>
       </div>
-      <button onClick={this.props.confirm}>Continue</button>
+      <div className="continue-button" onClick={props.confirm}>
+        <h2>Continue</h2>
+      </div>
     </div>
   )
 }

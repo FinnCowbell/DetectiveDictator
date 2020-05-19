@@ -11,6 +11,7 @@ export default function PlayerSidebar(props){
     let prevPres = eventDetails.previousPresidentPID;
     let prevChan = eventDetails.previousChancellorPID;
     let playersAreSelectable = props.playersAreSelectable;
+    console.log("playersAreSelectable: " + playersAreSelectable);
     let selectedPlayer = props.selectedPlayer;
     let membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
     let sidebarItems = order.map((PID, index)=>{
@@ -32,8 +33,8 @@ export default function PlayerSidebar(props){
         <div className={'vote ' + (vote == 1 ? 'ja' : (vote == 0 ? 'nein' : 'hidden'))}>
           {vote}
         </div>
-        <div className={"player-content " + (selected ? "selected" : (selectable ? "selectable" : ""))} 
-              onClick={()=>props.changeSelectedPlayer(PID)}>
+        <div className={"player-content " + (selected ? "selected " : (selectable ? "selectable " : ""))} 
+              onClick={()=>{if(selectable){props.changeSelectedPlayer(PID)}}}>
           <div className={'status ' + status}>
             {status}
           </div>

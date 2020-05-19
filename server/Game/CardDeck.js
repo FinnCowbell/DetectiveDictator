@@ -32,7 +32,6 @@ class CardDeck{
       if(this.shuffleIfNotEnough){
         this.reshuffleCards();
       } else{
-
         n = this.deck.length;
       }
     }
@@ -47,6 +46,7 @@ class CardDeck{
   }
   reshuffleCards(){
     this.deck = this.deck.concat(this.discardPile);
+    this.discardPile = [];
     this.shuffleCards();
   }
   shuffleCards(){
