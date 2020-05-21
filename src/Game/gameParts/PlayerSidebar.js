@@ -4,40 +4,86 @@ import ja from '../media/ja.png';
 import nein from '../media/nein.png';
 import hat from '../media/president-hat.png';
 
-export default function PlayerSidebar(props){
-    let order = props.order;
-    let yourPID = props.yourPID;
-    let players = props.players;
-    let memberships = props.memberships;
-    let eventDetails = props.event.details;
-    let votes = eventDetails.votes || {};
+export default class PlayerSidebar extends React.Component{
+  getMembership(player){
+    const membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
+    return membershipClasses[this.props.memberships[player.PID]] || "";
+  }
+  getStatus(player){
+    let details = this.props.event.details;
+    if(player.alive && player.PID == details.presidentPID){
+      return "president";
+    } else if(player.alive && player.PID == details.chancellorPID){
+      return "chancellor";
+    } else if(!player.alive){
+      return "dead";
+    } else{
+      return "";
+    }
+  }
+  getVoteClass(player){
+    const showVoteEvents = new Set(['president discard', 'chancellor discard', 'liberal policy placed', 'fascist policy placed', 'chancellor not voted'])
+    let event = this.props.event;
+    let votes = event.details.votes || {};
+    let vote = votes[player.PID];
+    if(showVoteEvents.has(event.name)){
+      if(vote == true){
+        return "ja";
+      } else if(vote == false){
+        return "nein";
+      }
+    }
+    return "hidden";
+  }
+  isPlayerSelectable(player){
+    //To be selectable:
+    //IF picking is president pick or chancellor pick, cannot be current President, Chancellor, previous president or chancellor.
+    //Player cannot be you.
+    //Player needs to be alive.
+    //You must be president
+    const yourPID = this.props.yourPID;
+    let event = this.props.event;
+    const playersAreSelectable = yourPID == event.details.presidentPID;
+    let unselectablePlayers = new Set([event.details.presidentPID]);
+    if(event.name == 'chancellor pick'){
+      unselectablePlayers.add(event.details.previousChanPID);
+      unselectablePlayers.add(event.details.previousPresPID);
+    }
+    if(event.name == 'president pick'){
+      unselectablePlayers.add(event.details.chancellorPID);
+    }
+    if(playersAreSelectable && player.PID != yourPID && player.alive != false){//you can never select yourself
+      if(!unselectablePlayers.has(player.PID)){
+        return true;
+      }
+    }
+    return false;
+  }
+  render(){
+    let order = this.props.order;
+    let yourPID = this.props.yourPID;
+    let players = this.props.players;
+    let memberships = this.props.memberships;
+    let eventDetails = this.props.event.details;
     let pres = eventDetails.presidentPID;
     let chan = eventDetails.chancellorPID;
-    let prevPres = eventDetails.previousPresidentPID;
-    let prevChan = eventDetails.previousChancellorPID;
-    let playersAreSelectable = props.playersAreSelectable;
+    let bulletIndex = this.props.uiInfo.bulletIndex;
     //if action == your president kill
-    let bulletIndex = props.uiInfo.bulletIndex;
-    console.log("playersAreSelectable: " + playersAreSelectable);
     //Maps each membership to a className.
-    const membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
-    const voteClasses = {false: "nein", true: "ja"};
-    const showVoteEvents = new Set(['president discard', 'chancellor discard', 'liberal policy placed', 'fascist policy placed', 'chancellor not voted'])
     let sidebarItems = order.map((PID, index)=>{
       let player = players[PID];
       if(!player){
         console.log(`No player with PID ${PID}`);
         return null;
       }
-      const statusClass =  (!player.alive ? "dead" : (PID == pres ? "president" : (PID == chan ? "chancellor" : "")));
-      const voteClass = voteClasses[votes[PID]] || "hidden";//Outputs event.votes[PID] if both exist. null/undefined otherwise.
       const isYou = (PID == yourPID) ? "you " : ""; 
-      const membership = membershipClasses[memberships[player.PID]] || "hidden";
-      const selectable = (playersAreSelectable)
-      const isSelected = (PID == props.selectedPlayer);
-      const isKillingPlayer = (props.event.name == "president kill");
-      const showVotes = showVoteEvents.has(props.event.name);
-      const hasBullet = (props.uiInfo.bulletIndex == index)|| (isSelected && yourPID == pres);
+      const status =  this.getStatus(player)
+      const voteClass = this.getVoteClass(player); //Outputs event.votes[PID] if both exist. null/undefined otherwise.
+      const membership = this.getMembership(player);
+      const selectable = this.isPlayerSelectable(player);
+      const isSelected = (PID == this.props.selectedPlayer);
+      const isKillingPlayer = (this.props.event.name == "president kill");
+      const hasBullet = (this.props.uiInfo.bulletIndex == index)|| (isSelected && yourPID == pres);
       return (
       <div key={index} className={`player ${membership} ${isYou}`}>
         {/* Next to the player content, we show a bullet OR the vote status, but not both. */}
@@ -48,27 +94,24 @@ export default function PlayerSidebar(props){
             }
           </div>
          )}
-        {showVotes && (
-          <div className={'vote ' + voteClass}>
-            {voteClass == "ja" ? (<img src={ja}/>) : (<img src={nein}/>)
-            }
-          </div>
-        )}
+        <div className={'vote ' + voteClass}>
+          {voteClass == "ja" ? (<img src={ja}/>) : (<img src={nein}/>)
+          }
+        </div>
 
-        <div className={"player-bar " + (isSelected ? "selected " : (selectable ? "selectable " : ""))} 
+        <div className={`player-bar ${isSelected ? "selected" : ""} ${selectable ? "selectable" : ""}`} 
               onClick={()=>{
                 if(selectable){
-                  props.changeSelectedPlayer(PID)
-                }
-                if(isKillingPlayer){
-                  props.moveBullet(index)
+                  this.props.changeSelectedPlayer(PID)
+                  if(isKillingPlayer){
+                    this.props.moveBullet(index)
+                  }
                 }
               }}>
-          {statusClass == "president" && <img className="hat" src={hat}/>}
-          <div className={'status ' + statusClass}>
-            {statusClass}
+          {status == "president" && <img className="hat" src={hat}/>/*He get hat*/}
+          <div className={'status ' + status}>
           </div>
-          <h3 className="username">{player.username}</h3>
+          <h2 className="username">{players[PID].username}</h2>
         </div>
       </div>
       )
@@ -81,3 +124,81 @@ export default function PlayerSidebar(props){
       </div>
     )
   }
+}
+
+// export default function PlayerSidebar(props){
+//     let order = props.order;
+//     let yourPID = props.yourPID;
+//     let players = props.players;
+//     let memberships = props.memberships;
+//     let eventDetails = props.event.details;
+//     let votes = eventDetails.votes || {};
+//     let pres = eventDetails.presidentPID;
+//     let chan = eventDetails.chancellorPID;
+//     let prevPres = eventDetails.previousPresidentPID;
+//     let prevChan = eventDetails.previousChancellorPID;
+//     let playersAreSelectable = props.playersAreSelectable;
+//     //if action == your president kill
+//     let bulletIndex = props.uiInfo.bulletIndex;
+//     console.log("playersAreSelectable: " + playersAreSelectable);
+//     //Maps each membership to a className.
+//     const membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
+//     const voteClasses = {false: "nein", true: "ja"};
+//     const showVoteEvents = new Set(['president discard', 'chancellor discard', 'liberal policy placed', 'fascist policy placed', 'chancellor not voted'])
+//     let sidebarItems = order.map((PID, index)=>{
+//       let player = players[PID];
+//       if(!player){
+//         console.log(`No player with PID ${PID}`);
+//         return null;
+//       }
+//       const statusClass =  (!player.alive ? "dead" : (PID == pres ? "president" : (PID == chan ? "chancellor" : "")));
+//       const voteClass = voteClasses[votes[PID]] || "hidden";//Outputs event.votes[PID] if both exist. null/undefined otherwise.
+//       const isYou = (PID == yourPID) ? "you " : ""; 
+//       const membership = membershipClasses[memberships[player.PID]] || "hidden";
+//       const selectable = (playersAreSelectable)
+//       const isSelected = (PID == props.selectedPlayer);
+//       const isKillingPlayer = (props.event.name == "president kill");
+//       const showVotes = showVoteEvents.has(props.event.name);
+//       const hasBullet = (props.uiInfo.bulletIndex == index)|| (isSelected && yourPID == pres);
+//       return (
+//       <div key={index} className={`player ${membership} ${isYou}`}>
+//         {/* Next to the player content, we show a bullet OR the vote status, but not both. */}
+//         {isKillingPlayer && (
+//           <div className="bullet-holder">
+//             {hasBullet &&
+//               <img className="bullet" src={bullet}/>
+//             }
+//           </div>
+//          )}
+//         {showVotes && (
+//           <div className={'vote ' + voteClass}>
+//             {voteClass == "ja" ? (<img src={ja}/>) : (<img src={nein}/>)
+//             }
+//           </div>
+//         )}
+
+//         <div className={"player-bar " + (isSelected ? "selected " : (selectable ? "selectable " : ""))} 
+//               onClick={()=>{
+//                 if(selectable){
+//                   props.changeSelectedPlayer(PID)
+//                 }
+//                 if(isKillingPlayer){
+//                   props.moveBullet(index)
+//                 }
+//               }}>
+//           {statusClass == "president" && <img className="hat" src={hat}/>}
+//           <div className={'status ' + statusClass}>
+//           </div>
+//           <h2 className="username">{player.username}</h2>
+//         </div>
+//       </div>
+//       )
+//     });
+//     return (
+//       <div className="player-sidebar">
+//         <div className="players">
+//           {sidebarItems}
+//         </div>
+//       </div>
+//     )
+//   }

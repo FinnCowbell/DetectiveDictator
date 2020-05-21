@@ -435,7 +435,7 @@ class Hitler{
       if(arg.vote == true){
         this.yesCount++;
       }
-      // socket.emit('vote recieved');
+      socket.emit('confirm vote', null);
       if(this.nVoted >= this.nAlive){
         let yesRatio = this.yesCount / this.nVoted;
         if(yesRatio <= .5){
@@ -551,6 +551,11 @@ class Hitler{
     socket.on('move bullet', (arg)=>{
       if(this.currentEvent == "president kill"){
         socket.broadcast.emit('move bullet', (arg));
+      }
+    })
+    socket.on('confirm vote', ()=>{
+      if(this.currentEvent == "chancellor vote"){
+        
       }
     })
   }

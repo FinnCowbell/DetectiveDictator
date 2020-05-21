@@ -71,6 +71,7 @@ export default class ActionBar extends React.Component{
     let details = this.props.event.details;
     let selectedPlayer =  this.props.players[this.props.selectedPlayer] || null;
     let selectedUsername = selectedPlayer && selectedPlayer.username;
+    let uiInfo = this.props.uiInfo;
     switch(this.props.action){
       case 'your chancellor pick':
         content = (<PickPlayer
@@ -82,7 +83,7 @@ export default class ActionBar extends React.Component{
         break;
       case 'chancellor vote':
         content = (
-          <JaNein confirm={this.castVote} />
+          <JaNein confirm={this.castVote} voteReceived={uiInfo.voteReceived} />
         )
         break;
       case 'your president discard':
@@ -120,6 +121,7 @@ export default class ActionBar extends React.Component{
         break;
       case 'your president kill':
         content = (
+          // <div className="bullet"/>
           <PickPlayer
             verb="Murder"
             confirm={this.doneViewing}
@@ -209,17 +211,34 @@ class JaNein extends React.Component{
   }
   render(){
     let isJa = this.state.isJa;
+    if(this.props.voteReceived){
+      return(
+        <div className="action ja-nein">
+        <div className="vote-options">
+        {isJa ? (
+          <div className={`option`}>
+            <img className={"selected"} src={jaPic}/>
+          </div>
+        ):(
+          <div  className={`option`}>
+            <img className={"selected"}src={neinPic}/>
+          </div>
+        )}
+        </div>
+      </div>        
+      )
+    }
     return (
       <div className="action ja-nein">
         <div className="vote-options">
-          <div className={"option"}>
-            <img className={isJa && "selected"} onClick={this.setJa} src={jaPic}/>
+          <div className={`option ${(isJa && this.props.voteReceived) ? "hidden" : ""}`}>
+            <img className={isJa ? "selected" : ""} onClick={this.setJa} src={jaPic}/>
           </div>
-          <div  className={"option"}>
+          <div  className={`option  ${(!isJa && this.props.voteReceived) ? "hidden" : ""}`}>
             <img className={isJa === false && "selected"} onClick={this.setNein} src={neinPic}/>
           </div>
         </div>
-        <button onClick={this.tryConfirm} className="vote-button">
+        <button onClick={this.tryConfirm} className={`vote-button ${this.props.voteReceived ? "hidden" : ""}`}>
           <h2>
             Cast Vote
           </h2>

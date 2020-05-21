@@ -44,7 +44,6 @@ class LibBoard extends React.Component{
   updateMarker(){
     let ctx = this.refs.canvas.getContext('2d');
     let x,y;
-    console.log(this.props.marker);
     x = this.markerLocations[this.props.marker || 0][0];
     y = this.markerLocations[this.props.marker || 0][1];
     ctx.beginPath();

@@ -50,31 +50,18 @@ export default class Hitler extends React.Component{
       }],
      }],
      //Logic for selecting players from the Player Sidebar
-     playersAreSelectable: false,
-     selectedPlayer: null,
+    selectedPlayer: null,
      //User Interface states.
-     uiInfo: {
-       bulletIndex: null
-     }
+    uiInfo: {
+      voteReceived: false,
+      bulletIndex: null,
+    }
    };
    this.changeSelectedPlayer = this.changeSelectedPlayer.bind(this);
    this.moveBullet = this.moveBullet.bind(this);
   }
   componentDidMount(){
     let socket = this.props.socket;
-    // socket.on('player info', (arg)=>{
-    //   this.setState({
-    //     order: arg.order,
-    //     players: arg.players
-    //   })
-    // })
-    // socket.on('reconnect game', (arg)=>{
-    //   console.log('reconnected!');
-    //   this.setState({
-    //     order: arg.order,
-    //     rounds: arg.rounds,
-    //   })
-    // })
     socket.on('full game info', (arg)=>{
       this.setState({
         order: arg.order,
@@ -85,11 +72,17 @@ export default class Hitler extends React.Component{
     socket.on('new round',(arg)=>{
       let rounds = this.state.rounds;
       let newRound = arg.newRound;
+      //reset UI Info
+      let uiInfo = {
+        voteReceived: false,
+        bulletIndex: null,
+      }
       // let knownMemberships = arg.memberships;
       // //Put our known memberships in the round.
       // newRound.memberships = knownMemberships;
       this.setState({
         rounds: rounds.concat([newRound]),
+        uiInfo: uiInfo
       })
     })
     socket.on('new event', (arg)=>{
@@ -110,6 +103,14 @@ export default class Hitler extends React.Component{
     socket.on('move bullet', (arg)=>{
       let uiInfo = this.state.uiInfo
       uiInfo.bulletIndex = arg.bulletIndex;
+      this.setState({
+        uiInfo: uiInfo
+      })
+    })
+    socket.on('confirm vote', ()=>{
+      console.log("vote recieved");
+      let uiInfo = this.state.uiInfo;
+      uiInfo.voteReceived = true;
       this.setState({
         uiInfo: uiInfo
       })
@@ -209,7 +210,6 @@ export default class Hitler extends React.Component{
     if(players[yourPID]){
       alive = players[yourPID].alive;
     }
-    let playersAreSelectable = event.details.presidentPID == yourPID ? true : false;
     return (
       <div className="game-window">
       <StatusBar      lobbyID={this.props.lobbyID} 
@@ -230,7 +230,6 @@ export default class Hitler extends React.Component{
                       memberships={memberships}
                       uiInfo={this.state.uiInfo}
                       selectedPlayer={this.state.selectedPlayer}
-                      playersAreSelectable={playersAreSelectable}
                       changeSelectedPlayer={this.changeSelectedPlayer}
                       moveBullet={this.moveBullet}
       />
