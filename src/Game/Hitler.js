@@ -6,7 +6,6 @@ import ActionBar from './gameParts/ActionBar.js'
 import StatusBar from './gameParts/StatusBar.js'
 import PlayerSidebar from './gameParts/PlayerSidebar.js'
 import PlayerCard from './gameParts/PlayerCard.js'
-import PolicyPiles from './gameParts/PolicyPiles.js'
 
 
 export default class Hitler extends React.Component{
@@ -53,8 +52,13 @@ export default class Hitler extends React.Component{
      //Logic for selecting players from the Player Sidebar
      playersAreSelectable: false,
      selectedPlayer: null,
+     //User Interface states.
+     uiInfo: {
+       bulletIndex: null
+     }
    };
    this.changeSelectedPlayer = this.changeSelectedPlayer.bind(this);
+   this.moveBullet = this.moveBullet.bind(this);
   }
   componentDidMount(){
     let socket = this.props.socket;
@@ -102,6 +106,14 @@ export default class Hitler extends React.Component{
         selectedPlayer: null,
       })
     })
+    //Sent by the player with the bullet.
+    socket.on('move bullet', (arg)=>{
+      let uiInfo = this.state.uiInfo
+      uiInfo.bulletIndex = arg.bulletIndex;
+      this.setState({
+        uiInfo: uiInfo
+      })
+    })
   }
   componentWillUnmount(){
     delete this.socket;
@@ -110,6 +122,9 @@ export default class Hitler extends React.Component{
     this.setState({
       selectedPlayer: PID
     });
+  }
+  moveBullet(bulletIndex){
+    this.socket.emit('move bullet', {bulletIndex: bulletIndex});
   }
   getPlayerAction(event){
     //Based on event info, constructs an 'action' for the player.
@@ -186,9 +201,14 @@ export default class Hitler extends React.Component{
     let players = round.players;
     let order = this.state.order;
     let memberships = this.state.memberships;
+    let gameStyle = Math.floor((order.length - 5)/ 2);
     let event = this.getFullEvent();
     let action = this.getPlayerAction(event);
     let yourPID = this.props.yourPID;
+    let alive = true;
+    if(players[yourPID]){
+      alive = players[yourPID].alive;
+    }
     let playersAreSelectable = event.details.presidentPID == yourPID ? true : false;
     return (
       <div className="game-window">
@@ -199,24 +219,42 @@ export default class Hitler extends React.Component{
                       players={players}
                       memberships={memberships}
       />
+
       <PlayerCard PID={yourPID} memberships={memberships}/>
-      <PolicyPiles draw={event.details.nInDraw} discard={event.details.nInDiscard}/>
+
       <PlayerSidebar  order={order}
                       yourPID={yourPID}
+                      action={action}
                       event={event}
                       players={players}
                       memberships={memberships}
+                      uiInfo={this.state.uiInfo}
                       selectedPlayer={this.state.selectedPlayer}
                       playersAreSelectable={playersAreSelectable}
                       changeSelectedPlayer={this.changeSelectedPlayer}
+                      moveBullet={this.moveBullet}
       />
-      <ActionBar      action={action}
+      <div className="boards">
+      <LibBoard
+        draw={event.details.nInDraw}
+        discard={event.details.nInDiscard}
+        marker={event.details.marker}
+        nCards={event.details.libBoard}
+        />
+      <FasBoard
+        nCards={event.details.fasBoard}
+        gameStyle={gameStyle}
+        />
+      </div>
+      { alive &&
+        <ActionBar    action={action}
                       socket={this.socket}
                       event={event}
+                      uiInfo={this.state.uiInfo}
                       selectedPlayer={this.state.selectedPlayer} 
                       players={players}
-        
-      />
+        />
+      }
       </div>
     )
   }

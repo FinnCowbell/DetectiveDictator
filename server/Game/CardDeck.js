@@ -45,11 +45,13 @@ class CardDeck{
     this.discardPile.push(card);
   }
   reshuffleCards(){
+    //Puts discard back into the deck and shuffles it.
     this.deck = this.deck.concat(this.discardPile);
     this.discardPile = [];
     this.shuffleCards();
   }
   shuffleCards(){
+    //shuffles cards in deck.
     shuffle(this.deck);
   }
   getAmountRemaining(){

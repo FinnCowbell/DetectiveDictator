@@ -3,6 +3,7 @@ export default function StatusBar(props){
   let president, presidentName, presidentPID;
   let chancellor, chancellorName, chancellorPID; 
   let investigatee, investigateePID, investigateeName;
+  let victim, victimPID, victimName;
   let description = ""; 
   let event = props.event;
   let action = props.action;
@@ -13,6 +14,7 @@ export default function StatusBar(props){
   presidentPID = details.presidentPID;
   chancellorPID = details.chancellorPID;
   investigateePID = details.investigatee;
+  victimPID = details.victim;
   if(presidentPID){
     president = players[presidentPID];
     presidentName= president.username;
@@ -24,6 +26,10 @@ export default function StatusBar(props){
   if(investigateePID){
     investigatee = players[investigateePID];
     investigateeName = investigatee.username;
+  }
+  if(victimPID){
+    victim = players[details.victim];
+    victimName = victim.username;
   }
   switch(action){
     case 'pre game':
@@ -93,7 +99,7 @@ export default function StatusBar(props){
       description = `Pick someone to kill.`
       break;
     case 'player killed':
-      description = `${killedPlayer} is Dead`
+      description = `${victimName} has been murdered.`
       break;
     case 'end game killed':
       description = `Hitler has been killed.`

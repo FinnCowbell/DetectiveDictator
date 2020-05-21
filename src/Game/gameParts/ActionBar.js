@@ -11,6 +11,7 @@ export default class ActionBar extends React.Component{
     super(props)
     this.socket = this.props.socket;
     // this.confirmAction = this.confirmAction.bind(this);
+    this.pickPresident = this.pickPresident.bind(this);
     this.pickChancellor = this.pickChancellor.bind(this);
     this.discardPolicy = this.discardPolicy.bind(this);
     this.castVote = this.castVote.bind(this);
@@ -51,6 +52,20 @@ export default class ActionBar extends React.Component{
       this.socket.emit('president investigate request', {investigatee: PID})
     }
   }
+  pickPresident(){
+    let selectedPlayer = this.props.selectedPlayer;
+    if(this.props.selectedPlayer != null){
+      this.socket.emit('president picked', {
+        pickedPresident: selectedPlayer,
+      });
+    }
+  }
+  killPlayer(PID){
+    let selectedPlayer = this.props.selectedPlayer;
+    if(this.props.selectedPlayer != null){
+      this.socket.emit('president kill request', {victim: PID})
+    }
+  }
   render(){
     let content;
     let details = this.props.event.details;
@@ -89,6 +104,28 @@ export default class ActionBar extends React.Component{
           <PresidentPeek
             policies={details.secret.policies}
             confirm={this.doneViewing}
+          />
+        )
+        break;
+      case 'your president pick':
+        content = (
+          <PickPlayer
+            verb="Nominate"
+            confirm={this.doneViewing}
+            selected={this.props.selectedPlayer}
+            confirm={this.pickPresident}
+            username={selectedUsername}
+          />
+        )
+        break;
+      case 'your president kill':
+        content = (
+          <PickPlayer
+            verb="Murder"
+            confirm={this.doneViewing}
+            selected={this.props.selectedPlayer}
+            confirm={()=>this.killPlayer(this.props.selectedPlayer)}
+            username={selectedUsername}
           />
         )
         break;
@@ -313,9 +350,9 @@ function PresidentPeek(props){
     <div className="action view-three">
       <div className="policy-cards">
         {cards}
-        <div className="continue-button" onClick={props.confirm}>
-          <h2>Continue</h2>
-        </div>
+      </div>
+      <div className="continue-button" onClick={props.confirm}>
+        <h2>Continue</h2>
       </div>
     </div>
   )

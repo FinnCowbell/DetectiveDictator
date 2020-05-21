@@ -25,11 +25,13 @@ class Hitler{
     this.gameStyle = -1; // 0 is 5-6 players, 1 is 7-8, 2 is 9-10
     this.policies = new CardDeck([0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1], true, true);;
     this.rounds = [];
+    //Used for voting
     this.votes = {};
     this.nVoted = 0;
     this.yesCount = 0;
     //Should only be used during executive actions.
     this.investigatee = null;
+    this.victim = null;
     /*Wait time between events in milliseconds.
     Occurs to separate actions such as placing cards and the following round or president action.
     As secret hitler is a somewhat slower-paced game, my goal with this is to try to get players 
@@ -62,7 +64,7 @@ class Hitler{
     this.assignRoles();
     if(this.nPlaying <= 6){
       this.gameStyle = 0;
-    } else if(this.nPlayer == 7 ||  this.nPlayers == 8){
+    } else if(this.nPlaying == 7 ||  this.nPlaying == 8){
       this.gameStyle = 1;
     } else{
       this.gameStyle = 2;
@@ -121,6 +123,7 @@ class Hitler{
     //Players are stored within rounds.
     const arg = {
       order: this.order,
+      gameStyle: this.gameStyle,
       memberships: {},
       isRunning: this.running,
       rounds: [],
@@ -223,6 +226,15 @@ class Hitler{
     if(nextPresident){ //If the next president has been pre-chosen,
       this.presidentPID = nextPresident;
     } else{
+      let PID, player;
+      for(let i = 0; i < this.nPlaying; i++){
+        PID = this.order[this.currentPlayer];
+        player = this.players[PID];
+        if(player.alive == true){
+          break;
+        }
+        this.currentPlayer = (this.currentPlayer + 1) % this.nPlaying;
+      }
       this.presidentPID = this.order[this.currentPlayer];
       this.currentPlayer = (this.currentPlayer + 1) % this.nPlaying;
     }
@@ -344,6 +356,15 @@ class Hitler{
       case "president pick":
         break; //Nothing changes!
       case "president kill":
+        break;
+      case "player killed":
+        eventDetails = {
+          victim: this.victim,
+        }
+        this.victim = null;
+        this.nAlive--;
+        break;
+      default:
         break;
     }
     let event = {
@@ -494,6 +515,13 @@ class Hitler{
         this.newRound();
       }
     })
+    socket.on('president picked', (arg)=>{
+      if(this.currentEvent != "president pick" || this.presidentPID != theirPID){
+        this.error("Cannot pick president!")
+      } else{
+        this.newRound(arg.pickedPresident)
+      }
+    })
     socket.on('president investigate request', (arg)=>{
       if(this.currentEvent != "president investigate"){
         this.error("Event isn't Investigate!");
@@ -505,6 +533,26 @@ class Hitler{
       this.buildEvent();
       this.sendLatestEvent();
     })
+    socket.on('president kill request', (arg)=>{
+      if(this.currentEvent != "president kill"){
+        this.error("Event isn't Kill!");
+      } else if (this.presidentPID != theirPID){
+        this.error("Non-president sent 'kill request'");
+      }
+      this.victim = arg.victim;
+      this.players[arg.victim].alive = false;
+      this.currentEvent = 'player killed'
+      this.buildEvent();
+      this.sendLatestEvent();
+      setTimeout(()=>{
+        this.newRound();
+      }, this.WAIT_TIME);
+    });
+    socket.on('move bullet', (arg)=>{
+      if(this.currentEvent == "president kill"){
+        socket.broadcast.emit('move bullet', (arg));
+      }
+    })
   }
   enactPolicy(value){
     //enacting a policy checks for executive actions. Placing a policy does not.
@@ -512,7 +560,7 @@ class Hitler{
     if(!endedGame){
       //Wait WAIT_TIME mS before continuing the game.
       setTimeout(()=>{
-        if(value){
+        if(value == 1){
           this.evalExecutiveAction();
         }
         else{
@@ -522,8 +570,11 @@ class Hitler{
     }
   }
   evalExecutiveAction(){
-    if(this.gameStyle == 0){
+    if(this.gameStyle == 0){ //5-6 players
         switch(this.fasBoard){
+          case 1: 
+            this.currentEvent = "president kill";
+            break;
           case 3:
             this.currentEvent = "president peek";
             break;
@@ -534,14 +585,13 @@ class Hitler{
             this.currentEvent = "president kill";
             break;
           default:
-            // this.currentEvent = "president peek";
             this.newRound();
             return;
             break;
         }
         this.buildEvent();
         this.sendLatestEvent();
-    } else if(this.gameStyle == 1){
+    } else if(this.gameStyle == 1){ //7-8 players
       switch(this.fasBoard){
         case 2:
           this.currentEvent = "president investigate"
@@ -560,7 +610,7 @@ class Hitler{
           return;
           break;
       }
-    } else if(this.gameStyle == 2){
+    } else if(this.gameStyle == 2){ // 9-10 players
       switch(this.fasBoard){
         case 1:
           this.currentEvent = "president investigate";
@@ -642,17 +692,6 @@ class Hitler{
 Player.prototype.membership = null;
 Player.prototype.alive = null;
 Player.prototype.vote = null;
-Player.prototype.kill = function(){
-  this.alive = false;
-}
-
-Player.prototype.getParty = function(){
-  if(this.membership){
-    return 1;
-  } else{
-    return 0;
-  }
-}
 
 function shuffle(a){
   //For shuffling player order, roles, party Cards

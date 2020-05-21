@@ -10,12 +10,14 @@
   font-family: 'Squada';
   src: url(./fonts/SquadaOne.ttf) format('truetype');
 }
-
+$background-color: #1d1d1d;
+$action-bar-dark-color: #2b2b2b;
+$liberal-blue: #5fc7d8;
 @mixin action-bar-button($rotation){
   border:none;
   font-family: Potsdam;
   color: #65c4a3;
-  background-color: #2b2b2b;
+  background-color: $action-bar-dark-color;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -26,6 +28,14 @@
     font-size: 2em;
     text-align: center;
     width: 100%;
+  }
+}
+
+//Desktop-specific changes
+@media only screen and (min-width: 1300px){
+  .game-window .player-sidebar{
+    top: 75px;
+    background-image: unset !important;
   }
 }
 
@@ -87,12 +97,27 @@
 
 .game-window{
   display: grid;
-  grid-template-areas: "status status status status status" 
-  "playercard . gameboards . players" 
-  "policies . gameboards . players" 
-  ". action action action players";
+  grid-template-areas: " status status status" 
+  "playercard boards  ." 
+  "policies boards  ." 
+  ". action .";
   grid-template-rows: 75px 3fr 3fr 1fr;
-  grid-template-columns: 1fr 1fr 1fr 1fr 300px;
+  grid-template-columns: 300px 1fr 300px;
+  background-color: $background-color; 
+  background-image: linear-gradient(to right, black 0%, #{$background-color} 20%, #{$background-color} 80%, black 100% );
+  .boards{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    grid-area: boards;
+    canvas{
+      height: auto;
+      max-width: 1000px;
+      min-width: 600px;
+      width: 100%;
+    }
+  }
   .status-bar{
     display: grid;
     grid-area: status;
@@ -121,68 +146,79 @@
     grid-area:policies;
   }
   .player-sidebar{
-    grid-area: players;
-    height: initial;
     right: 0px;
-    width: inherit;
+    width: 400px;
     height: inherit;
-    position: relative;
+    background-image: linear-gradient(to left, rgba(0,0,0,1) 25%, rgba(0, 0, 0, 0.527) 75%, #0000);
+    position: absolute;
     overflow: auto;
-    .players{
+    font-family: Squada;
+    .player{
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: flex-start;
+      width: inherit;
+      margin-top: 20px;
+      &.liberal .player-bar{
+        background-color: $liberal-blue;
+      }
+      &.fascist .player-bar{
+        background-color: rgb(250, 124, 124);
+      }
+      &.hitler .player-bar{
+        background-color: rgb(136, 15, 15);
+        color: white;
+      }
+      &.you .player-bar{
+        font-weight: bold;
+      }
       .vote{
-        height: 30px;
+        order: 1;
+        height: 50px;
         width: 30px;
-        position: absolute;
-        left: 0px;
-        background-color:gray;
         margin-top: auto;
         margin-bottom: auto;
         &.hidden{
           display: none;
         }
-        &.ja{
-          background-color:green;
-        }
         &.nein{
-          background-color:red;
-
+          transform: scaleX(-1);
+          margin-top: 35px;
+          margin-right: -15px;
+        }
+        img{
+          width: 50px;
         }
       }
-      .player{
-        &.liberal .player-content{
-          background-color: aqua;
-        }
-        &.fascist .player-content{
-          background-color: rgb(250, 124, 124);
-        }
-        &.hitler .player-content{
-          background-color: rgb(136, 15, 15);
-          color: white;
-        }
-        &.you .player-content{
-          font-weight: bold;
+      .bullet-holder{
+        order: 2;
+        display: flex;
+        justify-self: flex-end;
+        margin-right: 5px;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+        img{
+          width: 100px;
         }
       }
-      .player-content{
-        margin-right: -25px;
-        margin-left: 35px;
-        height: 50px;
-        background-color: rgb(215, 255, 255);
-        border: 2px solid blue;
-        border-bottom-left-radius: 20px;
-        margin-top: 20px;
-        padding: 20px;
-        transition: .25s;
-        &.selectable:hover{
-          margin-left: 15px;
-          border-left-width: 2px;
-        }
-        &.selected{
-          margin-left: 15px;
-          border-left-width: 8px;
-        }
+    }
+    .player-bar{
+      order: 0;
+      padding: 20px;
+      height: 50px;
+      width: 200px;
+      background-color: rgb(227, 255, 255);
+      border: 2px solid rgb(133, 133, 133);
+      border-bottom-left-radius: 20px;
+      transition: .25s;
+      &.selectable:hover{
+        width: 220px;
       }
-      display: inline;
+      &.selected{
+        width: 220px;
+        border-left-width: 8px;
+      }
     }
   }
 }
@@ -198,7 +234,7 @@
   border-image: url(./Game/media/ActionBarBorder.png) 25 round;
   height: 200px;
   width: 600px;
-  border-image-outset: 5px;
+  border-image-outset: 6px;
   background-color: #65c4a3;
   margin-left: auto;
   margin-right: auto;
@@ -206,7 +242,7 @@
 }
 .action{
   $inner-border-width: 15px;
-  border: $inner-border-width solid #2b2b2b;
+  border: $inner-border-width solid $action-bar-dark-color;
   width: calc(100% - #{$inner-border-width * 2});
   height: calc(100% - #{$inner-border-width * 2});
   &.discard, &.view-three, &.ja-nein{
@@ -219,15 +255,16 @@
       align-items: center;
       width: 100%;
       height: 100%;
+      padding: 0 10px;
     }
     .policy-cards .policy{
-      height: inherit;
+      height: calc(100% - 20px);
       transition: .25s filter;
       img{
-        height: inherit;
+        height: 100%;
       }
       filter: grayscale(0%);
-      &.selectable:hover{
+      &:hover{
         filter: grayscale(50%);
       }
       &.selected{
