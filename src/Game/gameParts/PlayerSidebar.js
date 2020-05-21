@@ -2,6 +2,7 @@ import React from 'react'
 import bullet from '../media/Bullet.png';
 import ja from '../media/ja.png';
 import nein from '../media/nein.png';
+import hat from '../media/president-hat.png';
 
 export default function PlayerSidebar(props){
     let order = props.order;
@@ -53,6 +54,7 @@ export default function PlayerSidebar(props){
             }
           </div>
         )}
+
         <div className={"player-bar " + (isSelected ? "selected " : (selectable ? "selectable " : ""))} 
               onClick={()=>{
                 if(selectable){
@@ -62,6 +64,7 @@ export default function PlayerSidebar(props){
                   props.moveBullet(index)
                 }
               }}>
+          {statusClass == "president" && <img className="hat" src={hat}/>}
           <div className={'status ' + statusClass}>
             {statusClass}
           </div>

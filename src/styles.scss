@@ -204,12 +204,22 @@ $liberal-blue: #5fc7d8;
       }
     }
     .player-bar{
+      position: relative;
+      .hat{
+        width: 60px;
+        height: auto;
+        position: absolute;
+        left: -20px;
+        top:-20px;
+        transform: rotate(-10deg);
+        filter: brightness(2);
+      }
       order: 0;
       padding: 20px;
       height: 50px;
       width: 200px;
       background-color: rgb(227, 255, 255);
-      border: 2px solid rgb(133, 133, 133);
+      border: 2px solid rgb(0, 0, 0);
       border-bottom-left-radius: 20px;
       transition: .25s;
       &.selectable:hover{
