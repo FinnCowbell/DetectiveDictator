@@ -277,8 +277,6 @@ class Hitler{
         break;
       case "chancellor not voted":
         eventDetails = {
-          chancellorPID: this.chancellorPID,
-          presidentPID: this.presidentPID,
           votes: this.votes,
           marker: this.marker,
         }

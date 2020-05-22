@@ -2,9 +2,16 @@ import React from 'react'
 import bullet from '../media/Bullet.png';
 import ja from '../media/ja.png';
 import nein from '../media/nein.png';
-import hat from '../media/president-hat.png';
+let presHat = './media/president-hat.png';
+let chanHat = './media/chancellor-hat.png';
 
 export default class PlayerSidebar extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      closed: false,
+    }
+  }
   getMembership(player){
     const membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
     return membershipClasses[this.props.memberships[player.PID]] || "";
@@ -108,7 +115,8 @@ export default class PlayerSidebar extends React.Component{
                   }
                 }
               }}>
-          {status == "president" && <img className="hat" src={hat}/>/*He get hat*/}
+          {status == "president" && <img className="pres hat" src={presHat}/>/*He get hat*/}
+          {status == "chancellor" && <img className="chan hat" src={chanHat}/>/*He also get hat*/}
           <div className={'status ' + status}>
           </div>
           <h2 className="username">{players[PID].username}</h2>

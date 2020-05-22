@@ -17,12 +17,15 @@ $unknown-color: #796199;
 $status-background: #f9e4c3;
 @mixin action-bar-button($rotation){
   border:none;
-  font-family: Potsdam;
+  font-family: Germania;
   color: #65c4a3;
   background-color: $action-bar-dark-color;
   display: flex;
   align-items: center;
   cursor: pointer;
+  h1{
+    font-family: Potsdam;
+  }
   h1, h2, h3{
     transform: rotate($rotation);
     cursor: pointer;
@@ -218,10 +221,18 @@ h1, h2, h3, h4{
         width: 60px;
         height: auto;
         position: absolute;
-        left: -20px;
-        top: -25px;
-        transform: rotate(-10deg);
         filter: brightness(2);
+        &.pres{
+          left: -20px;
+          top: -25px;
+          transform: rotate(-15deg);
+        }
+        &.chan{
+          left: -20px;
+          top: -20px;
+          transform: rotate(-10deg);
+
+        }
       }
       order: 0;
       padding: 10px;

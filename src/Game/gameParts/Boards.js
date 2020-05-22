@@ -1,15 +1,15 @@
 import React from 'react'
-import LiberalBoard from '../media/Liberal no text transparent.png';
-import Fascist56 from '../media/Fascist56 transparent.png'
-import Fascist78 from '../media/Fascist78 transparent.png'
-import Fascist910 from '../media/Fascist910 transparent.png'
+let libBoard = './media/boards/liberal.png';
+let Fascist56 = './media/boards/fascist56.png';
+let Fascist78 = './media/boards/fascist78.png';
+let Fascist910 = './media/boards/fascist910.png'
 import libPolicy from "../media/liberal-policy.png";
 import fasPolicy from "../media/fascist-policy.png";
 //Boards don't need a state.
 class LibBoard extends React.Component{
   constructor(props){
     super(props);
-    this.markerColor = "#65c4a3";
+    this.markerColor = "#2e8768";
     this.liberalText = "#5fc7d8";
     this.markerLocations = [[
       710,599
@@ -90,7 +90,7 @@ class LibBoard extends React.Component{
     return(
       <div className="liberal board">
         <canvas ref="canvas" className="lib-canvas" width={2056} height={678}></canvas>
-        <img ref="libBoard" src={LiberalBoard} style={{"display": "none"}}/>
+        <img ref="libBoard" src={libBoard} style={{"display": "none"}}/>
         <img ref="policy" src={libPolicy} style={{"display": "none"}}/>
         {/*<div className="draw-pile">
           <h2>DRAW PILE: {props.draw}</h2>
