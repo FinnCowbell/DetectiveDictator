@@ -14,7 +14,7 @@ import React from 'react'
 
 export default function PlayerCard(props){
   //membership and PID
-  let cardIMG = "DefaultPlayer";
+  let cardIMG = "";
   let membership = props.memberships[props.PID];
   if(membership == 0){
     cardIMG = `Liberal${(props.PID % 6) + 1}`;
@@ -25,7 +25,9 @@ export default function PlayerCard(props){
   }
   return(
     <figure className="player-card">
-      <img src={`./media/${cardIMG}.png`}/>
+      {cardIMG && 
+        <img src={`./media/${cardIMG}.png`}/>
+      }
     </figure>
   )
 }

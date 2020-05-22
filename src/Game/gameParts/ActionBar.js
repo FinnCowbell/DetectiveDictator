@@ -150,6 +150,15 @@ export default class ActionBar extends React.Component{
           />
         )
         break;
+      case 'liberal win hitler':
+      case 'liberal win cards':
+      case 'fascist win hitler':
+      case 'fascist win cards':
+        content = (
+          <LeaveGame
+            leaveLobby={this.props.leaveLobby}/>
+        )
+        break;
       default:
         content = (
           <div className="action empty"></div>
@@ -385,6 +394,16 @@ function ViewMembership(props){
       <div className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>
       </div>
+    </div>
+  )
+}
+
+function LeaveGame(props){
+  return (
+    <div className="action exit">
+      <button className="leaveGame" onClick={props.leaveLobby}>
+        <h2>Leave Lobby</h2>
+      </button>
     </div>
   )
 }

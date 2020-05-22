@@ -13,24 +13,26 @@ export default class Hitler extends React.Component{
    super(props);
    this.socket = this.props.socket;
    this.state = {
-    order: [1,2,3,4,5,6],
+    order: [101,102,103,104,105,106,7],
     memberships: {
-      1: 1,
-      2: 0,
-      3: 2,
-      4: 0,
-      5: 0,
-      6: 0,
+      101: 1,
+      102: 0,
+      103: 2,
+      104: 0,
+      105: 1,
+      106: 0,
+      7: 1,
     },
     rounds: [{
       players: { 
         // Testing Players, for now.
-        1: {PID: 1, username: "Finn", alive: true},
-        2: {PID: 2, username: "Chris", alive: true},
-        3: {PID: 3, username: "Max", alive: true},
-        4: {PID: 4, username: "Liam", alive: true},
-        5: {PID: 5, username: "Phil", alive: true},
-        6: {PID: 6, username: "Marco", alive: true}
+        101: {PID: 101, username: "Karl", alive: true},
+        102: {PID: 102, username: "Joseph", alive: true},
+        103: {PID: 103, username: "Adolf", alive: true},
+        104: {PID: 104, username: "Franklin", alive: true},
+        105: {PID: 105, username: "Paul", alive: true},
+        106: {PID: 106, username: "Winston", alive: true},
+        7: {PID: 7, username: "Chiang", alive: true},
       },
       events: [{
         name: "pre game",
@@ -38,8 +40,8 @@ export default class Hitler extends React.Component{
           LibBoard: 0,
           FasBoard: 0,
           marker: 0,
-          presidentPID: 1,
-          chancellorPID: 3,
+          presidentPID: 101,
+          chancellorPID: 103,
           previousPresidentPID: null,
           previousChancellorPID: null,
           votes: null,
@@ -70,7 +72,7 @@ export default class Hitler extends React.Component{
       })
     })
     socket.on('new round',(arg)=>{
-      let rounds = this.state.rounds;
+      const rounds = this.state.rounds;
       let newRound = arg.newRound;
       //reset UI Info
       let uiInfo = {
@@ -99,6 +101,13 @@ export default class Hitler extends React.Component{
         selectedPlayer: null,
       })
     })
+    socket.on(('end game'), (arg)=>{
+      let endState = arg.endState;
+      const rounds = this.state.rounds;
+      this.setState({
+        rounds: rounds.concat([endState]),
+      })
+    }); 
     //Sent by the player with the bullet.
     socket.on('move bullet', (arg)=>{
       let uiInfo = this.state.uiInfo
@@ -163,6 +172,9 @@ export default class Hitler extends React.Component{
         break;
       case 'president investigated':
         action = youArePresident ? 'your president investigated' : 'president investigated'
+        break;
+      case 'end game':
+        action = event.details.reason;
         break;
       default: 
         action = eventName;
@@ -245,12 +257,13 @@ export default class Hitler extends React.Component{
         gameStyle={gameStyle}
         />
       </div>
-      { alive &&
+      { (alive || event.name == "end game")&&
         <ActionBar    action={action}
                       socket={this.socket}
                       event={event}
                       uiInfo={this.state.uiInfo}
                       selectedPlayer={this.state.selectedPlayer} 
+                      leaveLobby={this.props.leaveLobby}
                       players={players}
         />
       }

@@ -101,16 +101,16 @@ export default function StatusBar(props){
     case 'player killed':
       description = `${victimName} has been murdered.`
       break;
-    case 'end game killed':
+    case 'liberal win hitler':
       description = `Hitler has been killed.`
       break;
-    case 'end game elected':
+    case 'fascist win hitler':
       description = `Hitler has been elected.`
       break;
-    case 'end game fascist':
+    case 'fascist win cards':
       description = `The Fascists have taken control.`
       break;
-    case 'end game liberal':
+    case 'liberal win cards':
       description = `The Liberals have taken control.`
       break;
     default:
@@ -120,9 +120,6 @@ export default function StatusBar(props){
   let gameStatus;
   return(
     <div className="status-bar">
-      <div className="lobby-id">
-        <h4 className="lobby-id"> Lobby ID: {props.lobbyID}</h4>
-      </div>
       <div className="status-div">
         {event &&(
         <h2 className="status">
@@ -130,9 +127,12 @@ export default function StatusBar(props){
         </h2>)
         }
       </div>
-      <div className="you-are">
+      {/* <div className="you-are">
         <h4>{you && `You are: ${you.username}`}</h4>
       </div>
+      <div className="lobby-id">
+        <h4 className="lobby-id"> Lobby ID: {props.lobbyID}</h4>
+      </div> */}
     </div>
   );
 }

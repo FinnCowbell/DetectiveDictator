@@ -241,7 +241,7 @@ class Hitler{
     this.votes = {}
     this.nVoted = 0;
     this.yesCount = 0;
-    
+
     this.rounds.push({
       players: this.getPlayerInfo(),
       memberships: {},
@@ -577,9 +577,6 @@ class Hitler{
   evalExecutiveAction(){
     if(this.gameStyle == 0){ //5-6 players
         switch(this.fasBoard){
-          case 1: 
-            this.currentEvent = "president kill";
-            break;
           case 3:
             this.currentEvent = "president peek";
             break;
@@ -679,8 +676,32 @@ class Hitler{
     //winner: 0 = liberal, 1 = fascist.
     //Liberal reasons: 0 = cards, 1 = killed hitler.
     //Fascist reasons: 0 = cards, 1 = elected hitler.
-    this.currentEvent = "end game"
-    //Todo: implement the end of the game. should it be different than an event?
+    let endGame = [["liberal win cards", "liberal win hitler"],["fascist win cards","fascist win hitler"]]
+    this.rounds.push({
+      players: this.getPlayerInfo(),
+      memberships: this.memberships,
+      events: [{
+        name: 'end game',
+        details: {
+          reason: endGame[winner][reason],
+          presidentPID: this.presidentPID,
+          chancellorPID: this.chancellorPID,
+          previousPresPID: this.previousPresPID,
+          previousChanPID: this.previousChanPID,
+          fasBoard: this.fasBoard,
+          libBoard: this.libBoard,
+          marker: this.marker,
+          nInDiscard: this.policies.getAmountDiscarded(),
+          nInDraw: this.policies.getAmountRemaining(),
+          nVoted: this.nVoted,
+          votes: this.votes,
+          secret: {},
+        },
+      }]
+    })
+    let newRound = this.rounds[this.rounds.length -1];
+    this.io.emit("end game", {endState: newRound});
+
   }
   checkMarker(){
     if(this.marker == 3){

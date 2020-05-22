@@ -40,7 +40,7 @@ export default class Lobby extends React.Component{
       })
     });
     socket.on('kick', ()=>this.leaveLobby("You've been Kicked From the Lobby!"));
-    socket.on('end game', ()=>this.leaveLobby("The game has ended."));
+    // socket.on('end game', ()=>this.leaveLobby("The game has ended."));
     socket.on('lobby update info', (arg)=>{
       this.setState({
         players: arg.lobbyInfo.players,
@@ -58,7 +58,6 @@ export default class Lobby extends React.Component{
     delete this.socket;
   }
   leaveLobby(reason){
-    this.socket.close();
     this.props.setLobbyID(null);
   }
   connect(username){
@@ -117,7 +116,7 @@ export default class Lobby extends React.Component{
             </button>)}
         </div>)}
         {inLobby && (<ChatRoom socket={this.socket} username={this.state.username}/>)}
-        <Game lobbyID={lobbyID} yourPID={this.state.PID} socket={this.socket}/>
+        <Game lobbyID={lobbyID} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.socket}/>
       </div>
     )
   }

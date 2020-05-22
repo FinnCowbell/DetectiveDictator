@@ -13,7 +13,8 @@
 $background-color: #1d1d1d;
 $action-bar-dark-color: #2b2b2b;
 $liberal-blue: #5fc7d8;
-$unknown-color: #581ea3;
+$unknown-color: #796199;
+$status-background: #f9e4c3;
 @mixin action-bar-button($rotation){
   border:none;
   font-family: Potsdam;
@@ -32,6 +33,10 @@ $unknown-color: #581ea3;
   }
 }
 
+h1, h2, h3, h4{
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+}
 
 @keyframes show-selectable{
   0%{
@@ -63,7 +68,6 @@ $unknown-color: #581ea3;
 //Desktop-specific changes
 @media only screen and (min-width: 1300px){
   .game-window .player-sidebar{
-    top: 75px;
     background-image: unset !important;
   }
 }
@@ -125,16 +129,16 @@ $unknown-color: #581ea3;
 }
 
 .game-window{
-  display: grid;
-  grid-template-areas: " status status status" 
+  // display: grid;
+  grid-template-areas: " . status ." 
   "playercard boards  ." 
-  "policies boards  ." 
   ". action .";
-  grid-template-rows: 75px 3fr 3fr 1fr;
+  grid-template-rows: 75px 6fr 1fr;
   grid-template-columns: 300px 1fr 300px;
   background-color: $background-color; 
   background-image: linear-gradient(to right, black 0%, #{$background-color} 20%, #{$background-color} 80%, black 100% );
   .boards{
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -142,46 +146,20 @@ $unknown-color: #581ea3;
     grid-area: boards;
     canvas{
       height: auto;
-      max-width: 1000px;
+      max-width: 950px;
       min-width: 600px;
       width: 100%;
     }
   }
-  .status-bar{
-    display: grid;
-    grid-area: status;
-    text-align: center;
-    grid-template-columns: 300px 1fr 300px;
-    grid-template-rows: 1fr;
-    grid-template-areas: 'id info youare';
-    background-color: rgb(192, 192, 192);
-    padding: 0px 20px 0px 20px;
-    .lobby-info{
-      grid-area: id;
-    }
-    .status-div{
-      grid-area: info;
-      font-family: Germania;
-      font-size: 1.2em;
-    }
-    .you-are{
-      grid-area: youare;
-    }
-  }
-  .player-card{
-    grid-area: playercard;
-  }
-  .policies{
-    grid-area:policies;
-  }
   .player-sidebar{
-    right: 0px;
-    width: 400px;
-    height: inherit;
-    background-image: linear-gradient(to left, rgba(0,0,0,1) 25%, rgba(0, 0, 0, 0.527) 75%, #0000);
     position: absolute;
     overflow: auto;
+    top: 0px;
+    right: 0;
+    width: 400px;
+    height: inherit;
     font-family: Squada;
+    background-image: linear-gradient(to left, rgba(0,0,0,1) 25%, rgba(0, 0, 0, 0.527) 75%, #0000);
     .player{
       display: flex;
       flex-direction: row-reverse;
@@ -207,13 +185,15 @@ $unknown-color: #581ea3;
         width: 30px;
         margin-top: auto;
         margin-bottom: auto;
+        margin-right: 10px;
+        z-index: 2;
         &.hidden{
           display: none;
         }
         &.nein{
           transform: scaleX(-1);
           margin-top: 35px;
-          margin-right: -15px;
+          margin-right: -10px;
         }
         img{
           width: 50px;
@@ -239,12 +219,12 @@ $unknown-color: #581ea3;
         height: auto;
         position: absolute;
         left: -20px;
-        top:-20px;
+        top: -25px;
         transform: rotate(-10deg);
         filter: brightness(2);
       }
       order: 0;
-      padding: 20px;
+      padding: 10px;
       height: 50px;
       width: 200px;
       background-color: $unknown-color;
@@ -269,9 +249,53 @@ $unknown-color: #581ea3;
   }
 }
 
+//STATAUS BAR
+.status-bar{
+  // grid-area: status;
+  display: flex;
+  align-items: space-between;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 75px;
+  margin-bottom: 30px;
+  .lobby-info{
+    grid-area: id;
+  }
+  .status-div{
+    max-width: 1100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: .1px transparent solid;
+    background-color: $status-background;
+    border-image: url(./Game/media/StatusBorder2.png) round;
+    border-image-slice:54 45 52 45;
+    padding: 0px 20px 0px 20px;
+    border-image-width: 0px 20px 20px 20px;
+    border-image-outset: 20px;
+    width: inherit;
+    font-family: Germania;
+    font-size: 1.2em;
+    h2{
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+  .you-are{
+    grid-area: youare;
+  }
+}
+.player-card{
+  position: absolute;
+  left: 0;
+  height: 100%;
+
+}
+
 //ACTION BAR INTERFACE
 .action-bar-container{
-  grid-area: action;
+  width: 100%;
   margin: auto;
 }
 .action-bar{
@@ -280,11 +304,13 @@ $unknown-color: #581ea3;
   border-image: url(./Game/media/ActionBarBorder.png) 25 round;
   height: 200px;
   width: 600px;
-  border-image-outset: 6px;
-  background-color: #65c4a3;
   margin-left: auto;
   margin-right: auto;
-  margin: 10px;
+  border-image-outset: 6px;
+  background-color: #65c4a3;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .action{
   $inner-border-width: 15px;
@@ -373,7 +399,7 @@ $unknown-color: #581ea3;
       margin-right: -5px;
     }
   }
-  &.pick-player{
+  &.pick-player, &.exit{
     display: flex;
     button{
       border:none;
