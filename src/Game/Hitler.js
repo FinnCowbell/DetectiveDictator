@@ -57,6 +57,7 @@ export default class Hitler extends React.Component{
     uiInfo: {
       voteReceived: false,
       bulletIndex: null,
+      voted: {},
     }
    };
    this.changeSelectedPlayer = this.changeSelectedPlayer.bind(this);
@@ -78,6 +79,7 @@ export default class Hitler extends React.Component{
       let uiInfo = {
         voteReceived: false,
         bulletIndex: null,
+        voted: {},
       }
       // let knownMemberships = arg.memberships;
       // //Put our known memberships in the round.
@@ -109,20 +111,19 @@ export default class Hitler extends React.Component{
       })
     }); 
     //Sent by the player with the bullet.
-    socket.on('move bullet', (arg)=>{
-      let uiInfo = this.state.uiInfo
-      uiInfo.bulletIndex = arg.bulletIndex;
-      this.setState({
-        uiInfo: uiInfo
-      })
-    })
-    socket.on('confirm vote', ()=>{
-      console.log("vote recieved");
+    socket.on('new ui event', (arg)=>{
       let uiInfo = this.state.uiInfo;
-      uiInfo.voteReceived = true;
-      this.setState({
-        uiInfo: uiInfo
-      })
+      if(arg.name == 'player voted'){
+        uiInfo.voted[arg.PID] = true;
+        this.setState({
+          uiInfo: uiInfo
+        })
+      } else if(arg.name == 'move bullet'){
+        uiInfo.bulletIndex = arg.bulletIndex;
+        this.setState({
+          uiInfo: uiInfo
+        })
+      }
     })
   }
   componentWillUnmount(){
@@ -150,7 +151,6 @@ export default class Hitler extends React.Component{
       case 'chancellor pick':
         action = youArePresident ? 'your chancellor pick' : 'chancellor pick'
         break;
-      //'chancellor vote' vs 'wait chancellor vote'? (Probably can be done in the action bar.)
       //your president discard vs president discard
       case 'president discard':
         action = youArePresident ? 'your president discard' : 'president discard'

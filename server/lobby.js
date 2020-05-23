@@ -33,7 +33,7 @@ class Lobby{
     this.players = {}
     this.disconnectedPlayers = {}
     this.nextPID = 1;
-    this.game = new Game(ourio, this.players, this);
+    this.game = new Game(ourio, devLobby, this.players, this);
     // this.chat = new Chat(ourio);
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.

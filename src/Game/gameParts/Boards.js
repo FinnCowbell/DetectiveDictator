@@ -90,8 +90,8 @@ class LibBoard extends React.Component{
     return(
       <div className="liberal board">
         <canvas ref="canvas" className="lib-canvas" width={2056} height={678}></canvas>
-        <img ref="libBoard" src={libBoard} style={{"display": "none"}}/>
-        <img ref="policy" src={libPolicy} style={{"display": "none"}}/>
+        <img ref="libBoard" onLoad={()=>{this.update()}} src={libBoard} style={{"display": "none"}}/>
+        <img ref="policy" onLoad={()=>{this.update()}} src={libPolicy} style={{"display": "none"}}/>
         {/*<div className="draw-pile">
           <h2>DRAW PILE: {props.draw}</h2>
         </div>
@@ -158,8 +158,8 @@ class FasBoard extends React.Component{
     return(
       <div className="fascist board">
         <canvas ref="canvas" width={2074} height={687}></canvas>
-        <img ref="board" src={fascistBoard} style={{'display': "none"}}/>
-        <img ref="policy" src={fasPolicy} style={{'display': "none"}}/>
+        <img ref="board" onLoad={()=>{this.update()}} src={fascistBoard} style={{'display': "none"}}/>
+        <img ref="policy" onLoad={()=>{this.update()}} src={fasPolicy} style={{'display': "none"}}/>
       </div>
     )
   }

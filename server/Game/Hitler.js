@@ -3,10 +3,11 @@ var {Lobbies, Lobby, Player} = require('../Lobby')
 //Generally: 0 = Liberal, >0 = Fascist.
 
 class Hitler{
-  constructor(io, players, lobby){
+  constructor(io, devMode, players, lobby){
     this.lobby = lobby;
     this.running = false;
     this.io = io;
+    this.isDevMode = devMode;
     this.players = players;
     this.memberships = {};
     this.order = []; //Order of players by PID.
@@ -221,8 +222,10 @@ class Hitler{
   buildNewRound(nextPresident = null){
     //Each round has player info stored with it.
     //Players don't change very much (Except on round-ending events).
-    this.previousPresPID = this.presidentPID;
-    this.previousChanPID = this.chancellorPID;
+    if(!this.isDevMode){
+      this.previousPresPID = this.presidentPID;
+      this.previousChanPID = this.chancellorPID;
+    }
     if(nextPresident){ //If the next president has been pre-chosen,
       this.presidentPID = nextPresident;
     } else{
@@ -434,6 +437,10 @@ class Hitler{
         this.yesCount++;
       }
       socket.emit('confirm vote', null);
+      this.io.emit('new ui event',{
+        name: 'player voted',
+        PID: theirPID,
+      });
       if(this.nVoted >= this.nAlive){
         let yesRatio = this.yesCount / this.nVoted;
         if(yesRatio <= .5){
@@ -548,12 +555,8 @@ class Hitler{
     });
     socket.on('move bullet', (arg)=>{
       if(this.currentEvent == "president kill"){
-        socket.broadcast.emit('move bullet', (arg));
-      }
-    })
-    socket.on('confirm vote', ()=>{
-      if(this.currentEvent == "chancellor vote"){
-        
+        arg.name = 'move bullet'
+        socket.broadcast.emit('new ui event', (arg));
       }
     })
   }
@@ -575,6 +578,8 @@ class Hitler{
   evalExecutiveAction(){
     if(this.gameStyle == 0){ //5-6 players
         switch(this.fasBoard){
+          case 1:
+            this.currentEvent = "president kill";
           case 3:
             this.currentEvent = "president peek";
             break;

@@ -7,25 +7,17 @@ var io = require('socket.io')(http)
 var {Lobbies, Lobby, Player} = require('./lobby');
 var Game = require('./Game/Hitler');
 const port = 1945;
-// var cookieParser = require('cookie-parser') (for Cookies)
-// var bodyParser = require('body-parser') (for Bodies)
-// app.use(express.static(path.join(__dirname + "/public")))
 
-//Useful Functions
-String.prototype.capitalize = function() {
-  return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-};
+//Get Args
 
-//Express Static File Logic
-// app.use('/menu', express.static(path.join(__dirname, 'dist/Menu')));
-// app.use('/lobby/:roomID/', express.static(path.join(__dirname, 'dist/Lobby')));
+let argc = process.argv.length;
+let devMode = false
+for(let i = 0; i < argc; i++){
+  if(process.argv[i] == "-dev"){
+    devMode = true;
+  }
+}
 
-// app.get('/:lobby/:roomID/socket.io.js', function(req, res){
-//   res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
-// })
-// app.get('/socket.io.js', function(req, res){
-//   res.sendFile(__dirname + "/node_modules/socket.io-client/dist/socket.io.js");
-// })
 
 //Initializing storage for all lobbies
 var lobbies = new Lobbies(io, Game);
@@ -43,7 +35,7 @@ io.of('/menu').on("connection", (socket)=>{//When we get a new connection
     console.log("[Menu]: User disconnected");
   });
   socket.on("create lobby", (arg) =>{
-    let lobby = lobbies.createLobby(devMode = true);
+    let lobby = lobbies.createLobby(devMode = devMode);
     console.log(lobby);
     socket.emit("lobby created",{"ID": lobby.ID});
   })
@@ -53,3 +45,8 @@ io.of('/menu').on("connection", (socket)=>{//When we get a new connection
 http.listen(port, ()=>{
   console.log(`listening on port ${port}`);
 });
+
+//Useful Functions
+String.prototype.capitalize = function() {
+  return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+};

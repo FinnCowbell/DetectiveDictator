@@ -2,6 +2,7 @@ import React from 'react'
 import bullet from '../media/Bullet.png';
 import ja from '../media/ja.png';
 import nein from '../media/nein.png';
+import sent from '../media/fist.png';
 let presHat = './media/president-hat.png';
 let chanHat = './media/chancellor-hat.png';
 
@@ -11,6 +12,13 @@ export default class PlayerSidebar extends React.Component{
     this.state = {
       closed: false,
     }
+    this.toggleState = this.toggleState.bind(this);
+  }
+  toggleState(){
+    const status = !this.state.closed;
+    this.setState({
+      closed: status
+    })
   }
   getMembership(player){
     const membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
@@ -29,10 +37,18 @@ export default class PlayerSidebar extends React.Component{
     }
   }
   getVoteClass(player){
+    //Gets the vote class
+    //Ja, Nein, or Sent.
+    //Sent = event is 'chancellor vote' and vote is true.
     const showVoteEvents = new Set(['president discard', 'chancellor discard', 'liberal policy placed', 'fascist policy placed', 'chancellor not voted'])
     let event = this.props.event;
     let votes = event.details.votes || {};
     let vote = votes[player.PID];
+    let voted = this.props.uiInfo.voted || {};
+    console.log(this.props.uiInfo);
+    if(event.name == 'chancellor vote' && voted[player.PID]){
+      return "sent";
+    }
     if(showVoteEvents.has(event.name)){
       if(vote == true){
         return "ja";
@@ -75,9 +91,9 @@ export default class PlayerSidebar extends React.Component{
     let pres = eventDetails.presidentPID;
     let chan = eventDetails.chancellorPID;
     let bulletIndex = this.props.uiInfo.bulletIndex;
-    //if action == your president kill
-    //Maps each membership to a className.
-    let sidebarItems = order.map((PID, index)=>{
+
+
+    let playerList = order.map((PID, index)=>{
       let player = players[PID];
       if(!player){
         console.log(`No player with PID ${PID}`);
@@ -85,7 +101,7 @@ export default class PlayerSidebar extends React.Component{
       }
       const isYou = (PID == yourPID) ? "you " : ""; 
       const status =  this.getStatus(player)
-      const voteClass = this.getVoteClass(player); //Outputs event.votes[PID] if both exist. null/undefined otherwise.
+      const voteStatus = this.getVoteClass(player); //Outputs event.votes[PID] if both exist. null/undefined otherwise.
       const membership = this.getMembership(player);
       const selectable = this.isPlayerSelectable(player);
       const isSelected = (PID == this.props.selectedPlayer);
@@ -101,9 +117,10 @@ export default class PlayerSidebar extends React.Component{
             }
           </div>
          )}
-        <div className={'vote ' + voteClass}>
-          {voteClass == "ja" ? (<img src={ja}/>) : (<img src={nein}/>)
-          }
+        <div className={'vote ' + voteStatus}>
+          {voteStatus == "ja" ? (<img src={ja}/>) : null}
+          {voteStatus == "nein" ? (<img src={nein}/>):null}
+          {voteStatus == "sent" ? (<img src={sent}/>):null}
         </div>
 
         <div className={`player-bar ${isSelected ? "selected" : ""} ${selectable ? "selectable" : ""}`} 
@@ -125,10 +142,13 @@ export default class PlayerSidebar extends React.Component{
       )
     });
     return (
-      <div className="player-sidebar">
+      <div className={`player-sidebar ${this.state.closed ? "closed" : ""}`}>
         <div className="players">
-          {sidebarItems}
+          {playerList}
         </div>
+        <button onClick={this.toggleState} className={`controller ${this.state.closed ? "toggled" : ""}`}>
+          <h1>></h1>
+        </button>
       </div>
     )
   }
