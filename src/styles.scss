@@ -21,7 +21,8 @@
 $background-color: #1d1d1d;
 $action-bar-dark-color: #2b2b2b;
 $liberal-blue: #5fc7d8;
-$unknown-color: #796199;
+$hitler-red: #980300;
+$unknown-color: #0e4e6b;
 $status-background: #f9e4c3;
 @mixin action-bar-button($rotation){
   border:none;
@@ -179,15 +180,38 @@ h1, h2, h3, h4{
       flex-direction: row-reverse;
       justify-content: flex-start;
       width: inherit;
-      margin-top: 20px;
+      margin-top: 35px;
+      .player-bar{
+        display: flex;
+        align-items: center;
+        background-color: $unknown-color;
+        border: solid 7px transparent;
+        border-image-width: 15px;
+        border-image: url(./Game/media/unknown-border.png) 26 round;
+        border-image-outset: 7px;
+      }
       &.liberal .player-bar{
         background-color: $liberal-blue;
+        border: solid 7px transparent;
+        border-image-width: 15px;
+        border-image: url(./Game/media/liberal-border.png) 26 round;
+        border-image-outset: 7px;
       }
       &.fascist .player-bar{
-        background-color: rgb(250, 124, 124);
+        background-color: #e56344;
+        border: solid 7px transparent;
+        border-image: url(./Game/media/fascist-border.png) 45 round;
+        border-image-width: 15px;
+        border-image-slice: 45 51 45 45;
+        border-image-outset: 7px;
       }
       &.hitler .player-bar{
-        background-color: rgb(136, 15, 15);
+        border: solid 7px transparent;
+        border-image: url(./Game/media/hitler-border.png) 45 round;
+        border-image-width: 15px;
+        border-image-slice: 45 51 45 45;
+        border-image-outset: 7px;
+        background-color: $hitler-red;
         color: white;
       }
       &.you .player-bar{
@@ -231,31 +255,31 @@ h1, h2, h3, h4{
     }
     .player-bar{
       position: relative;
+      
       .hat{
         width: 60px;
         height: auto;
         position: absolute;
         filter: brightness(2);
         &.pres{
-          left: -20px;
-          top: -25px;
+          left: -30px;
+          top: -35px;
           transform: rotate(-15deg);
         }
         &.chan{
-          left: -20px;
-          top: -20px;
+          left: -30px;
+          top: -30px;
           transform: rotate(-10deg);
 
         }
       }
       order: 0;
-      padding: 10px;
+      // padding: 10px;
       height: 50px;
       width: 200px;
       background-color: $unknown-color;
       color:white;
       border: 2px solid rgb(0, 0, 0);
-      border-bottom-left-radius: 20px;
       transition: .25s;
      &.selectable{
         animation-name: show-selectable;
@@ -315,6 +339,7 @@ h1, h2, h3, h4{
   position: absolute;
   display: none;
   left: 0;
+  top: 100px;
   height: 100%;
 }
 

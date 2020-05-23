@@ -80,7 +80,6 @@ export default class PlayerSidebar extends React.Component{
       cantSelect.add(presID);
     }
     if(player.alive && !cantSelect.has(""+player.PID)){
-      console.log(`PID: ${player.PID} previousChanPID: ${event.details.previousChanPID}`)
       return true;
     }
     return false;
