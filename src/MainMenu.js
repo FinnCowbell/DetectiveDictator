@@ -1,5 +1,4 @@
 import React from 'react';
-import io from 'socket.io-client'
 import Header from './Lobby/Header.js'
 
 export default class MainMenu extends React.Component{

@@ -1,5 +1,4 @@
 import React from 'react';
-import io from 'socket.io-client'
 
 import Header from './Lobby/Header.js'
 import ChatRoom from './Lobby/ChatRoom.js'

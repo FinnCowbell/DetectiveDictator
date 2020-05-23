@@ -11,7 +11,6 @@ import PlayerCard from './gameParts/PlayerCard.js'
 export default class Hitler extends React.Component{
   constructor(props){
    super(props);
-   this.socket = this.props.socket;
    this.state = {
     order: [101,102,103,104,105,106,7],
     memberships: {
@@ -124,16 +123,13 @@ export default class Hitler extends React.Component{
       }
     })
   }
-  componentWillUnmount(){
-    delete this.socket;
-  }
   changeSelectedPlayer(PID){
     this.setState({
       selectedPlayer: PID
     });
   }
   moveBullet(bulletIndex){
-    this.socket.emit('move bullet', {bulletIndex: bulletIndex});
+    this.props.socket.emit('move bullet', {bulletIndex: bulletIndex});
   }
   getPlayerAction(event){
     //Based on event info, constructs an 'action' for the player.
@@ -257,7 +253,7 @@ export default class Hitler extends React.Component{
       </div>
       { (alive || event.name == "end game")&&
         <ActionBar    action={action}
-                      socket={this.socket}
+                      socket={this.props.socket}
                       event={event}
                       uiInfo={this.state.uiInfo}
                       selectedPlayer={this.state.selectedPlayer} 

@@ -1,10 +1,10 @@
 import React from 'react'
-import liberalPolicy from '../media/liberal-policy.png';
-import fascistPolicy from '../media/fascist-policy.png';
-import liberalMembership from '../media/fascist-policy.png';
-import fascistMembership from '../media/fascist-policy.png';
-import jaPic from '../media/ja.png';
-import neinPic from '../media/nein.png';
+let liberalPolicy = './media/liberal-policy.png';
+let fascistPolicy = './media/fascist-policy.png';
+let liberalMembership = liberalPolicy;
+let fascistMembership = fascistPolicy;
+let ja = './media/ja.png';
+let nein = './media/nein.png';
 
 export default class ActionBar extends React.Component{
   constructor(props){
@@ -225,11 +225,11 @@ class JaNein extends React.Component{
         <div className="vote-options">
         {isJa ? (
           <div className={`option`}>
-            <img className={"selected"} src={jaPic}/>
+            <img className={"selected"} src={ja}/>
           </div>
         ):(
           <div  className={`option`}>
-            <img className={"selected"} src={neinPic}/>
+            <img className={"selected"} src={nein}/>
           </div>
         )}
         </div>
@@ -240,10 +240,10 @@ class JaNein extends React.Component{
       <div className="action ja-nein">
         <div className="vote-options">
           <div className={`option ${(isJa && this.props.voteReceived) ? "hidden" : ""}`}>
-            <img className={isJa ? "selected" : ""} onClick={this.setJa} src={jaPic}/>
+            <img className={isJa ? "selected" : ""} onClick={this.setJa} src={ja}/>
           </div>
           <div  className={`option  ${(!isJa && this.props.voteReceived) ? "hidden" : ""}`}>
-            <img className={isJa === false ? "selected" : ""} onClick={this.setNein} src={neinPic}/>
+            <img className={isJa === false ? "selected" : ""} onClick={this.setNein} src={nein}/>
           </div>
         </div>
         <button onClick={this.tryConfirm} className={`vote-button ${this.props.voteReceived ? "hidden" : ""}`}>

@@ -1,11 +1,11 @@
 import React from 'react'
-import bullet from '../media/Bullet.png';
-import ja from '../media/ja.png';
-import nein from '../media/nein.png';
-import sent from '../media/fist.png';
+let bullet = './media/bullet.png';
+let ja = './media/ja.png';
+let nein = './media/nein.png';
+let sent = './media/fist.png';
 let presHat = './media/president-hat.png';
 let chanHat = './media/chancellor-hat.png';
-
+let bulletHole = './media/bullet-holes.png'
 export default class PlayerSidebar extends React.Component{
   constructor(props){
     super(props);
@@ -74,12 +74,13 @@ export default class PlayerSidebar extends React.Component{
       return false;
     };
     let cantSelect = new Set();
+    let selectEvents=new Set(['chancellor pick', 'president pick', 'president kill'])
     if(event.name == 'chancellor pick' || event.name == 'president pick'){
       cantSelect.add(prevChan);
       cantSelect.add(prevPres);
       cantSelect.add(presID);
     }
-    if(player.alive && !cantSelect.has(""+player.PID)){
+    if(player.alive && !cantSelect.has(""+player.PID) && selectEvents.has(event.name)){
       return true;
     }
     return false;
@@ -136,8 +137,7 @@ export default class PlayerSidebar extends React.Component{
               }}>
           {status == "president" && <img className="pres hat" src={presHat}/>/*He get hat*/}
           {status == "chancellor" && <img className="chan hat" src={chanHat}/>/*He also get hat*/}
-          <div className={'status ' + status}>
-          </div>
+          {status == "dead" && <img className="bullet-holes" src={bulletHole}/>}
           <h2 className="username">{players[PID].username}</h2>
         </div>
       </div>
