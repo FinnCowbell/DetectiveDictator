@@ -1,0 +1,101 @@
+@use '_fonts.scss';
+$background-color: #2b2b2b;
+@font-face {
+  font-family: 'FasterOne';
+  src: url(./fonts/FasterOne-Regular.ttf) format('truetype');
+}
+.lobby-window, .menu-window{
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height:100%;
+  background-color: rgba(0, 0, 0, 0.671);
+  z-index: 99;
+  display: flex;
+  .content{
+    width: 500px;
+    height: 500px;
+    background-color: gray;
+    border-radius: 25px;
+    border-bottom: 5px solid rgb(192, 192, 192);
+    box-shadow: 5px 5px 10px rgb(0, 0, 0);
+    padding: 20px;
+  }
+  .site-header{
+    text-align: center;
+    .site-title{
+      font-family: FasterOne;
+      font-size: 2em;
+    };
+    .lobby-title{
+      font-family: Squada;
+      font-size: 1.5em;
+      cursor: pointer;
+      &:hover{
+        color: rgb(32, 32, 32);
+      }
+    };
+  }
+  .new-player-form{ 
+    display: flex;
+    justify-content: center;
+    font-family: Squada;
+    margin: 10px;
+  }
+  .player-list{
+    font-family: Squada;
+    font-size: 1.25em;
+    ul{
+      list-style-type: none;
+    }
+    .leader{
+      color: goldenrod;
+    }
+
+    .you{
+      font-weight: bold;
+    }
+  }    
+  .main-menu{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 300px;
+    justify-content: space-evenly;
+    font-family: Squada;
+    .new-lobby{
+      font-size: 2em;
+      width: 300px;
+      border-radius: 10px;
+      border-bottom: 5px solid black;
+      margin: auto;
+    }
+    .existing-lobby{
+      font-size: 2em;
+      margin: 0px 30px;
+      text-align: center;
+      font-family: Squada;
+    }
+  }
+}
+
+@keyframes waveBackground{
+  0%{
+    background-color: #5fc8d8;
+  }
+  100%{
+    background-color: rgb(250, 124, 124);
+  }
+}
+
+.menu-window{
+  animation: waveBackground;
+  animation-iteration-count: infinite;
+  animation-direction: alternate-reverse;
+  animation-timing-function: ease-in-out;
+  animation-duration: 5s;
+}

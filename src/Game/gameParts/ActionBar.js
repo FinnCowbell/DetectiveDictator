@@ -9,7 +9,6 @@ import neinPic from '../media/nein.png';
 export default class ActionBar extends React.Component{
   constructor(props){
     super(props)
-    this.socket = this.props.socket;
     // this.confirmAction = this.confirmAction.bind(this);
     this.pickPresident = this.pickPresident.bind(this);
     this.pickChancellor = this.pickChancellor.bind(this);
@@ -19,7 +18,7 @@ export default class ActionBar extends React.Component{
     this.doneViewing = this.doneViewing.bind(this);
   }
   pickChancellor(){
-    let socket = this.socket;
+    let socket = this.props.socket;
     let selectedPlayer = this.props.selectedPlayer;
     if(this.props.selectedPlayer != null){
       socket.emit('chancellor picked', {
@@ -31,31 +30,31 @@ export default class ActionBar extends React.Component{
     if(isJa == null){
       return;
     }
-    this.socket.emit('cast vote', {vote: isJa});
+    this.props.socket.emit('cast vote', {vote: isJa});
   }
   discardPolicy(policyIndex){
     if(policyIndex == null){
       return;
     }
     let actions = {
-      "your president discard": (()=>this.socket.emit('president discarding', {policyIndex : policyIndex})),
-      "your chancellor discard": (()=>this.socket.emit('chancellor discarding', {policyIndex : policyIndex})),
+      "your president discard": (()=>this.props.socket.emit('president discarding', {policyIndex : policyIndex})),
+      "your chancellor discard": (()=>this.props.socket.emit('chancellor discarding', {policyIndex : policyIndex})),
     }
     actions[this.props.action]();
   }
   //Executive Actions
   doneViewing(){
-    this.socket.emit('president done');
+    this.props.socket.emit('president done');
   }
   viewPlayer(PID){
     if(PID != null){
-      this.socket.emit('president investigate request', {investigatee: PID})
+      this.props.socket.emit('president investigate request', {investigatee: PID})
     }
   }
   pickPresident(){
     let selectedPlayer = this.props.selectedPlayer;
     if(this.props.selectedPlayer != null){
-      this.socket.emit('president picked', {
+      this.props.socket.emit('president picked', {
         pickedPresident: selectedPlayer,
       });
     }
@@ -63,7 +62,7 @@ export default class ActionBar extends React.Component{
   killPlayer(PID){
     let selectedPlayer = this.props.selectedPlayer;
     if(this.props.selectedPlayer != null){
-      this.socket.emit('president kill request', {victim: PID})
+      this.props.socket.emit('president kill request', {victim: PID})
     }
   }
   render(){
@@ -230,7 +229,7 @@ class JaNein extends React.Component{
           </div>
         ):(
           <div  className={`option`}>
-            <img className={"selected"}src={neinPic}/>
+            <img className={"selected"} src={neinPic}/>
           </div>
         )}
         </div>
@@ -244,7 +243,7 @@ class JaNein extends React.Component{
             <img className={isJa ? "selected" : ""} onClick={this.setJa} src={jaPic}/>
           </div>
           <div  className={`option  ${(!isJa && this.props.voteReceived) ? "hidden" : ""}`}>
-            <img className={isJa === false && "selected"} onClick={this.setNein} src={neinPic}/>
+            <img className={isJa === false ? "selected" : ""} onClick={this.setNein} src={neinPic}/>
           </div>
         </div>
         <button onClick={this.tryConfirm} className={`vote-button ${this.props.voteReceived ? "hidden" : ""}`}>

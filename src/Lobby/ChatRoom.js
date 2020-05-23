@@ -2,7 +2,6 @@ import React from 'react'
 export default class ChatRoom extends React.Component{
   constructor(props){
     super(props)
-    this.socket = this.props.socket;
     this.state={
       message: "",
       messages: [],
@@ -14,7 +13,7 @@ export default class ChatRoom extends React.Component{
     this.sendChat = this.sendChat.bind(this)
   }
   componentDidMount(){
-    this.socket.on('chat recv msg', (arg)=>this.postChat(arg.msg));
+    this.props.socket.on('chat recv msg', (arg)=>this.postChat(arg.msg));
   }
   handleSubmit(e){
     if(e.keyCode == 13){
@@ -36,7 +35,7 @@ export default class ChatRoom extends React.Component{
       username: this.props.username,
       message: this.state.message,
     }
-    this.socket.emit('chat send msg', {msg: msg});
+    this.props.socket.emit('chat send msg', {msg: msg});
     this.setState({
       message: ""
     });

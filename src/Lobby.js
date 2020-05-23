@@ -8,7 +8,6 @@ import {default as Game} from './Game/Hitler.js';
 export default class Lobby extends React.Component{
   constructor(props){
     super(props);
-    this.socket = this.props.socket;
     this.state = {
       PID: null,
       username: null,
@@ -25,7 +24,7 @@ export default class Lobby extends React.Component{
     this.startGame = this.startGame.bind(this);
   }
   componentDidMount(){
-    const socket = this.socket;
+    let socket = this.props.socket;
     socket.on('lobby init info',(arg)=>{
       this.setState({
         lobbyExists: true,
@@ -48,20 +47,25 @@ export default class Lobby extends React.Component{
       })
     });
     socket.on('disconnect', ()=>{
-      this.leaveLobby(`Lost connection to ${this.lobbyID}`);
+      this.leaveLobby(`Lost connection to ${this.props.lobbyID}`);
     })
+    socket.on('alert', (alert)=>{
+      this.props.setAlert(alert);
+    });
     //establishing lobby connection needs to occur AFTer signals have been triggered.
     socket.emit('connection init request');
   }
   componentWillUnmount(){
-    this.socket.close();
-    delete this.socket;
+    this.props.socket.close();
   }
-  leaveLobby(reason){
+  leaveLobby(reason = null){
+    if(reason){
+      this.props.setAlert(reason);
+    }
     this.props.setLobbyID(null);
   }
   connect(username){
-    this.socket.emit("join lobby", {
+    this.props.socket.emit("join lobby", {
       username: username,
     });
     this.setState({
@@ -72,18 +76,18 @@ export default class Lobby extends React.Component{
     let arg = {
       PID: PID,
     }
-    this.socket.emit("rejoin lobby", arg);
+    this.props.socket.emit("rejoin lobby", arg);
   }
   kickPlayer(PID){
     const you = this.state.players[this.state.PID];
     if(you.isLeader){
-      this.socket.emit('request kick', {
+      this.props.socket.emit('request kick', {
         kickee: PID,
       });
     }
   }
   startGame(){
-    this.socket.emit('game init');
+    this.props.socket.emit('game init');
   }
   render(){
     let connectionForm;
@@ -101,9 +105,11 @@ export default class Lobby extends React.Component{
     <NewPlayerForm connect={this.connect}/>; 
     return(
       <div className="window">
-        {(!inLobby || !gameInfo.isRunning) && (<div className="lobby-window">
+        {(!inLobby || !gameInfo.isRunning) && (
+        <div className="lobby-window">
+          <div className="content">
           <Header lobbyID ={lobbyID}/>
-          {!lobbyExists && <LoadingMessage leaveLobby={this.leaveLobby}/>}
+          {!lobbyExists && <LoadingMessage leaveLobby={()=>{this.leaveLobby(null)}}/>}
           {(lobbyExists && !inLobby) && connectionForm}
           <LobbyPlayerList PID={this.state.PID} 
                       players={this.state.players}
@@ -114,9 +120,11 @@ export default class Lobby extends React.Component{
                     onClick={this.startGame}>
               Start Game
             </button>)}
+          </div>
         </div>)}
-        {inLobby && (<ChatRoom socket={this.socket} username={this.state.username}/>)}
-        <Game lobbyID={lobbyID} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.socket}/>
+        {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username}/>)}
+        <Game lobbyID={lobbyID} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
+        
       </div>
     )
   }

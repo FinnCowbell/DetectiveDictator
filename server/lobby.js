@@ -8,7 +8,7 @@ class Lobbies {
    }
   createLobby(devMode=false){
     let lobbyID = this.generateLobbyID();
-    this.lobbies[lobbyID] = new Lobby(this.io,lobbyID,devMode);
+    this.lobbies[lobbyID] = new Lobby(this.io,lobbyID,devMode, 1);
     return this.lobbies[lobbyID];
   }
   getLobby(lobbyID){
@@ -26,20 +26,20 @@ class Lobbies {
 }
 
 class Lobby{
-  constructor(io, lobbyID,devLobby = false, Game=Hitler,  min = 5, max = 10){
+  constructor(io, lobbyID, devMode = false, startingPID, Game=Hitler, min = 5, max = 10){
     let ourio = io.of("/"+lobbyID);
     this.ID = lobbyID
     this.io = io.of("/"+lobbyID);
     this.players = {}
     this.disconnectedPlayers = {}
-    this.nextPID = 1;
-    this.game = new Game(ourio, devLobby, this.players, this);
+    this.nextPID = startingPID;
+    this.game = new Game(ourio, devMode, this.players, this);
     // this.chat = new Chat(ourio);
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
     this.MinPlayers = min;
     this.MaxPlayers = max;
-    this.isDev = devLobby;
+    this.devMode = devMode;
     this._sidpid = {}
     this.activateSignals();
   }
@@ -207,9 +207,12 @@ class Lobby{
     }
     return args
   }
-  initializeGame(){
-    if(this.nPlayers < this.MinPlayers && !this.isDev){
+  initializeGame(socket){
+    if(this.nPlayers < this.MinPlayers && !this.devMode){
+      socket.emit('alert', `You need at least ${this.MinPlayers} to play.`);
       return false; //Only condition to not play game
+    } else if(!this.getPlayerBySocketID(socket.id).isLeader){
+      socket.emit('alert', "You cannot start the game!")
     }
     this.game.init();
   }
@@ -227,7 +230,7 @@ class Lobby{
       socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
       socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
-      socket.on('game init', ()=>this.initializeGame());
+      socket.on('game init', ()=>this.initializeGame(socket));
       // socket.on('activate game signals', ()=>this.game.activateGameSignals(socket));
       // if(this.game.running){
       //   this.game.activateGameSignals(socket);

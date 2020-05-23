@@ -224,8 +224,10 @@ class Hitler{
     //Players don't change very much (Except on round-ending events).
     if(!this.isDevMode){
       this.previousPresPID = this.presidentPID;
-      this.previousChanPID = this.chancellorPID;
+      this.previousChanPID = this.chancellorPID;  
     }
+    this.presidentPID = null;
+    this.chancellorPID = null;
     if(nextPresident){ //If the next president has been pre-chosen,
       this.presidentPID = nextPresident;
     } else{
@@ -578,8 +580,9 @@ class Hitler{
   evalExecutiveAction(){
     if(this.gameStyle == 0){ //5-6 players
         switch(this.fasBoard){
-          case 1:
-            this.currentEvent = "president kill";
+          // case 1:
+          //   this.currentEvent = "president kill";
+          //   break;
           case 3:
             this.currentEvent = "president peek";
             break;

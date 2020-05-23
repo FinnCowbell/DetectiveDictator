@@ -90,10 +90,8 @@ export default class Hitler extends React.Component{
       })
     })
     socket.on('new event', (arg)=>{
-      console.log("________");
       console.log("NEW EVENT!");
       console.log(arg.event);
-      console.log("________");
       const rounds = this.state.rounds;
       let events = rounds[rounds.length-1].events;
       events = events.concat([arg.event]);
@@ -203,6 +201,7 @@ export default class Hitler extends React.Component{
         details[change] = event[change]
       }
     }
+    console.log(details);
     return {
       name: events[eventIndex].name,
       details: details

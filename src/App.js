@@ -2,20 +2,27 @@ import { hot } from "react-hot-loader/root";
 import React from 'react';
 import io from 'socket.io-client'
 
+import Status from './Alert.js';
 import Lobby from './Lobby.js';
 import MainMenu from './MainMenu.js';
 
 class App extends React.Component{
   constructor(props){
     super(props)
+    let socket;
+    if(this.props.lobbyID){
+      socket = io.connect(this.props.socketURL + `/${this.props.lobbyID}`);
+    } else {
+      socket = io.connect(this.props.socketURL + `/menu`);
+    }
     this.state={
       lobbyID: this.props.lobbyID || null,
-      socket: this.props.lobbyID ? 
-      io.connect(this.props.socketURL + `/${this.props.lobbyID}`) : 
-      io.connect(this.props.socketURL + "/menu"),
+      socket: socket,
     }
     this.setLobbyID = this.setLobbyID.bind(this);
+    this.setAlert = this.setAlert.bind(this);
   }
+
   setLobbyID(newID){
     this.state.socket.close();
     this.setState({
@@ -23,13 +30,25 @@ class App extends React.Component{
       socket: io.connect(this.props.socketURL + (newID ? `/${newID}` : "/menu"))
     });
   }
-  render(){
-    let socket = this.state.socket;
-    if(this.state.lobbyID){
-      return (<Lobby socket={socket} lobbyID={this.state.lobbyID} setLobbyID={this.setLobbyID}/>)
-    } else{
-      return (<MainMenu socket={socket} setLobbyID={this.setLobbyID}/>)
+
+  setAlert(message){
+    if(typeof message == 'string'){
+      this.setState({
+      message: message,
+      })
     }
+  }
+  
+  render(){
+    let content = this.state.lobbyID ? 
+      <Lobby socket={this.state.socket} lobbyID={this.state.lobbyID} setAlert={this.setAlert} setLobbyID={this.setLobbyID}/> : 
+      <MainMenu socket={this.state.socket} setLobbyID={this.setLobbyID}/>;
+    return(
+      <div>
+        <Status message={this.state.message}/>
+        {content}
+      </div>
+    )
   }
 }
 

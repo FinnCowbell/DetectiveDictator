@@ -45,7 +45,6 @@ export default class PlayerSidebar extends React.Component{
     let votes = event.details.votes || {};
     let vote = votes[player.PID];
     let voted = this.props.uiInfo.voted || {};
-    console.log(this.props.uiInfo);
     if(event.name == 'chancellor vote' && voted[player.PID]){
       return "sent";
     }
@@ -66,19 +65,23 @@ export default class PlayerSidebar extends React.Component{
     //You must be president
     const yourPID = this.props.yourPID;
     let event = this.props.event;
-    const playersAreSelectable = yourPID == event.details.presidentPID;
-    let unselectablePlayers = new Set([event.details.presidentPID]);
-    if(event.name == 'chancellor pick'){
-      unselectablePlayers.add(event.details.previousChanPID);
-      unselectablePlayers.add(event.details.previousPresPID);
+    let presID = event.details.presidentPID;
+    let chanID = event.details.chancellorPID;
+    let prevPres = event.details.previousPresPID;
+    let prevChan = event.details.previousChanPID;
+    const youArePresident = yourPID == presID;
+    if(yourPID != presID){
+      return false;
+    };
+    let cantSelect = new Set();
+    if(event.name == 'chancellor pick' || event.name == 'president pick'){
+      cantSelect.add(prevChan);
+      cantSelect.add(prevPres);
+      cantSelect.add(presID);
     }
-    if(event.name == 'president pick'){
-      unselectablePlayers.add(event.details.chancellorPID);
-    }
-    if(playersAreSelectable && player.PID != yourPID && player.alive != false){//you can never select yourself
-      if(!unselectablePlayers.has(player.PID)){
-        return true;
-      }
+    if(player.alive && !cantSelect.has(""+player.PID)){
+      console.log(`PID: ${player.PID} previousChanPID: ${event.details.previousChanPID}`)
+      return true;
     }
     return false;
   }
