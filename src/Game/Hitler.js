@@ -104,13 +104,17 @@ export default class Hitler extends React.Component{
       let endState = arg.endState;
       const rounds = this.state.rounds;
       this.setState({
+        memberships: endState.memberships,
         rounds: rounds.concat([endState]),
       })
     }); 
     //Sent by the player with the bullet.
     socket.on('new ui event', (arg)=>{
-      let uiInfo = this.state.uiInfo;
+      const uiInfo = this.state.uiInfo;
       if(arg.name == 'player voted'){
+        if(arg.PID == this.props.yourPID){
+          uiInfo.voteReceived = true;
+        }
         uiInfo.voted[arg.PID] = true;
         this.setState({
           uiInfo: uiInfo
@@ -207,9 +211,9 @@ export default class Hitler extends React.Component{
     let round = rounds[rounds.length-1];
     let players = round.players;
     let order = this.state.order;
+    let event = this.getFullEvent();
     let memberships = this.state.memberships;
     let gameStyle = Math.floor((order.length - 5)/ 2);
-    let event = this.getFullEvent();
     let action = this.getPlayerAction(event);
     let yourPID = this.props.yourPID;
     let alive = true;

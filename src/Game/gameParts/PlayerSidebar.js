@@ -120,11 +120,6 @@ export default class PlayerSidebar extends React.Component{
             }
           </div>
          )}
-        <div className={'vote ' + voteStatus}>
-          {voteStatus == "ja" ? (<img src={ja}/>) : null}
-          {voteStatus == "nein" ? (<img src={nein}/>):null}
-          {voteStatus == "sent" ? (<img src={sent}/>):null}
-        </div>
 
         <div className={`player-bar ${isSelected ? "selected" : ""} ${selectable ? "selectable" : ""}`} 
               onClick={()=>{
@@ -138,6 +133,11 @@ export default class PlayerSidebar extends React.Component{
           {status == "president" && <img className="pres hat" src={presHat}/>/*He get hat*/}
           {status == "chancellor" && <img className="chan hat" src={chanHat}/>/*He also get hat*/}
           {status == "dead" && <img className="bullet-holes" src={bulletHole}/>}
+          <div className={'vote ' + voteStatus}>
+            {voteStatus == "ja" ? (<img src={ja}/>) : null}
+            {voteStatus == "nein" ? (<img src={nein}/>):null}
+            {voteStatus == "sent" ? (<img src={sent}/>):null}
+          </div>
           <h2 className="username">{players[PID].username}</h2>
         </div>
       </div>

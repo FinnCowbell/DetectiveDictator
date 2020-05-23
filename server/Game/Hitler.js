@@ -548,6 +548,9 @@ class Hitler{
       }
       this.victim = arg.victim;
       this.players[arg.victim].alive = false;
+      if(this.victim == this.hitler.PID){
+        return this.endGame(0,1);
+      }
       this.currentEvent = 'player killed'
       this.buildEvent();
       this.sendLatestEvent();
