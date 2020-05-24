@@ -2,50 +2,67 @@ var Hitler = require('./Game/Hitler')
 class Lobbies {
   constructor(io,Game){
     this.io = io;
+    this.idWordLength = 2;
     this.Game = Game;
     this.lobbies = {};
     this.words = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
    }
   createLobby(devMode=false){
-    let lobbyID = this.generateLobbyID();
-    this.lobbies[lobbyID] = new Lobby(this.io,lobbyID,devMode, 1);
+    let lobbyID, lobby, nLobbies, maxLobbies; 
+    //If we're running out of words at our current length, increase the length.
+    nLobbies = Object.keys(this.lobbies).length;
+    maxLobbies = Math.pow(this.words.length, this.idWordLength);
+    if(nLobbies >= maxLobbies - 1){
+      this.idWordLength++;
+    }
+    
+    //Confirms we dontt overwrite existing lobbies.
+    do{
+      lobbyID = this.generateLobbyID(this.idWordLength);
+    } while(this.getLobby(lobbyID));
+    
+    lobby = new Lobby(this.io,lobbyID,devMode, 1, Hitler, 5, 10 );
+    this.lobbies[lobbyID] = lobby;
     return this.lobbies[lobbyID];
   }
+
   getLobby(lobbyID){
     return this.lobbies[lobbyID]
   }
-  generateLobbyID(len = 2){
+
+  generateLobbyID(len = 3){
     let nextWord, str = ""
-     while(len > 0){
+    while(len > 0){
       nextWord = this.words[Math.floor(Math.random()*this.words.length)];
       str += nextWord;
       len--;
     }
     return str
   }
+
 }
 
 class Lobby{
-  constructor(io, lobbyID, devMode = false, startingPID, Game=Hitler, min = 5, max = 10){
-    let ourio = io.of("/"+lobbyID);
-    this.ID = lobbyID
-    this.io = io.of("/"+lobbyID);
-    this.players = {}
-    this.disconnectedPlayers = {}
+  constructor(io, lobbyID, devMode = false, startingPID, Game=Hitler, min = 0, max = 100){
+    let ourio = io.of(`/${lobbyID}`)
+    this.ID = lobbyID;
+    this.io = ourio;
+    this.players = {};
+    this.disconnectedPlayers = {};
+    this._sidpid = {};
     this.nextPID = startingPID;
     this.game = new Game(ourio, devMode, this.players, this);
-    // this.chat = new Chat(ourio);
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
     this.MinPlayers = min;
     this.MaxPlayers = max;
     this.devMode = devMode;
-    this._sidpid = {}
     this.activateSignals();
   }
 
   error(message){
-    this.log("ERROR! " + message);
+    this.log("<ERROR>" + message);
+    return -1;
   }
   log(message){
     if(typeof message == 'string'){
@@ -117,8 +134,7 @@ class Lobby{
   reconnectPlayer(PID, socket){ 
     //Linking disconnected player PID to socket.
     if(!this.disconnectedPlayers[PID]){
-      this.error("Reconnect: Player not in disconnected list! (were they kicked?)");
-      return false;
+      return this.error("Reconnect: Player not in disconnected list! (were they kicked?)");
     }
     let SID = socket.id
     let player = this.disconnectedPlayers[PID];
@@ -129,9 +145,8 @@ class Lobby{
     player.connected = true;
     this.nConnected++;
     this.log(`${player.username} and PID ${PID} reconnected with SID = ${SID}`)
+
     //If the game's running and the game handles reconnecting, 
-    /*Because gamers are initialized when the game starts, sometimes games need to
-    rerun initialization functions. */
     if(this.game.reconnectPlayer && this.game.running){
       this.game.reconnectPlayer(socket);
     }
@@ -231,10 +246,6 @@ class Lobby{
       socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
       socket.on('game init', ()=>this.initializeGame(socket));
-      // socket.on('activate game signals', ()=>this.game.activateGameSignals(socket));
-      // if(this.game.running){
-      //   this.game.activateGameSignals(socket);
-      // }
     })
   }
 }
@@ -246,7 +257,7 @@ class Player{
     this.PID = PID;
     this.SID = SID;
     this.socket = socket;
-    this.connected = true; //True by default, changes to false on disconnect.
+    this.connected = true; //Changes to false on disconnect.
   }
   getPublicInfo(){
     //publicInfo: the stuff that every player gets to know.
@@ -258,20 +269,6 @@ class Player{
               }
     return arg;
   }
-}
-
-// class Chat {
-//   constructor(io){
-//     io.on('chat send msg', (arg)=>{
-//       console.log("Chat!");
-//       io.emit('chat recv msg', (arg));
-//     });
-//   }
-// }
-
-//If i need to check the length of object.
-function getObjectLength(obj){
-  return Object.keys(obj).length;
 }
 
 module.exports = {Lobbies, Lobby, Player};
