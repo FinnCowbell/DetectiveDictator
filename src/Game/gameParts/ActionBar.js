@@ -1,8 +1,8 @@
 import React from 'react'
 import liberalPolicy from '../media/liberal-policy.png';
 import fascistPolicy from '../media/fascist-policy.png';
-let liberalMembership = liberalPolicy;
-let fascistMembership = fascistPolicy;
+import liberalMembership from '../media/liberal-membership.png';
+import fascistMembership from '../media/fascist-membership.png';
 import ja from '../media/hands/ja.png';
 import nein from '../media/hands/nein.png';
 

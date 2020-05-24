@@ -10,6 +10,7 @@ class Hitler{
     this.isDevMode = devMode;
     this.players = players;
     this.memberships = {};
+    this.currentEvent = "pre game";
     this.order = []; //Order of players by PID.
     this.currentPlayer = 0; //Next President in order List.
     this.presidentPID = null; 
@@ -17,7 +18,6 @@ class Hitler{
     this.previousPresPID = null;
     this.previousChanPID = null;
     this.hitler = null;
-    this.currentEvent = "pre game";
     this.fasBoard = 0; //0-6
     this.libBoard = 0; //0-6
     this.marker = 0; //0-3. If it turns to 3 it should be set to 0.
@@ -304,7 +304,6 @@ class Hitler{
         let round = this.rounds[this.rounds.length - 1]
         let event = round.events[round.events.length - 1];
         let policies = event.details.secret.policies.slice();
-        console.log("discarded index:" + event.details.secret.discardedIndex);
         policies.splice(event.details.secret.discardedIndex, 1);
         eventSecret = {
           PID: this.chancellorPID,
@@ -407,11 +406,9 @@ class Hitler{
     let theirPID = this.lobby._sidpid[socket.id];
     socket.on('chancellor picked', (arg)=>{
       if(this.currentEvent != 'chancellor pick'){
-        this.error("Event is not chancellor pick!");
-        return;
+        return this.error("Event is not chancellor pick!");
       } else if(this.presidentPID != theirPID){
-        this.error("Non-president called 'chancellor picked!'");
-        return;
+        return this.error("Non-president called 'chancellor picked!'");
       }
       this.chancellorPID = arg.pickedChancellor;
       this.currentEvent = 'chancellor vote';
@@ -424,14 +421,11 @@ class Hitler{
       let round = this.rounds[this.rounds.length - 1];
       let event = round.events[round.events.length - 1];
       if(event.name != 'chancellor vote'){
-        this.error('Vote cast at invalid time!');
-        return;
+        return this.error('Vote cast at invalid time!');
       } else if(!player.alive){
-        this.error('Dead men tell no tales!');
-        return;
+        return this.error('Dead men tell no tales!');
       } if(this.votes[theirPID] == 0 || this.votes[theirPID] == 1){
-        this.error('Vote already exists!');
-        return;
+        return this.error('Vote already exists!');
       }
       this.votes[theirPID] = arg.vote;
       this.nVoted++;
@@ -479,11 +473,9 @@ class Hitler{
       let round = this.rounds[this.rounds.length - 1];
       let event = round.events[round.events.length - 1];
       if(this.presidentPID != theirPID){
-        this.error("Non-president trying to discard");
-        return;
+        return this.error("Non-president trying to discard");
       } else if(event.name != 'president discard'){
-        this.error("president discarding during invalid event!");
-        return;
+        return this.error("president discarding during invalid event!");
       }
       let policyIndex = arg.policyIndex;
       this.policies.discard(event.details.secret.policies[policyIndex]);
@@ -498,19 +490,15 @@ class Hitler{
       let round = this.rounds[this.rounds.length - 1];
       let event = round.events[round.events.length - 1];
       if(this.chancellorPID != theirPID){
-        this.error("Non-chancellor trying to discard");
-        return;
+        return this.error("Non-chancellor trying to discard");
       } else if(event.name != 'chancellor discard'){
-        this.error("chancellor discarding during invalid event!");
-        return;
+        return this.error("chancellor discarding during invalid event!");
       }
       let policyIndex = arg.policyIndex;
       this.policies.discard(event.details.secret.policies[policyIndex]);
       event.details.secret.discardedIndex = policyIndex;
       let placedPolicy = event.details.secret.policies.slice();
       placedPolicy.splice(policyIndex, 1)[0];
-      this.log('policyIndex: '+ policyIndex);
-      this.log('placedPolicy: ' + placedPolicy);
       this.enactPolicy(placedPolicy);
     })
     socket.on('president done', ()=>{
@@ -569,7 +557,7 @@ class Hitler{
     //enacting a policy checks for executive actions. Placing a policy does not.
     let endedGame = this.placePolicy(value);
     if(!endedGame){
-      //Wait WAIT_TIME mS before continuing the game.
+      //Wait WAIT_TIME before continuing the game.
       setTimeout(()=>{
         if(value == 1){
           this.evalExecutiveAction();
@@ -583,69 +571,50 @@ class Hitler{
   evalExecutiveAction(){
     if(this.gameStyle == 0){ //5-6 players
         switch(this.fasBoard){
-          case 1:
-            this.currentEvent = "president investigate";
-            break;
           case 3:
-            this.currentEvent = "president peek";
-            break;
+            this.currentEvent = "president peek"; break;
           case 4:
-            this.currentEvent = "president kill";
-            break;
+            this.currentEvent = "president kill"; break;
           case 5:
-            this.currentEvent = "president kill";
-            break;
+            this.currentEvent = "president kill"; break;
           default:
             this.newRound();
             return;
-            break;
         }
         this.buildEvent();
         this.sendLatestEvent();
     } else if(this.gameStyle == 1){ //7-8 players
       switch(this.fasBoard){
         case 2:
-          this.currentEvent = "president investigate"
-          break;
+          this.currentEvent = "president investigate"; break;
         case 3:
-          this.currentEvent = "president pick";
-          break;
+          this.currentEvent = "president pick"; break;
         case 4:
-          this.currentEvent = "president kill";
-          break;
+          this.currentEvent = "president kill"; break;
         case 5:
-          this.currentEvent = "president kill";
-          break;
+          this.currentEvent = "president kill"; break;
         default:
           this.newRound();
           return;
-          break;
       }
     } else if(this.gameStyle == 2){ // 9-10 players
       switch(this.fasBoard){
         case 1:
-          this.currentEvent = "president investigate";
-          break;
+          this.currentEvent = "president investigate"; break;
         case 2:
-          this.currentEvent = "president investigate";
-          break;
+          this.currentEvent = "president investigate"; break;
         case 3:
-          this.currentEvent = "president pick";
-          break;
+          this.currentEvent = "president pick"; break;
         case 4:
-          this.currentEvent = "president kill";
-          break;
+          this.currentEvent = "president kill"; break;
         case 5:
-          this.currentEvent = "president kill";
-          break;
+          this.currentEvent = "president kill"; break;
         default:
           this.newRound();
           return;
-          break;
       }
     } else{
-      this.error("Gamestyle incorrectly set!");
-      return;
+      return this.error("Gamestyle incorrectly set!");
     }
     this.buildEvent();
     this.sendLatestEvent();
@@ -666,8 +635,7 @@ class Hitler{
         return 1;
       }
     } else{
-      this.error(`Policy was ${value}, not 1 or 0!`);
-      return -1;
+      return this.error(`Policy was ${value}, not 1 or 0!`);
     }
     if(value == 1){
       this.currentEvent = 'fascist policy placed';
@@ -678,13 +646,9 @@ class Hitler{
     this.sendLatestEvent();
     return 0;
   }
-  // checkExecutiveAction(){
-  //   return;
-  // }
   endGame(winner, reason){
     //winner: 0 = liberal, 1 = fascist.
-    //Liberal reasons: 0 = cards, 1 = killed hitler.
-    //Fascist reasons: 0 = cards, 1 = elected hitler.
+    //Reasons: 0 = cards, 1 = killed/elected hitler.
     let endGame = [["liberal win cards", "liberal win hitler"],["fascist win cards","fascist win hitler"]]
     this.rounds.push({
       players: this.getPlayerInfo(),
@@ -710,7 +674,6 @@ class Hitler{
     })
     let newRound = this.rounds[this.rounds.length -1];
     this.io.emit("end game", {endState: newRound});
-
   }
   checkMarker(){
     if(this.marker == 3){
@@ -747,7 +710,10 @@ module.exports = Hitler;
    chancellor vote
    president discard (implies vote passed)
    chancellor discard
-   enact policy
+   enactPolicy() and placePolicy()
+    -liberal policy placed
+    -fascist policy placed
+
    president pick
    president kill
    president examine
@@ -764,10 +730,4 @@ module.exports = Hitler;
       -hitler voted in, 
       -hitler is killed, 
       -enough policies are voted in.
-
-*** Player Specific Events ***
-  These are events where certain players get explicit information that other players do not.
-  -When the event occurs they explicitly ask for the info.
-    -president discard
-    -chancellor discard
 */
