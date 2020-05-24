@@ -1,10 +1,10 @@
 import React from 'react'
-let libBoard = './media/boards/liberal.png';
-let Fascist56 = './media/boards/fascist56.png';
-let Fascist78 = './media/boards/fascist78.png';
-let Fascist910 = './media/boards/fascist910.png'
-let libPolicy = "./media/liberal-policy.png";
-let fasPolicy = "./media/fascist-policy.png";
+import libBoard from '../media/boards/liberal.png';
+import Fascist56 from '../media/boards/fascist56.png';
+import Fascist78 from '../media/boards/fascist78.png';
+import Fascist910 from '../media/boards/fascist910.png'
+import libPolicy from "../media/liberal-policy.png";
+import fasPolicy from "../media/fascist-policy.png";
 //Boards don't need a state.
 class LibBoard extends React.Component{
   constructor(props){

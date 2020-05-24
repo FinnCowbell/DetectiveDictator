@@ -1,4 +1,5 @@
 import React from 'react'
+
 export default function StatusBar(props){
   let president, presidentName, presidentPID;
   let chancellor, chancellorName, chancellorPID; 

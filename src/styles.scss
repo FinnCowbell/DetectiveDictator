@@ -1,22 +1,7 @@
 @import 'scss/fonts';
 @import 'scss/lobby';
 @import 'scss/alert';
-// @font-face {
-//   font-family: 'Germania';
-//   src: url(./fonts/GermaniaOne.ttf) format('truetype');
-// }
-// @font-face {
-//   font-family: 'Potsdam';
-//   src: url(./fonts/Potsdam.ttf) format('truetype');
-// }
-// @font-face {
-//   font-family: 'Squada';
-//   src: url(./fonts/SquadaOne.ttf) format('truetype');
-// }
-// @font-face {
-//   font-family: 'FasterOne';
-//   src: url(./fonts/FasterOne-Regular.ttf) format('truetype');
-// }
+
 
 $background-color: #1d1d1d;
 $action-bar-dark-color: #2b2b2b;
@@ -91,7 +76,7 @@ h1, h2, h3, h4{
   padding: 10px;
   border-bottom: .1px transparent solid;
   background-color: $status-background;
-  border-image: url(./Game/media/StatusBorder2.png) round;
+  border-image: url(./Game/media/border/status-border.png) round;
   border-image-outset: 20px;
   border-image-slice:54 45 52 45;
   padding: 0px 20px 0px 20px;
@@ -196,27 +181,27 @@ h1, h2, h3, h4{
         background-color: $unknown-color;
         border: solid 7px transparent;
         border-image-width: 15px;
-        border-image: url(./Game/media/unknown-border.png) 26 round;
+        border-image: url(./Game/media/border/unknown-border.png) 26 round;
         border-image-outset: 7px;
       }
       &.liberal .player-bar{
         background-color: $liberal-blue;
         border: solid 7px transparent;
         border-image-width: 15px;
-        border-image: url(./Game/media/liberal-border.png) 26 round;
+        border-image: url(./Game/media/border/liberal-border.png) 26 round;
         border-image-outset: 7px;
       }
       &.fascist .player-bar{
         background-color: #e56344;
         border: solid 7px transparent;
-        border-image: url(./Game/media/fascist-border.png) 45 round;
+        border-image: url(./Game/media/border/fascist-border.png) 45 round;
         border-image-width: 15px;
         border-image-slice: 45 51 45 45;
         border-image-outset: 7px;
       }
       &.hitler .player-bar{
         border: solid 7px transparent;
-        border-image: url(./Game/media/hitler-border.png) 45 round;
+        border-image: url(./Game/media/border/hitler-border.png) 45 round;
         border-image-width: 15px;
         border-image-slice: 45 51 45 45;
         border-image-outset: 7px;
@@ -332,7 +317,7 @@ h1, h2, h3, h4{
     align-items: center;
     border-bottom: .1px transparent solid;
     background-color: $status-background;
-    border-image: url(./Game/media/StatusBorder2.png) round;
+    border-image: url(./Game/media/border/status-border.png) round;
     border-image-slice:54 45 52 45;
     padding: 0px 20px 0px 20px;
     border-image-width: 0px 20px 20px 20px;
@@ -367,7 +352,7 @@ h1, h2, h3, h4{
 .action-bar{
   background-color: gray;
   border: 10px solid transparent;
-  border-image: url(./Game/media/ActionBarBorder.png) 25 round;
+  border-image: url(./Game/media/border/action-border.png) 25 round;
   height: 200px;
   width: 600px;
   margin-top: 10px;

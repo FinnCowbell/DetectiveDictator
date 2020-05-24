@@ -1,10 +1,10 @@
 import React from 'react'
-let liberalPolicy = './media/liberal-policy.png';
-let fascistPolicy = './media/fascist-policy.png';
+import liberalPolicy from '../media/liberal-policy.png';
+import fascistPolicy from '../media/fascist-policy.png';
 let liberalMembership = liberalPolicy;
 let fascistMembership = fascistPolicy;
-let ja = './media/ja.png';
-let nein = './media/nein.png';
+import ja from '../media/hands/ja.png';
+import nein from '../media/hands/nein.png';
 
 export default class ActionBar extends React.Component{
   constructor(props){
@@ -388,7 +388,7 @@ function ViewMembership(props){
   return(
     <div className="action membership">
       <div className="membership-card">
-        <img src={props.membership ? liberalMembership : fascistMembership}/>
+        <img src={props.membership == 0 ? liberalMembership : fascistMembership}/>
       </div>
       <div className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>

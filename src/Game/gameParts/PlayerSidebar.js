@@ -1,11 +1,13 @@
 import React from 'react'
-let bullet = './media/bullet.png';
-let ja = './media/ja.png';
-let nein = './media/nein.png';
-let sent = './media/fist.png';
-let presHat = './media/president-hat.png';
-let chanHat = './media/chancellor-hat.png';
-let bulletHole = './media/bullet-holes.png'
+
+import bullet from '../media/sidebar/bullet.png';
+import ja from '../media/hands/ja.png';
+import nein from '../media/hands/nein.png';
+import sent from '../media/hands/fist.png';
+import presHat from '../media/sidebar/president-hat.png';
+import chanHat from '../media/sidebar/chancellor-hat.png';
+import bulletHole from '../media/sidebar/bullet-holes.png'
+
 export default class PlayerSidebar extends React.Component{
   constructor(props){
     super(props);
@@ -74,11 +76,14 @@ export default class PlayerSidebar extends React.Component{
       return false;
     };
     let cantSelect = new Set();
-    let selectEvents=new Set(['chancellor pick', 'president pick', 'president kill'])
-    if(event.name == 'chancellor pick' || event.name == 'president pick'){
+    let selectEvents=new Set(['chancellor pick', 'president pick', 'president kill', 'president investigate'])
+    if(event.name == 'chancellor pick'){
       cantSelect.add(prevChan);
       cantSelect.add(prevPres);
       cantSelect.add(presID);
+    } else if(event.name == 'president pick'){
+      cantSelect.add(presID);
+      cahtSelect.add(chanID);
     }
     if(player.alive && !cantSelect.has(""+player.PID) && selectEvents.has(event.name)){
       return true;

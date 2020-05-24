@@ -344,7 +344,7 @@ class Hitler{
       case "president investigated":
         eventSecret = {
           PID: this.presidentPID,
-          membership: this.memberships[this.investigatee],
+          membership: this.memberships[this.investigatee] > 0 ? 1 : 0,
         };
         eventDetails = {
           investigatee: this.investigatee,
@@ -515,25 +515,25 @@ class Hitler{
     })
     socket.on('president done', ()=>{
       if(this.currentEvent != "president peek" && this.currentEvent != "president investigated"){
-        this.error("Event isn't valid!");
+        return this.error("Event isn't valid!");
       } else if (this.presidentPID != theirPID){
-        this.error("Non-president sent 'done'");
+        return this.error("Non-president sent 'done'");
       } else{
         this.newRound();
       }
     })
     socket.on('president picked', (arg)=>{
       if(this.currentEvent != "president pick" || this.presidentPID != theirPID){
-        this.error("Cannot pick president!")
+        return this.error("Cannot pick president!")
       } else{
         this.newRound(arg.pickedPresident)
       }
     })
     socket.on('president investigate request', (arg)=>{
       if(this.currentEvent != "president investigate"){
-        this.error("Event isn't Investigate!");
+        return this.error("Event isn't Investigate!");
       } else if (this.presidentPID != theirPID){
-        this.error("Non-president sent 'investigate request'");
+        return this.error("Non-president sent 'investigate request'");
       }
       this.investigatee = arg.investigatee;
       this.currentEvent = 'president investigated'
@@ -542,9 +542,9 @@ class Hitler{
     })
     socket.on('president kill request', (arg)=>{
       if(this.currentEvent != "president kill"){
-        this.error("Event isn't Kill!");
+        return this.error("Event isn't Kill!");
       } else if (this.presidentPID != theirPID){
-        this.error("Non-president sent 'kill request'");
+        return this.error("Non-president sent 'kill request'");
       }
       this.victim = arg.victim;
       this.players[arg.victim].alive = false;
@@ -583,9 +583,9 @@ class Hitler{
   evalExecutiveAction(){
     if(this.gameStyle == 0){ //5-6 players
         switch(this.fasBoard){
-          // case 1:
-          //   this.currentEvent = "president kill";
-          //   break;
+          case 1:
+            this.currentEvent = "president investigate";
+            break;
           case 3:
             this.currentEvent = "president peek";
             break;

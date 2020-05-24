@@ -24,12 +24,16 @@ const config = {
         ]
       },
       {
-        test: /\.png$/,
+        test: /\.(png|jpg|gif)$/,
         use: [
           {
             loader: 'url-loader',
             options: {
-              mimetype: 'image/png'
+              limit: 10240, //10kb max img size.
+              mimetype: true,
+              fallback: 'file-loader',
+              outputPath: 'media',
+              name: '[folder]/[name]-[md4:hash:hex:5].[ext]'
             }
           }
         ]
@@ -40,8 +44,8 @@ const config = {
           {
             loader: 'file-loader',
             options: {
+              outputPath: 'fonts',
               name: '[name].[ext]',
-              outputPath: 'fonts/'
             }
           }
         ]
@@ -59,11 +63,8 @@ const config = {
   },
   devServer: {
     contentBase: './dist',
-    port: 8080,
-    before: function(app, server, compiler){
-      app.use('/lobby/:roomID/', express.static('/dist/Lobby'));
-    }
-  } 
+    port: 8080
+  }
 };
 
 module.exports = config;
