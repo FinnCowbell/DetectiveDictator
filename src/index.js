@@ -6,7 +6,7 @@ import App from './App.js';
 import "./styles.scss";
 
 let SOCKETIO_PORT = 1945;
-let SOCKETIO_SERVER = 'http://localhost';
+let SOCKETIO_SERVER = 'localhost';
 
 // pathname is now ./?lobby=KyleKyle
 let socketURL = SOCKETIO_SERVER + ":" + SOCKETIO_PORT;

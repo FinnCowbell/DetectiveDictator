@@ -154,6 +154,9 @@ export default class Hitler extends React.Component{
       case 'chancellor discard':
         action = youAreChancellor ? 'your chancellor discard' : 'chancellor discard'
         break;
+      case 'veto requested':
+        action = youArePresident ? 'your veto requested' : 'veto requested'
+        break;
       case 'president peek':
         action = youArePresident ? 'your president peek' : 'president peek'
         break;

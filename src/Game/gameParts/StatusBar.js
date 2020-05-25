@@ -34,89 +34,69 @@ export default function StatusBar(props){
   }
   switch(action){
     case 'pre game':
-      description = `Please wait, the game will begin shortly`
-      break;
+      description = `Please wait, the game will begin shortly`; break;
     case 'new round':
-      description = `A new round has begun.`
-      break;
+      description = `A new round has begun.`; break;
     case 'chancellor pick':
-      description = `${presidentName} is picking a chancellor`
-      break;
+      description = `${presidentName} is picking a chancellor`; break;
     case 'your chancellor pick':
-      description = `Pick Your Chancellor.`;
-      break;
+      description = `Pick Your Chancellor.`; break;
     case 'chancellor vote':
-      description = `Vote for President ${presidentName} and Chancellor ${chancellorName}.`;
-      break;
+      description = `Vote for President ${presidentName} and Chancellor ${chancellorName}.`; break;
     case 'chancellor not voted':
-      description = `The vote didn't pass.`
-      break;
+      description = `The vote didn't pass.`; break;
     case 'your president discard':
-      description = `Discard a Policy.`;
-      break;
+      description = `Discard a Policy.`; break;
     case 'president discard':
-      description = `The vote passed and President ${presidentName} is discarding a policy.`
-      break;
+      description = `The vote passed and President ${presidentName} is discarding a policy.`; break;
     case 'your chancellor discard':
-      description = `Discard a Policy.`;
-      break;
+      description = `Discard a Policy.`; break;
     case 'chancellor discard':
-      description = `Chancellor ${chancellorName} is discarding a policy.`;
-      break;
+      description = `Chancellor ${chancellorName} is discarding a policy.`; break;
+    case 'veto requested':
+      description = `Chancellor ${chancellorName} has requested to veto!`; break;
+    case 'your veto requested':
+      description = `Will you veto?`; break;
+    case 'veto accepted':
+      description  = `President ${presidentName} has accepted the veto.`; break;
+    case 'veto denied':
+      description  = `President ${presidentName} has denied the veto.`; break;
     case 'liberal policy placed':
-      description = `A Liberal policy has been placed.`
-      break;
+      description = `A Liberal policy has been placed.`; break;
     case 'fascist policy placed':
-      description = `A Fascist policy has been placed.`
-      break;
+      description = `A Fascist policy has been placed.`; break;
     case 'president peek':
-      description = `President ${presidentName} is viewing the top 3 policy cards.`
-      break;
+      description = `President ${presidentName} is viewing the top 3 policy cards.`; break;
     case 'your president peek':
-      description = `Take a peek. (Rightmost = Topmost Card)`
-      break;
+      description = `Take a peek. (Rightmost = Topmost Card)`; break;
     case 'president investigate':
-      description = `President ${presidentName} is picking someone to investigate.`
-      break;
+      description = `President ${presidentName} is picking someone to investigate.`; break;
     case 'your president investigate':
-      description = `Pick someone to investigate.`
-      break;
+      description = `Pick someone to investigate.`; break;
     case 'president investigated':
-      description = `${presidentName} investigated ${investigateeName}.`
-      break;
+      description = `${presidentName} investigated ${investigateeName}.`; break;
     case 'your president investigated':
-      description = `${presidentName} investigated ${investigateeName}.`
-      break;
+      description = `${presidentName} investigated ${investigateeName}.`; break;
     case 'president pick':
-      description = `President ${presidentName} is selecting the next president.`
-      break;
+      description = `President ${presidentName} is selecting the next president.`; break;
     case 'your president pick':
-      description = `Pick the next president.`
-      break;
-      case 'president kill':
-        description = `President ${presidentName} is picking someone to assassinate.`
-        break;
+      description = `Pick the next president.`; break;
+    case 'president kill':
+      description = `President ${presidentName} is picking someone to assassinate.`; break;
     case 'your president kill':
-      description = `Pick someone to kill.`
-      break;
+      description = `Pick someone to kill.`; break;
     case 'player killed':
-      description = `${victimName} has been murdered.`
-      break;
+      description = `${victimName} has been murdered.`; break;
     case 'liberal win hitler':
-      description = `Hitler has been killed.`
-      break;
+      description = `Hitler has been killed.`; break;
     case 'fascist win hitler':
-      description = `Hitler has been elected.`
-      break;
+      description = `Hitler has been elected.`; break;
     case 'fascist win cards':
-      description = `The Fascists have taken control.`
-      break;
+      description = `The Fascists have taken control.`; break;
     case 'liberal win cards':
-      description = `The Liberals have taken control.`
-      break;
+      description = `The Liberals have taken control.`; break;
     default:
-      description = "Unimplemented event name!"
-      break;
+      description = "Unimplemented event name!"; break;
   }
   let gameStatus;
   return(

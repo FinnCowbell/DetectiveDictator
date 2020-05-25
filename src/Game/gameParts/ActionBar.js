@@ -9,9 +9,10 @@ import nein from '../media/hands/nein.png';
 export default class ActionBar extends React.Component{
   constructor(props){
     super(props)
-    // this.confirmAction = this.confirmAction.bind(this);
     this.pickPresident = this.pickPresident.bind(this);
     this.pickChancellor = this.pickChancellor.bind(this);
+    this.sendVetoRequest = this.sendVetoRequest.bind(this);
+    this.sendVetoConfirmation = this.sendVetoConfirmation.bind(this);
     this.discardPolicy = this.discardPolicy.bind(this);
     this.castVote = this.castVote.bind(this);
     this.viewPlayer = this.viewPlayer.bind(this);
@@ -42,6 +43,21 @@ export default class ActionBar extends React.Component{
     }
     actions[this.props.action]();
   }
+
+  sendVetoRequest(policyIndex){
+    if(policyIndex == null){
+      return;
+    }
+    this.props.socket.emit('veto request', {policyIndex: policyIndex});
+  }
+
+  sendVetoConfirmation(isJa = null){
+    if(isJa == null){
+      return;
+    }
+    this.props.socket.emit('confirm veto request', {isJa: isJa});
+  }
+
   //Executive Actions
   doneViewing(){
     this.props.socket.emit('president done');
@@ -96,7 +112,18 @@ export default class ActionBar extends React.Component{
         content = (
           <DiscardChancellor 
             confirm={this.discardPolicy} 
-            policies={details.secret.policies}/>
+            veto={this.sendVetoRequest}
+            fasBoard={details.fasBoard}
+            policies={details.secret.policies}
+
+            />
+        );
+        break;
+      case 'your veto requested':
+        content = (
+          <JaNein 
+            confirm={this.sendVetoConfirmation}
+            />
         );
         break;
       case 'your president peek':
@@ -301,6 +328,7 @@ class DiscardPresident extends React.Component{
 }
 
 class DiscardChancellor extends React.Component{
+  //Same as President, but with Veto logic and 2 cards.
   constructor(props){
     super(props)
     this.state={
@@ -308,6 +336,7 @@ class DiscardChancellor extends React.Component{
     }
     this.selectCard = this.selectCard.bind(this);
     this.trySubmit = this.trySubmit.bind(this);
+    this.tryVeto = this.tryVeto.bind(this);
   }
   selectCard(i){
     if(i < 0 || i > this.props.policies.length){return;};
@@ -317,6 +346,12 @@ class DiscardChancellor extends React.Component{
     const selectedCard = this.state.selectedCard
     if(selectedCard !== null){
       this.props.confirm(selectedCard)
+    }
+  }
+  tryVeto(){
+    const selectedCard = this.state.selectedCard
+    if(selectedCard !== null){
+      this.props.veto(selectedCard)
     }
   }
   render(){
@@ -329,16 +364,26 @@ class DiscardChancellor extends React.Component{
         onClick={()=>this.selectCard(index)}
       />
     ))
+    let button = (
+      <div className="discard-button" onClick={this.trySubmit}><h2>Discard</h2></div>
+    );
+    if(this.props.fasBoard == 5){
+      button = (
+        <div className="stacked-buttons">
+          <div className="discard-button" onClick={this.trySubmit}>
+            <h3>Discard</h3>
+          </div>
+          <div className="veto-button" onClick={this.tryVeto}>
+            <h3>Veto</h3>
+          </div></div>
+      )
+    }
     return (
       <div className="action discard">
         <div className="policy-cards">
           {cards}
         </div>
-        <div className="discard-button" onClick={this.trySubmit}>
-          <h2>
-            Discard
-          </h2>
-        </div>
+        {button}
       </div>
     )
   }

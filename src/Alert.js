@@ -1,5 +1,5 @@
 import React from 'react';
-export default class Status extends React.Component{
+export default class Alert extends React.Component{
   constructor(props){
     super(props);
     this.state={

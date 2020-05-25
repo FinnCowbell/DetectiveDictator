@@ -26,6 +26,7 @@ class Hitler{
     this.gameStyle = -1; // 0 is 5-6 players, 1 is 7-8, 2 is 9-10
     this.policies = new CardDeck([0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1], true, true);;
     this.rounds = [];
+    this.remainingPolicy = null;
     //Used for voting
     this.votes = {};
     this.nVoted = 0;
@@ -272,6 +273,7 @@ class Hitler{
   buildEvent(secret){
     let eventDetails = {};
     let eventSecret = secret || {};
+    let round, event;
     switch(this.currentEvent){
       case "chancellor pick":
         break;// No extra data to be sent
@@ -301,8 +303,8 @@ class Hitler{
         }
         break;
       case "chancellor discard": 
-        let round = this.rounds[this.rounds.length - 1]
-        let event = round.events[round.events.length - 1];
+        round = this.rounds[this.rounds.length - 1]
+        event = round.events[round.events.length - 1];
         let policies = event.details.secret.policies.slice();
         policies.splice(event.details.secret.discardedIndex, 1);
         eventSecret = {
@@ -313,6 +315,13 @@ class Hitler{
           nInDiscard: this.policies.getAmountDiscarded(),
           nInDraw: this.policies.getAmountRemaining(),
           secret: eventSecret,
+        }
+        break;
+      case "veto requested": 
+        round = this.rounds[this.rounds.length - 1];
+        event = round.events[round.events.length - 1];
+        eventDetails = {
+          nInDiscard: this.policies.getAmountDiscarded(),
         }
         break;
       case "liberal policy placed":
@@ -369,7 +378,7 @@ class Hitler{
       default:
         break;
     }
-    let event = {
+    event = {
       name: this.currentEvent,
       details: eventDetails,
     }
@@ -469,7 +478,6 @@ class Hitler{
       }
     })
     socket.on('president discarding', (arg)=>{
-      let player = this.players[theirPID];
       let round = this.rounds[this.rounds.length - 1];
       let event = round.events[round.events.length - 1];
       if(this.presidentPID != theirPID){
@@ -486,7 +494,6 @@ class Hitler{
     })
     socket.on('chancellor discarding', (arg)=>{
       //arg.policyIndex.
-      let player = this.players[theirPID];
       let round = this.rounds[this.rounds.length - 1];
       let event = round.events[round.events.length - 1];
       if(this.chancellorPID != theirPID){
@@ -498,7 +505,7 @@ class Hitler{
       this.policies.discard(event.details.secret.policies[policyIndex]);
       event.details.secret.discardedIndex = policyIndex;
       let placedPolicy = event.details.secret.policies.slice();
-      placedPolicy.splice(policyIndex, 1)[0];
+      placedPolicy.splice(policyIndex, 1);
       this.enactPolicy(placedPolicy);
     })
     socket.on('president done', ()=>{
@@ -546,6 +553,43 @@ class Hitler{
         this.newRound();
       }, this.WAIT_TIME);
     });
+    socket.on('veto request', (arg)=>{
+      let round = this.rounds[this.rounds.length - 1];
+      let event = round.events[round.events.length - 1];
+      if(this.currentEvent != "chancellor discard" || this.chancellorPID != theirPID || this.fasBoard != 5){
+        return this.error("This player cannot veto now!")
+      }
+      let policyIndex = arg.policyIndex;
+      this.policies.discard(event.details.secret.policies[policyIndex]);
+      let policies = event.details.secret.policies.slice()
+      policies.splice(policyIndex,1);
+      this.remainingPolicy = policies[0];
+      this.currentEvent = 'veto requested'
+      this.buildEvent();
+      this.sendLatestEvent();
+    })
+    socket.on('confirm veto request', (arg)=>{
+      if(this.currentEvent != "veto requested" || this.presidentPID != theirPID || this.fasBoard != 5){
+        return this.error("This player cannot confirm veto now!")
+      }
+      let remainingPolicy = this.remainingPolicy;
+      if(arg.isJa){
+        this.currentEvent = 'veto accepted';
+        this.policies.discard(remainingPolicy);
+        setTimeout(()=>{
+          this.newRound()
+        }, this.WAIT_TIME)
+      } else{
+        this.currentEvent = 'veto denied'
+        setTimeout(()=>{
+          this.enactPolicy(remainingPolicy);
+        }, this.WAIT_TIME);
+      }
+      this.remainingPolicy = null;
+      this.buildEvent();
+      this.sendLatestEvent();
+    })
+
     socket.on('move bullet', (arg)=>{
       if(this.currentEvent == "president kill"){
         arg.name = 'move bullet'

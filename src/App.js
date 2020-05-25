@@ -2,7 +2,7 @@ import { hot } from "react-hot-loader/root";
 import React from 'react';
 import io from 'socket.io-client'
 
-import Status from './Alert.js';
+import Alert from './Alert.js';
 import Lobby from './Lobby.js';
 import MainMenu from './MainMenu.js';
 
@@ -45,7 +45,7 @@ class App extends React.Component{
       <MainMenu socket={this.state.socket} setLobbyID={this.setLobbyID}/>;
     return(
       <div>
-        <Status message={this.state.message}/>
+        <Alert message={this.state.message}/>
         {content}
       </div>
     )
