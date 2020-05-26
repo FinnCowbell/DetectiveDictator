@@ -83,7 +83,7 @@ export default class PlayerSidebar extends React.Component{
       cantSelect.add(presID);
     } else if(event.name == 'president pick'){
       cantSelect.add(presID);
-      cahtSelect.add(chanID);
+      cantSelect.add(chanID);
     }
     if(player.alive && !cantSelect.has(""+player.PID) && selectEvents.has(event.name)){
       return true;
