@@ -50,14 +50,13 @@ h1, h2, h3, h4{
   bottom: 0px;
   left: 20px;
   width: 200px;
-  padding: 10px;
   border-bottom: .1px transparent solid;
-  background-color: $status-background;
   @include status-border();
   h3{
     font-family: Germania;
     text-align: center; 
     font-size: 2em;
+    margin: 0px 15px;
     border-bottom: 3px solid black;
     border-image: url(./Game/media/border/chat-line.png) 33 round;
     border-image-slice:152 153 152 147;
@@ -66,7 +65,10 @@ h1, h2, h3, h4{
     margin-bottom: 15px;
   }
   .sent-messages{
-    overflow: scroll;
+
+    overflow-y: scroll;
+    overflow-x: hidden;
+    word-wrap: break-word;
     height: 0px;
   }
   .chat-input{
@@ -239,6 +241,9 @@ h1, h2, h3, h4{
           top: -30px;
           transform: rotate(-10deg);
         }
+      }
+      .username{
+        overflow-y: hidden;
       }
       order: 0;
       // padding: 10px;

@@ -6,7 +6,7 @@ export default class ChatRoom extends React.Component{
       message: "",
       messages: [],
     }
-
+    this.MAX_LENGTH = 150;
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.postChat = this.postChat.bind(this)
@@ -19,9 +19,14 @@ export default class ChatRoom extends React.Component{
     if(e.keyCode == 13){
       this.sendChat(this.state.message);
     }
-  }
+    }
   handleChange(e){
-    this.setState({message: e.target.value})
+    let msg = e.target.value;
+    if(msg.length > this.MAX_LENGTH){
+      //Truncate anything that's pasted to the first MAX.LENGTH characters.
+      msg = msg.split('').splice(0,this.MAX_LENGTH).join('');
+    }
+    this.setState({message: msg})
   }
   postChat(msg){
     const messages = this.state.messages;

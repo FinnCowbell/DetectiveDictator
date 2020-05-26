@@ -135,6 +135,7 @@ class NewPlayerForm extends React.Component{
     this.state = {
       username: ""
     }
+    this.MAX_LENGTH = 30;//30 is generous >:(
     this.handleEnter = this.handleEnter.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -145,7 +146,11 @@ class NewPlayerForm extends React.Component{
     }
   }
   handleChange(e){
-    this.setState({username:event.target.value});
+    let msg = e.target.value;
+    if(msg.length > this.MAX_LENGTH){
+      msg = msg.split('').splice(0,this.MAX_LENGTH).join('');
+    }
+    this.setState({username:msg});
   }
   handleSubmit(e){
     let username = this.state.username;
@@ -157,7 +162,7 @@ class NewPlayerForm extends React.Component{
     return(
       <div className="new-player-form">
         <label>Enter your Name:</label>
-        <input className="username-input" type="text" onKeyDown={this.handleEnter} onChange={this.handleChange}></input>
+        <input className="username-input" type="text" value={this.state.username} onKeyDown={this.handleEnter} onChange={this.handleChange}></input>
         <button onClick={this.handleSubmit}>Join</button>
       </div>
     )
