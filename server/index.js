@@ -26,7 +26,7 @@ fs.readFile(__dirname + "/util/wwii.txt", 'utf8', (err, data) =>{
     console.error(err)
     return
   }
-  lobbies.words = data.capitalize().split("\n");
+  lobbies.words = data.capitalize().split(" ");
 })
 
 io.of('/menu').on("connection", (socket)=>{//When we get a new connection
