@@ -25,10 +25,13 @@ export default class ChatRoom extends React.Component{
   }
   postChat(msg){
     const messages = this.state.messages;
+    let sentWindow = this.refs.sent;
     this.setState({
       messages: messages.concat([msg]),
     })
+    sentWindow.scrollTo({behavior: "smooth", top: sentWindow.scrollHeight});
   }
+
   sendChat(){
     if(this.state.message == ''){return};
     let msg = {
@@ -40,6 +43,7 @@ export default class ChatRoom extends React.Component{
       message: ""
     });
   }
+
   render(){
     let chats = this.state.messages.map((msg, i)=>(
       <p key={i} className="message">
@@ -49,11 +53,11 @@ export default class ChatRoom extends React.Component{
     return(
       <div className="chat-window">
         <h3>Chat</h3>
-        <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
-        <button onClick={this.sendChat}>Send</button>
-        <div className="sent-messages">
+        <div ref="sent" className="sent-messages">
           {chats}
         </div>
+        <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
+        <button onClick={this.sendChat}>Send</button>
       </div>
     )
   }
