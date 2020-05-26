@@ -6,6 +6,7 @@ import ActionBar from './gameParts/ActionBar.js'
 import StatusBar from './gameParts/StatusBar.js'
 import PlayerSidebar from './gameParts/PlayerSidebar.js'
 import PlayerCard from './gameParts/PlayerCard.js'
+import EndWindow from './gameParts/EndWindow.js'
 
 
 export default class Hitler extends React.Component{
@@ -217,7 +218,8 @@ export default class Hitler extends React.Component{
     let gameStyle = Math.floor((order.length - 5)/ 2);
     let action = this.getPlayerAction(event);
     let yourPID = this.props.yourPID;
-    let alive = true;
+
+    let alive = false; //Assume dead until proven otherwise
     if(players[yourPID]){
       alive = players[yourPID].alive;
     }
@@ -266,6 +268,13 @@ export default class Hitler extends React.Component{
                       players={players}
         />
       }
+      {event.name == "end game" &&(
+        <EndWindow
+          winner={action.includes("liberal") ? 0 : 1}
+          leaveLobby={this.props.leaveLobby}
+          returnToLobby={()=>this.leaveLobby()}
+        />
+      )}
       </div>
     )
   }
