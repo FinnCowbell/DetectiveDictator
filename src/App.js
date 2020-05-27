@@ -11,7 +11,7 @@ class App extends React.Component{
     super(props)
     let socket;
     if(this.props.lobbyID){
-      socket = io.connect(this.props.socketURL + `/${this.props.lobbyID}`);
+      socket = io.connect(this.props.socketURL + `/${this.props.lobbyID.toLowerCase()}`);
     } else {
       socket = io.connect(this.props.socketURL + `/menu`);
     }
@@ -27,7 +27,7 @@ class App extends React.Component{
     this.state.socket.close();
     this.setState({
       lobbyID: newID || null,
-      socket: io.connect(this.props.socketURL + (newID ? `/${newID}` : "/menu"))
+      socket: io.connect(this.props.socketURL + (newID ? `/${newID.toLowerCase()}` : "/menu"))
     });
   }
 

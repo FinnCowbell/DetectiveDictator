@@ -36,7 +36,6 @@ io.of('/menu').on("connection", (socket)=>{//When we get a new connection
   });
   socket.on("create lobby", (arg) =>{
     let lobby = lobbies.createLobby(devMode = devMode);
-    console.log(lobby);
     socket.emit("lobby created",{"ID": lobby.ID});
   })
 });

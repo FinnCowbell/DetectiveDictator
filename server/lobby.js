@@ -8,7 +8,8 @@ class Lobbies {
     this.words = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
    }
   createLobby(devMode=false){
-    let lobbyID, lobby, nLobbies, maxLobbies; 
+    //LobbyID = what is printed. lobbyKey = an all-lowercase lobbyID.
+    let lobbyID, lobbyKey, lobby, nLobbies, maxLobbies; 
     //If we're running out of words at our current length, increase the length.
     nLobbies = Object.keys(this.lobbies).length;
     maxLobbies = Math.pow(this.words.length, this.idWordLength);
@@ -19,11 +20,12 @@ class Lobbies {
     //Confirms we dontt overwrite existing lobbies.
     do{
       lobbyID = this.generateLobbyID(this.idWordLength);
-    } while(this.getLobby(lobbyID));
+      lobbyKey = lobbyID.toLowerCase();
+    } while(this.getLobby(lobbyKey));
     
     lobby = new Lobby(this.io,lobbyID,devMode, 1, Hitler, 5, 10 );
-    this.lobbies[lobbyID] = lobby;
-    return this.lobbies[lobbyID];
+    this.lobbies[lobbyKey] = lobby;
+    return this.lobbies[lobbyKey];
   }
 
   getLobby(lobbyID){
@@ -44,8 +46,10 @@ class Lobbies {
 
 class Lobby{
   constructor(io, lobbyID, devMode = false, startingPID, Game=Hitler, min = 0, max = 100){
-    let ourio = io.of(`/${lobbyID}`)
+    let lobbyKey = lobbyID.toLowerCase();
+    let ourio = io.of(`/${lobbyKey}`)
     this.ID = lobbyID;
+    this.key = lobbyKey;
     this.io = ourio;
     this.players = {};
     this.disconnectedPlayers = {};
@@ -58,6 +62,7 @@ class Lobby{
     this.MaxPlayers = max;
     this.devMode = devMode;
     this.activateSignals();
+    this.log("Lobby Created");
   }
 
   error(message){
@@ -65,6 +70,7 @@ class Lobby{
     return -1;
   }
   log(message){
+    //If an object is sent, allow the object to be printed.
     if(typeof message == 'string'){
       let consoleMessage = "[" + this.ID + "]: " + message
       console.log(consoleMessage);

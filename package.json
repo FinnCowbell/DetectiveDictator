@@ -25,7 +25,7 @@
     "build-prod": "webpack -p --mode production",
     "start-front": "webpack-dev-server --hot",
     "start-back": "nodemon --watch server server/index.js -dev",
-    "start-back-prod": "nodemon --watch server server/index.js"
+    "start-back-prod": "node server/index.js"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
