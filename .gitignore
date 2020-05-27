@@ -6,6 +6,7 @@ package-lock.json
 coverage/
 dist/*
 !dist/index.html
+!dist/favicon
 *.log
 
 # OS generated files
