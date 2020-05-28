@@ -6,7 +6,7 @@ var http = require('http').Server(app)
 var io = require('socket.io')(http)
 var {Lobbies, Lobby, Player} = require('./lobby');
 var Game = require('./Game/Hitler');
-let port = process.env.PORT || 1945;
+let port = process.env.PORT || process.env.DD_PORT || 1945;
 
 //Get Args
 let argv = process.argv;

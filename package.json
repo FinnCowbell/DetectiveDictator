@@ -24,12 +24,12 @@
   },
   "scripts": {
     "start": "node server/index.js -front",
-    "heroku-postbuild": "webpack -p",
+    "build": "webpack -p",
+    "start-back": "node server/index.js",
+    "build-custom": "webpack -p --env.server --env.port",
     "build-dev": "webpack -d --mode development",
-    "build-prod": "webpack -p --mode production",
-    "start-front": "webpack-dev-server --hot",
-    "start-back": "nodemon --watch server server/index.js -dev",
-    "start-back-prod": "node server/index.js"
+    "test-front": "webpack-dev-server --hot",
+    "test-back": "nodemon --watch server server/index.js -dev"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
