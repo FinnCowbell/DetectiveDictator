@@ -9,15 +9,27 @@ var Game = require('./Game/Hitler');
 const port = 1945;
 
 //Get Args
+let argv = process.argv;
 
-let argc = process.argv.length;
-let devMode = false
-for(let i = 0; i < argc; i++){
-  if(process.argv[i] == "-dev"){
+//Environmental variables: 
+let front = process.env.DD_HOSTFRONT || false;
+let devMode = process.env.DD_DEV || false;
+
+for(let i = 0; i < argv.length; i++){
+  if(argv[i] == "-dev"){
     devMode = true;
+  } else if(argv[i] == "-front"){
+    front = true;
   }
 }
 
+if(front){
+//if the backend is hosting the front end files,
+  app.use('/', express.static(__dirname + "/../dist"))
+  app.get('/', (req,res)=>{
+    res.sendFile(__dirname + "/../dist/index.html");
+  })
+}
 
 //Initializing storage for all lobbies
 var lobbies = new Lobbies(io, Game);
