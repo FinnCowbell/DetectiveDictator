@@ -6,7 +6,7 @@ var http = require('http').Server(app)
 var io = require('socket.io')(http)
 var {Lobbies, Lobby, Player} = require('./lobby');
 var Game = require('./Game/Hitler');
-const port = 1945;
+let port = 80;
 
 //Get Args
 let argv = process.argv;
@@ -17,7 +17,8 @@ let devMode = process.env.DD_DEV || false;
 
 for(let i = 0; i < argv.length; i++){
   if(argv[i] == "-dev"){
-    devMode = true;
+    devMode = true; 
+    port = 1945;
   } else if(argv[i] == "-front"){
     front = true;
   }
