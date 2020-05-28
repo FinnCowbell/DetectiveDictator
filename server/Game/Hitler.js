@@ -1,5 +1,4 @@
 var CardDeck = require('./CardDeck');
-var {Lobbies, Lobby, Player} = require('../lobby')
 //Generally: 0 = Liberal, >0 = Fascist.
 
 class Hitler{
@@ -730,10 +729,6 @@ class Hitler{
     return 0;
   }
 }
-
-Player.prototype.membership = null;
-Player.prototype.alive = null;
-Player.prototype.vote = null;
 
 function shuffle(a){
   //For shuffling player order, roles, party Cards
