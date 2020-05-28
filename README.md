@@ -35,19 +35,21 @@ Run `build` to compile the frontend and then `start` to start the server.
 
 `build-dev` builds a development version of the frontend.
 
-`test-front` runs a the webpack development server.
+`test-front` runs the webpack development server, running on port 8080.
 
 `test-back` runs the backend server in development mode, with nodemon enabled.
 - Development mode bypasses some game restrictions: removing the limitations to the # of players and allowing players to be in office subsequent rounds.
-<!-- 
+
 IF you want to host the server and static frontend files on different servers: 
-1. Set the environmental variables DD_SERVER and (optionally) DD_PORT to the server IP/URL and port.
+1. Set the environmental variables DD_SERVER and (optionally) DD_PORT to the  IP/URL of the server and the port you want to use.
     - EX: `export DD_SERVER="192.168.2.0"` 
     - Default Port: 1945
 
 2. Run the `build-custom` script
     - EX: `yarn run build-custom`
 
-3. Run `start-back` on the server computer. The compiled files in './dist' can be used on any computer. 
-    - If a custon port was given, DD_PORT must be set on the server computer as well.
--->
+
+3. Run `start-back` on the server computer. 
+    - If a custom port was given, DD_PORT must be set on the server computer as well.
+
+4. The compiled files in './dist' are compiled to connect to DD_SERVER:DD_PORT from any computer. 

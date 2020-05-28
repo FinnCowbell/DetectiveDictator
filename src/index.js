@@ -5,17 +5,20 @@ import App from './App.js';
 
 import "./styles.scss";
 
-let SOCKETIO_PORT = ":1945";
-let SOCKETIO_SERVER = 'localhost';
-
-// pathname is now ./?lobby=KyleKyle
-let socketURL = SOCKETIO_SERVER// + SOCKETIO_PORT;
+//DD_SERVER and DD_PORT are environmental variables given during compilation.
+let socketURL = "";
+if(process.env.DD_SERVER){
+  socketURL += process.env.DD_SERVER;
+  if(process.env.DD_PORT){
+    socketURL += `:${process.env.DD_PORT}`;
+  }
+}
 
 let urlVars = getUrlVars();
 let lobbyID = urlVars.lobby;
+// pathname is now ./?lobby=KyleKyle
 
-
-ReactDOM.render(<App lobbyID={lobbyID} socketURL={null}/>, document.getElementById('root'));
+ReactDOM.render(<App lobbyID={lobbyID} socketURL={socketURL}/>, document.getElementById('root'));
 
 //Stack Overflow Functions :^)
 function getUrlVars() {

@@ -6,21 +6,24 @@ var http = require('http').Server(app)
 var io = require('socket.io')(http)
 var {Lobbies, Lobby, Player} = require('./lobby');
 var Game = require('./Game/Hitler');
-let port = process.env.PORT || process.env.DD_PORT || 1945;
+//env.PORT = Heroku. DD_PORT = my implementation.
+let port = process.env.DD_PORT || process.env.PORT || 1945;
 
 //Get Args
 let argv = process.argv;
 
-//Environmental variables: 
-let front = process.env.DD_HOSTFRONT || false;
-let devMode = process.env.DD_DEV || false;
+//Command Parameters.
+
+//Host frontend by default.
+let front = true
+let devMode = false
 
 for(let i = 0; i < argv.length; i++){
   if(argv[i] == "-dev"){
     devMode = true; 
     port = 1945;
-  } else if(argv[i] == "-front"){
-    front = true;
+  } else if(argv[i] == "-nofront"){
+    front = false;
   }
 }
 

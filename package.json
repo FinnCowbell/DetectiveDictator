@@ -23,13 +23,13 @@
     "webpack-cli": "^3.3.11"
   },
   "scripts": {
-    "start": "node server/index.js -front",
+    "start": "node server/index.js",
     "build": "webpack -p",
-    "start-back": "node server/index.js",
-    "build-custom": "webpack -p --env.server --env.port",
+    "start-back": "node server/index.js -nofront",
+    "build-custom": "webpack -p --env.custom",
     "build-dev": "webpack -d --mode development",
-    "test-front": "webpack-dev-server --hot",
-    "test-back": "nodemon --watch server server/index.js -dev"
+    "test-front": "webpack-dev-server --env.custom --hot",
+    "test-back": "nodemon --watch server server/index.js -dev -nofront"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
