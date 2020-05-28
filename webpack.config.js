@@ -69,7 +69,7 @@ module.exports = env=>{
     }
   };
   //If we're building custom (split front and backend), pass the DD_SERVER and DD_PORT environment variables.
-  if(env.custom){
+  if(env && env.custom){
     config.plugins.push(new webpack.EnvironmentPlugin(
       {'DD_SERVER':"localhost",
        'DD_PORT': 1945
