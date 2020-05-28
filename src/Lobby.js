@@ -21,6 +21,7 @@ export default class Lobby extends React.Component{
     this.connect = this.connect.bind(this);
     this.reconnect = this.reconnect.bind(this);
     this.startGame = this.startGame.bind(this);
+    this.spectateGame = this.spectateGame.bind(this);
   }
   componentDidMount(){
     let socket = this.props.socket;
@@ -88,6 +89,9 @@ export default class Lobby extends React.Component{
   startGame(){
     this.props.socket.emit('game init');
   }
+  spectateGame(){
+    this.props.socket.emit('spectator init');
+  }
   render(){
     let connectionForm;
     const lobbyID = this.props.lobbyID;
@@ -107,18 +111,28 @@ export default class Lobby extends React.Component{
         {(!inLobby || !gameInfo.isRunning) && (
         <div className="lobby-window">
           <div className="content">
-          <Header lobbyID ={lobbyID}/>
-          {!lobbyExists && <LoadingMessage leaveLobby={()=>{this.leaveLobby(null)}}/>}
-          {(lobbyExists && !inLobby) && connectionForm}
-          <LobbyPlayerList PID={this.state.PID} 
-                      players={this.state.players}
-                      kickPlayer={this.kickPlayer}
-                      />
-          {(isLeader) &&(
-            <button className="game-start" 
-                    onClick={this.startGame}>
-              Start Game
-            </button>)}
+            <Header lobbyID ={lobbyID}/>
+            {!lobbyExists && <LoadingMessage leaveLobby={()=>{this.leaveLobby(null)}}/>}
+            {(lobbyExists && !inLobby) && connectionForm}
+            <LobbyPlayerList PID={this.state.PID} 
+                        players={this.state.players}
+                        kickPlayer={this.kickPlayer}
+                        />
+            <div className="bottom-button">
+              {(isLeader) &&(
+                <button 
+                  className="game-start" 
+                  onClick={this.startGame}>
+                  Start Game
+                </button>)}
+              {(gameInfo && gameInfo.isRunning) &&(
+                <button 
+                  className="spectate"
+                  onClick={this.spectateGame}>
+                  Spectate
+                </button>
+              )}
+            </div>
           </div>
         </div>)}
         {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username}/>)}

@@ -28,12 +28,10 @@ export default class MainMenu extends React.Component{
       <div className="menu-window">
         <div className="content">
           <Header lobbyID={null}/>
-          <div className="main-menu">
-            <button className="new-lobby" onClick={this.createLobby}>
-              <h4>Create Game</h4>
-            </button>
-            <LobbyInput joinLobby={this.joinLobby}/>
-          </div>
+          <button className="new-lobby" onClick={this.createLobby}>
+            <h4>Create Game</h4>
+          </button>
+          <LobbyInput joinLobby={this.joinLobby}/>
         </div>
       </div>
     )
@@ -59,8 +57,10 @@ class LobbyInput extends React.Component{
     return(
       <div className="existing-lobby">
         <h4>Join an Existing Lobby</h4>
-        <input className="lobby-input" value={this.state.lobbyName} onKeyDown={(e)=>this.handleSubmit(e)} onChange={(e)=>this.handleChange(e)}/>
-        <button onClick={()=>this.props.joinLobby(this.state.lobbyName)}>Join</button>
+        <div>
+          <input className="lobby-input" value={this.state.lobbyName} onKeyDown={(e)=>this.handleSubmit(e)} onChange={(e)=>this.handleChange(e)}/>
+          <button onClick={()=>this.props.joinLobby(this.state.lobbyName)}>Join</button>
+        </div>
       </div>
     )
   }

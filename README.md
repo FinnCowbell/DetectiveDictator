@@ -38,6 +38,7 @@ Run `build` to compile the frontend and then `start` to start the server.
 `test-front` runs the webpack development server, running on port 8080.
 
 `test-back` runs the backend server in development mode, with nodemon enabled.
+ 
 - Development mode bypasses some game restrictions: removing the limitations to the # of players and allowing players to be in office subsequent rounds.
 
 IF you want to host the server and static frontend files on different servers: 
