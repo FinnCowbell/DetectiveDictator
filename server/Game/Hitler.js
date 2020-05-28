@@ -1,5 +1,5 @@
 var CardDeck = require('./CardDeck');
-var {Lobbies, Lobby, Player} = require('../Lobby')
+var {Lobbies, Lobby, Player} = require('../lobby')
 //Generally: 0 = Liberal, >0 = Fascist.
 
 class Hitler{
