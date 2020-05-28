@@ -15,7 +15,7 @@ let urlVars = getUrlVars();
 let lobbyID = urlVars.lobby;
 
 
-ReactDOM.render(<App lobbyID={lobbyID} socketURL={socketURL}/>, document.getElementById('root'));
+ReactDOM.render(<App lobbyID={lobbyID} socketURL={null}/>, document.getElementById('root'));
 
 //Stack Overflow Functions :^)
 function getUrlVars() {
