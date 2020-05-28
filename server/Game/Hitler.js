@@ -211,23 +211,29 @@ class Hitler{
       }
     }
   }
-  newRound(nextPresident = null){
-    this.buildNewRound(nextPresident);
+  newRound(nextPresident = null, playersWereElected = true){
+    this.buildNewRound(nextPresident, playersWereElected);
     let newRound = this.rounds[this.rounds.length -1];
     this.io.emit("new round", {newRound: newRound});
     this.currentEvent="chancellor pick";
     this.buildEvent();
     this.sendLatestEvent();
   }
-  buildNewRound(nextPresident = null){
+  buildNewRound(nextPresident = null, playersWereElected = true){
     //Each round has player info stored with it.
     //Players don't change very much (Except on round-ending events).
-    if(!this.isDevMode){
+    if(this.isDevMode){
+      playersWereElected = false;
+    }
+
+    if(playersWereElected){
       this.previousPresPID = this.presidentPID;
       this.previousChanPID = this.chancellorPID;  
     }
+
     this.presidentPID = null;
     this.chancellorPID = null;
+    
     if(nextPresident){ //If the next president has been pre-chosen,
       this.presidentPID = nextPresident;
     } else{
@@ -448,21 +454,14 @@ class Hitler{
       if(this.nVoted >= this.nAlive){
         let yesRatio = this.yesCount / this.nVoted;
         if(yesRatio <= .5){
+          //Marker is moved immediately, so it moves as soon as the chancellor is not voted.
           this.marker++;
           this.presidentPID = null;
           this.chancellorPID = null;
           this.currentEvent = "chancellor not voted";
           this.buildEvent();
           this.sendLatestEvent();
-          setTimeout(
-            ()=>{
-              if(this.checkMarker()){
-                return;
-              }else{
-                this.newRound()
-              }},
-            this.WAIT_TIME
-          );
+          setTimeout(()=>this.checkMarker(), this.WAIT_TIME);
         } else{
           if((this.chancellorPID == (this.hitler && this.hitler.PID)) && this.fasBoard >= 3){
             return this.endGame(1, 1);
@@ -520,7 +519,7 @@ class Hitler{
       if(this.currentEvent != "president pick" || this.presidentPID != theirPID){
         return this.error("Cannot pick president!")
       } else{
-        this.newRound(arg.pickedPresident)
+        this.newRound(arg.pickedPresident, true);
       }
     })
     socket.on('president investigate request', (arg)=>{
@@ -719,14 +718,14 @@ class Hitler{
     this.io.emit("end game", {endState: newRound});
   }
   checkMarker(){
+    let delay = 0;
     if(this.marker == 3){
       this.marker = 0;
       let drawnPolicy = this.policies.draw(1)[0];
       this.placePolicy(drawnPolicy);
-      setTimeout(()=>this.newRound(),this.WAIT_TIME);
-      return 1;
+      delay = this.WAIT_TIME;
     }
-    return 0;
+    setTimeout(()=>this.newRound(false, false), delay);
   }
 }
 
