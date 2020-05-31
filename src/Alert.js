@@ -3,8 +3,8 @@ export default class Alert extends React.Component{
   constructor(props){
     super(props);
     this.state={
+      previousState: false,
       open: false,
-      message: this.props.message || null,
     }
     this.closeStatus = this.closeStatus.bind(this);
   }
@@ -13,13 +13,17 @@ export default class Alert extends React.Component{
       open: false,
     })
   }
-  componentDidUpdate(){
-    if(this.props.message != this.state.message ){
-      let message = this.props.message
-      this.setState({
-        open: true,
-        message: message,
-      })
+  openStatus(){
+    this.setState({
+      open: true,
+    })
+  }
+  componentDidUpdate(){ 
+    if(this.state.previousState != this.props.toggledState){
+      this.openStatus();
+      this.setState((state, props)=>({
+        previousState: props.toggledState,
+      }));
       setTimeout(this.closeStatus,5000);
     }
   }
@@ -28,7 +32,7 @@ export default class Alert extends React.Component{
     return(
       <div className={`alert-bar ${!open ? "closed" : ""}`}>
         <h2 className="alert-message">
-          {this.state.message}
+          {this.props.children}
         </h2>
         <button className="x" onClick={this.closeStatus}>
           X

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import Header from './Lobby/Header.js'
 import ChatRoom from './Lobby/ChatRoom.js'
-import {default as Game} from './Game/Hitler.js';
+//Lazy Load the game in the background, as it is not neccessary for loading the lobby.
+const Game = React.lazy(() => import('./Game/Hitler.js'));
+// import {default as Game} from './Game/Hitler.js';
 
 export default class Lobby extends React.Component{
   constructor(props){
@@ -16,6 +18,8 @@ export default class Lobby extends React.Component{
       username: null,
       gameInfo: null,
     }
+    this.disconnector = null;
+    this.RECONNECT_TIME = 5000;
     this.leaveLobby = this.leaveLobby.bind(this);
     this.kickPlayer = this.kickPlayer.bind(this);
     this.connect = this.connect.bind(this);
@@ -38,8 +42,8 @@ export default class Lobby extends React.Component{
         PID: arg.PID,
       })
     });
-    socket.on('kick', ()=>this.leaveLobby("You've been Kicked From the Lobby!"));
-    // socket.on('end game', ()=>this.leaveLobby("The game has ended."));
+    socket.on('kick', ()=>this.leaveLobby("You've been kicked From the lobby!"));
+    socket.on('end game', ()=>this.leaveLobby("The game has ended."));
     socket.on('lobby update info', (arg)=>{
       this.setState({
         players: arg.lobbyInfo.players,
@@ -47,7 +51,10 @@ export default class Lobby extends React.Component{
       })
     });
     socket.on('disconnect', ()=>{
-      this.leaveLobby(`Lost connection to ${this.props.lobbyID}`);
+      this.disconnector = setTimeout(()=>this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`),this.RECONNECT_TIME)
+    })
+    socket.on('reconnect', ()=>{
+      clearTimeout(this.disconnector)
     })
     socket.on('alert', (alert)=>{
       this.props.setAlert(alert);
@@ -101,8 +108,7 @@ export default class Lobby extends React.Component{
     const players = this.state.players;
     const you = this.state.players && this.state.players[this.state.PID];
     const isLeader = you && you.isLeader;
-    if(!lobbyID){this.leaveLobby();}
-    //If we're just connecting, display the correct connection field.
+    //If the game is running, only reconnects are allowed.
     connectionForm = (gameInfo && gameInfo.isRunning) ? 
     <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : 
     <NewPlayerForm connect={this.connect}/>; 
@@ -136,7 +142,9 @@ export default class Lobby extends React.Component{
           </div>
         </div>)}
         {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username}/>)}
-        <Game lobbyID={lobbyID} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
+        <Suspense fallback={<div className="game-window"></div>}>
+          <Game lobbyID={lobbyID} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
+        </Suspense>
         
       </div>
     )

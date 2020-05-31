@@ -19,6 +19,8 @@ class App extends React.Component{
     this.state={
       lobbyID: this.props.lobbyID || null,
       socket: socket,
+      alertMessage: "",
+      alertMessageState: 0,
     }
     this.setLobbyID = this.setLobbyID.bind(this);
     this.setAlert = this.setAlert.bind(this);
@@ -33,10 +35,11 @@ class App extends React.Component{
   }
 
   setAlert(message){
-    if(typeof message == 'string'){
-      this.setState({
-      message: message,
-      })
+    if(typeof message == 'string' && message != null){
+      this.setState(prevState=>({
+        alertMessageState: prevState.alertMessageState + 1,
+        alertMessage: message,
+      }));
     }
   }
   
@@ -46,7 +49,7 @@ class App extends React.Component{
       <MainMenu socket={this.state.socket} setLobbyID={this.setLobbyID}/>;
     return(
       <div>
-        <Alert message={this.state.message}/>
+        <Alert toggledState={this.state.alertMessageState}>{this.state.alertMessage}</Alert>
         {content}
       </div>
     )
