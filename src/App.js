@@ -6,6 +6,7 @@ import Alert from './Alert.js';
 import Lobby from './Lobby.js';
 import MainMenu from './MainMenu.js';
 
+/*The main purpose of the App react component is socket room  management.*/
 class App extends React.Component{
   constructor(props){
     super(props)
