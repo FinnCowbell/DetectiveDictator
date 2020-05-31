@@ -15,6 +15,7 @@ export default class PlayerSidebar extends React.Component{
       closed: false,
     }
     this.toggleState = this.toggleState.bind(this);
+    this.changeSelectedPlayer = this.changeSelectedPlayer.bind(this);
   }
   toggleState(){
     const status = !this.state.closed;
@@ -25,6 +26,12 @@ export default class PlayerSidebar extends React.Component{
   getMembership(player){
     const membershipClasses = {"-1": "", 0: "liberal", 1: "fascist", 2: "hitler"};
     return membershipClasses[this.props.memberships[player.PID]] || "";
+  }
+  changeSelectedPlayer(PID){
+    this.props.sendUIInfo({
+      name: "select player",
+      PID: PID
+    })
   }
   getStatus(player){
     let details = this.props.event.details;
@@ -98,6 +105,7 @@ export default class PlayerSidebar extends React.Component{
     let eventDetails = this.props.event.details;
     let pres = eventDetails.presidentPID;
     let chan = eventDetails.chancellorPID;
+    let uiInfo = this.props.uiInfo;
     let bulletIndex = this.props.uiInfo.bulletIndex;
 
 
@@ -112,9 +120,9 @@ export default class PlayerSidebar extends React.Component{
       const voteStatus = this.getVoteClass(player); //Outputs event.votes[PID] if both exist. null/undefined otherwise.
       const membership = this.getMembership(player);
       const selectable = this.isPlayerSelectable(player);
-      const isSelected = (PID == this.props.selectedPlayer);
+      const isSelected = (PID == uiInfo.selectedPlayer);
       const isKillingPlayer = (this.props.event.name == "president kill");
-      const hasBullet = (this.props.uiInfo.bulletIndex == index)|| (isSelected && yourPID == pres);
+      const hasBullet = (isSelected && isKillingPlayer);
       return (
       <div key={index} className={`player ${membership} ${isYou}`}>
         {/* Next to the player content, we show a bullet OR the vote status, but not both. */}
@@ -126,13 +134,10 @@ export default class PlayerSidebar extends React.Component{
           </div>
          )}
 
-        <div className={`player-bar ${isSelected ? "selected" : ""} ${selectable ? "selectable" : ""}`} 
+        <div className={`player-bar ${(isSelected && !hasBullet ) ? "selected" : ""} ${selectable ? "selectable" : ""}`} 
               onClick={()=>{
                 if(selectable){
-                  this.props.changeSelectedPlayer(PID)
-                  if(isKillingPlayer){
-                    this.props.moveBullet(index)
-                  }
+                  this.changeSelectedPlayer(PID)
                 }
               }}>
           {status == "president" && <img className="pres hat" src={presHat}/>/*He get hat*/}

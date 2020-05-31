@@ -20,8 +20,8 @@ export default class ActionBar extends React.Component{
   }
   pickChancellor(){
     let socket = this.props.socket;
-    let selectedPlayer = this.props.selectedPlayer;
-    if(this.props.selectedPlayer != null){
+    let selectedPlayer = this.props.uiInfo.selectedPlayer;
+    if(selectedPlayer != null){
       socket.emit('chancellor picked', {
         pickedChancellor: selectedPlayer,
       });
@@ -68,37 +68,38 @@ export default class ActionBar extends React.Component{
     }
   }
   pickPresident(){
-    let selectedPlayer = this.props.selectedPlayer;
-    if(this.props.selectedPlayer != null){
+    let selectedPlayer = this.props.uiInfo.selectedPlayer;
+    if(selectedPlayer != null){
       this.props.socket.emit('president picked', {
         pickedPresident: selectedPlayer,
       });
     }
   }
   killPlayer(PID){
-    let selectedPlayer = this.props.selectedPlayer;
-    if(this.props.selectedPlayer != null){
+    let selectedPlayer = this.props.uiInfo.selectedPlayer;
+    if(selectedPlayer != null){
       this.props.socket.emit('president kill request', {victim: PID})
     }
   }
   render(){
     let content;
     let details = this.props.event.details;
-    let selectedPlayer =  this.props.players[this.props.selectedPlayer] || null;
+    let selectedPlayer =  this.props.players[this.props.uiInfo.selectedPlayer] || null;
     let selectedUsername = selectedPlayer && selectedPlayer.username;
+    let yourPID = this.props.yourPID;
     let uiInfo = this.props.uiInfo;
     switch(this.props.action){
       case 'your chancellor pick':
         content = (<PickPlayer
           verb="Pick"
-          selected={this.props.selectedPlayer}
+          selected={this.props.uiInfo.selectedPlayer}
           confirm={this.pickChancellor}
           username={selectedUsername}
         />)
         break;
       case 'chancellor vote':
         content = (
-          <JaNein confirm={this.castVote} voteReceived={uiInfo.voteReceived} />
+          <JaNein confirm={this.castVote} voteReceived={uiInfo.voted[yourPID]} />
         )
         break;
       case 'your president discard':
@@ -139,7 +140,7 @@ export default class ActionBar extends React.Component{
           <PickPlayer
             verb="Nominate"
             confirm={this.doneViewing}
-            selected={this.props.selectedPlayer}
+            selected={this.props.uiInfo.selectedPlayer}
             confirm={this.pickPresident}
             username={selectedUsername}
           />
@@ -151,8 +152,8 @@ export default class ActionBar extends React.Component{
           <PickPlayer
             verb="Murder"
             confirm={this.doneViewing}
-            selected={this.props.selectedPlayer}
-            confirm={()=>this.killPlayer(this.props.selectedPlayer)}
+            selected={this.props.uiInfo.selectedPlayer}
+            confirm={()=>this.killPlayer(this.props.uiInfo.selectedPlayer)}
             username={selectedUsername}
           />
         )
@@ -163,8 +164,8 @@ export default class ActionBar extends React.Component{
           <PickPlayer
             verb="Investigate"
             username={selectedUsername}
-            selected={this.props.selectedPlayer}
-            confirm={()=>this.viewPlayer(this.props.selectedPlayer)}
+            selected={this.props.uiInfo.selectedPlayer}
+            confirm={()=>this.viewPlayer(this.props.uiInfo.selectedPlayer)}
           />
         )
         break;

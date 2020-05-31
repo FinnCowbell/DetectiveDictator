@@ -51,18 +51,49 @@ export default class Hitler extends React.Component{
         }
       }],
      }],
-     //Logic for selecting players from the Player Sidebar
-    selectedPlayer: null,
-     //User Interface states.
-    uiInfo: {
+     //UIInfo is for visual information that doesn't impact gameplay.
+     uiInfo: {}
+   };
+   this.clearUIInfo = this.clearUIInfo.bind(this);
+   this.sendUIInfo = this.sendUIInfo.bind(this);
+   this.recieveUIInfo = this.recieveUIInfo.bind(this);
+  }
+  clearUIInfo(){
+    let uiInfo = {
+      selectedPlayer: null,
       voteReceived: false,
-      bulletIndex: null,
       voted: {},
     }
-   };
-   this.changeSelectedPlayer = this.changeSelectedPlayer.bind(this);
-   this.moveBullet = this.moveBullet.bind(this);
+    this.setState({
+      uiInfo: uiInfo,
+    });
   }
+
+  sendUIInfo(arg){
+    //arg contains arg.name and other required arg info.
+    //All shared UI events pass are sent to other players.
+    //The info is broadcast to all other players, but updates instantly on the player's side.
+    this.props.socket.emit('send ui info', arg);
+    this.recieveUIInfo(arg);
+  }
+
+  recieveUIInfo(arg){
+    const uiInfo = this.state.uiInfo;
+    switch(arg.name){
+      case 'player voted':
+        uiInfo.voted[arg.PID] = true;
+        break;
+      case 'select player':
+        uiInfo.selectedPlayer = arg.PID;
+        break;
+      default:
+        break;
+    }
+    this.setState({
+      uiInfo: uiInfo
+    })
+  }
+
   componentDidMount(){
     let socket = this.props.socket;
     socket.on('full game info', (arg)=>{
@@ -72,33 +103,27 @@ export default class Hitler extends React.Component{
         rounds: arg.rounds,
       })
     })
+
     socket.on('new round',(arg)=>{
       const rounds = this.state.rounds;
       let newRound = arg.newRound;
-      //reset UI Info
-      let uiInfo = {
-        voteReceived: false,
-        bulletIndex: null,
-        voted: {},
-      }
-      // let knownMemberships = arg.memberships;
-      // //Put our known memberships in the round.
-      // newRound.memberships = knownMemberships;
+      this.clearUIInfo();
       this.setState({
         rounds: rounds.concat([newRound]),
-        uiInfo: uiInfo
       })
     })
+
     socket.on('new event', (arg)=>{
       const rounds = this.state.rounds;
       let events = rounds[rounds.length-1].events;
       events = events.concat([arg.event]);
       rounds[rounds.length-1].events = events;
+      this.clearUIInfo();
       this.setState({
         rounds: rounds,
-        selectedPlayer: null,
       })
     })
+
     socket.on(('end game'), (arg)=>{
       let endState = arg.endState;
       const rounds = this.state.rounds;
@@ -108,32 +133,9 @@ export default class Hitler extends React.Component{
       })
     }); 
     //Sent by the player with the bullet.
-    socket.on('new ui event', (arg)=>{
-      const uiInfo = this.state.uiInfo;
-      if(arg.name == 'player voted'){
-        if(arg.PID == this.props.yourPID){
-          uiInfo.voteReceived = true;
-        }
-        uiInfo.voted[arg.PID] = true;
-        this.setState({
-          uiInfo: uiInfo
-        })
-      } else if(arg.name == 'move bullet'){
-        uiInfo.bulletIndex = arg.bulletIndex;
-        this.setState({
-          uiInfo: uiInfo
-        })
-      }
-    })
+    socket.on('ui event', (arg)=>this.recieveUIInfo(arg))
   }
-  changeSelectedPlayer(PID){
-    this.setState({
-      selectedPlayer: PID
-    });
-  }
-  moveBullet(bulletIndex){
-    this.props.socket.emit('move bullet', {bulletIndex: bulletIndex});
-  }
+  
   getPlayerAction(event){
     //Based on event info, constructs an 'action' for the player.
     let action = "";
@@ -215,6 +217,7 @@ export default class Hitler extends React.Component{
     let order = this.state.order;
     let event = this.getFullEvent();
     let memberships = this.state.memberships;
+    //TODO: Change gameStyle retrieval.
     let gameStyle = Math.floor((order.length - 5)/ 2);
     let action = this.getPlayerAction(event);
     let yourPID = this.props.yourPID;
@@ -242,9 +245,7 @@ export default class Hitler extends React.Component{
                       players={players}
                       memberships={memberships}
                       uiInfo={this.state.uiInfo}
-                      selectedPlayer={this.state.selectedPlayer}
-                      changeSelectedPlayer={this.changeSelectedPlayer}
-                      moveBullet={this.moveBullet}
+                      sendUIInfo={this.sendUIInfo}
       />
       <div className="boards">
       <LibBoard
@@ -261,9 +262,9 @@ export default class Hitler extends React.Component{
       { (alive || event.name == "end game")&&
         <ActionBar    action={action}
                       socket={this.props.socket}
+                      yourPID={yourPID}
                       event={event}
                       uiInfo={this.state.uiInfo}
-                      selectedPlayer={this.state.selectedPlayer} 
                       leaveLobby={this.props.leaveLobby}
                       players={players}
         />

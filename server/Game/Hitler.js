@@ -434,6 +434,7 @@ class Hitler{
       let player = this.players[theirPID];
       let round = this.rounds[this.rounds.length - 1];
       let event = round.events[round.events.length - 1];
+
       if(event.name != 'chancellor vote'){
         return this.error('Vote cast at invalid time!');
       } else if(!player.alive){
@@ -441,20 +442,24 @@ class Hitler{
       } if(this.votes[theirPID] == 0 || this.votes[theirPID] == 1){
         return this.error('Vote already exists!');
       }
+
       this.votes[theirPID] = arg.vote;
       this.nVoted++;
       if(arg.vote == true){
         this.yesCount++;
       }
-      socket.emit('confirm vote', null);
-      this.io.emit('new ui event',{
+      //For now, repack the argument and send the UI event.
+      let uiEventArg = {
         name: 'player voted',
         PID: theirPID,
-      });
+      }
+      this.sendUIEvent(uiEventArg, theirPID, socket);
+      //Send just to the player. We can skip error checking as we know all values exist.
+      socket.emit('ui event', uiEventArg);
       if(this.nVoted >= this.nAlive){
         let yesRatio = this.yesCount / this.nVoted;
         if(yesRatio <= .5){
-          //Marker is moved immediately, so it moves as soon as the chancellor is not voted.
+          //Marker is moved immediately, so it moves ASAP on the player's side.
           this.marker++;
           this.presidentPID = null;
           this.chancellorPID = null;
@@ -586,15 +591,38 @@ class Hitler{
       this.remainingPolicy = null;
       this.buildEvent();
       this.sendLatestEvent();
-    })
-
-    socket.on('move bullet', (arg)=>{
-      if(this.currentEvent == "president kill"){
-        arg.name = 'move bullet'
-        socket.broadcast.emit('new ui event', (arg));
-      }
-    })
+    });
+    socket.on('send ui info', (arg)=>this.sendUIEvent(arg, theirPID, socket));
   }
+  
+  sendUIEvent(arg, theirPID, socket){
+    //Required UI arguments for each UI event.
+    //If an event is missing any of their arguments, then shoot an error.
+    const uiArgs = {
+      'select player': ['PID'],
+      'player voted': ['PID'],
+    }
+    const uiReqs = {
+      'select player': this.presidentPID == theirPID,
+      'player voted': true, //Only called when allowed.
+    }
+    if(!arg || !arg.name){
+      return this.error('arg or arg name is undefined.')
+    }
+    let requiredArgs = uiArgs[arg.name];
+    let givenArgs = new Set(Object.keys(arg));
+    let canSendEvent = uiReqs[arg.name];
+    for(let arg of requiredArgs){
+      if(!givenArgs.has(arg)){
+        return this.error(`Missing arg in ui info: ${arg}`);
+      }
+    }
+    if(!canSendEvent){
+      return this.error('Ui info requirements not met!');
+    }
+    socket.broadcast.emit('ui event', (arg));
+  }
+
   enactPolicy(value){
     //enacting a policy checks for executive actions. Placing a policy does not.
     let endedGame = this.placePolicy(value);

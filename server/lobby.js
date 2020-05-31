@@ -66,7 +66,7 @@ class Lobby{
   }
 
   error(message){
-    this.log("<ERROR>" + message);
+    this.log("<ERROR> " + message);
     return -1;
   }
   log(message){
