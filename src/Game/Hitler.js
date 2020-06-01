@@ -13,26 +13,26 @@ export default class Hitler extends React.Component{
   constructor(props){
    super(props);
    this.state = {
-    order: [101,102,103,104,105,106,7],
+    order: [101,102,103,104,105,106,107],
     memberships: {
       101: 1,
       102: 0,
       103: 2,
       104: 0,
-      105: 1,
+      105: 0,
       106: 0,
-      7: 1,
+      107: 0,
     },
     rounds: [{
       players: { 
         // Testing Players, for now.
         101: {PID: 101, username: "Karl", alive: true},
         102: {PID: 102, username: "Joseph", alive: true},
-        103: {PID: 103, username: "Adolf", alive: true},
+        103: {PID: 103, username: "Adolf", alive: false},
         104: {PID: 104, username: "Franklin", alive: true},
         105: {PID: 105, username: "Paul", alive: true},
         106: {PID: 106, username: "Winston", alive: true},
-        7: {PID: 7, username: "Chiang", alive: true},
+        107: {PID: 107, username: "Chiang", alive: true},
       },
       events: [{
         name: "pre game",

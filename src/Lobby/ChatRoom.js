@@ -61,8 +61,12 @@ export default class ChatRoom extends React.Component{
         <div ref="sent" className="sent-messages">
           {chats}
         </div>
-        <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
-        <button onClick={this.sendChat}>Send</button>
+        {!this.props.spectating && (
+          <div className="input-section">
+            <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
+            <button onClick={this.sendChat}>Send</button>
+          </div>
+        )}
       </div>
     )
   }

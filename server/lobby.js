@@ -52,6 +52,8 @@ class Lobby{
     this.key = lobbyKey;
     this.io = ourio;
     this.players = {};
+    this.leader = null;
+    this.spectators = {};
     this.disconnectedPlayers = {};
     this._sidpid = {};
     this.nextPID = startingPID;
@@ -88,10 +90,11 @@ class Lobby{
     //Every player gets a player ID.
   }
 
-  connectNewPlayer(username,socket){
+  connectNewPlayer(username,socket,spectating = false){
     // Error checking
-    let SID = socket.id
-    if(this.nPlayers >= this.MaxPlayers || this.game.running){
+    let SID = socket.id;
+    if(this.nPlayers >= this.MaxPlayers){
+      socket.emit('alert', "Lobby is Full!");
       return false;
     }
     if(this._sidpid[SID] != undefined){
@@ -100,15 +103,24 @@ class Lobby{
     }
     let PID = this.getNewPID()
     let player = new Player(username, PID, SID, socket);
-    if(this.nPlayers == 0){
+
+    if(this.leader === null && !spectating){
       player.isLeader = true;
+      this.leader = player;
     }
     this._sidpid[SID] = PID;
     this.players[PID] = player;
-    this.nPlayers++;
-    this.log(`${player.username} successfully connected and assigned PID=${PID} SID=${SID}`);
-    //Update the Lobby
-    //Let the player know their PID.
+    if(spectating){
+      player.isSpectating = true;
+      if(this.game.initSpectator && this.game.running){
+        this.game.initSpectator(socket);
+      }
+    } else{
+      this.nPlayers++;
+      this.log(`${player.username} successfully connected and assigned PID=${PID} SID=${SID}`);
+      //Update the Lobby
+      //Let the player know their PID.
+    }
     socket.emit('lobby joined', {PID: PID})
     this.emitUpdateLobby();
   }
@@ -133,7 +145,7 @@ class Lobby{
     this.disconnectedPlayers[PID] = this.players[PID];
     player.connected = false;
     this.nConnected--;
-    this.log(`Player ${player.username} disconnected.}`);
+    this.log(`Player ${player.username} disconnected.`);
     this.emitUpdateLobby();
   }
 
@@ -192,6 +204,9 @@ class Lobby{
     }else{
       delete this.disconnectedPlayers[PID];
     }
+    if(player.isLeader){
+      this.leader = null;
+    }
     this.nPlayers--;
     this.log(`Player ${player.username} kicked from the lobby.`)
     player.socket.emit('kick');
@@ -219,7 +234,9 @@ class Lobby{
     let gameInfo = this.game.getLobbyGameInfo();
     let publicPlayers = {};
     for(var PID in this.players){
-      publicPlayers[PID] = this.players[PID].getPublicInfo();
+      if(!this.players[PID].isSpectating){
+        publicPlayers[PID] = this.players[PID].getPublicInfo();
+      }
     }
     let args = {
       "lobbyID": this.ID,
@@ -248,6 +265,7 @@ class Lobby{
       })
       socket.on('connection init request', ()=>socket.emit('lobby init info', {initInfo: this.getLobbyInfo()}));
       socket.on('join lobby', (arg) => {this.connectNewPlayer(arg.username, socket)})
+      socket.on('spectator init', ()=>{this.connectNewPlayer('SPECTATOR', socket, true)})
       socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
       socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
       socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
@@ -260,6 +278,7 @@ class Player{
   constructor(username="definitelyLiberal", PID, SID, socket = null){
     this.username = username;
     this.isLeader = false;
+    this.isSpectating = false;
     this.PID = PID;
     this.SID = SID;
     this.socket = socket;
@@ -270,6 +289,7 @@ class Player{
     //This should mostly be used for initializing the game.
     let arg = {"username": this.username, 
                "isLeader": this.isLeader, 
+               "isSpectating": this.isSpectating,
                "connected": this.connected,
                "PID": this.PID
               }

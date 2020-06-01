@@ -56,8 +56,10 @@ class Hitler{
     for(PID in this.players){ 
       let player = this.players[PID];
       player.alive = true;
-      //If 0, liberal. If 1, Fascist. If 2, Hitler. -1 is unknown status and spectating. (?)
-      player.membership = -1;
+      //If 0, liberal. If 1, Fascist. If 2, Hitler. -1 is spectating.
+      if(player.membership != -1){//Do not include spectators
+        player.membership = null;
+      }
       this.nPlaying++; //reCalculate player count.
       this.nAlive++;
       this.order.push(PID);
@@ -82,7 +84,9 @@ class Hitler{
     let PID;
     for(PID of this.order){
       let player = this.players[PID];
-      if(player.membership != -1){this.error("player already assigned role!"); continue;} 
+      if(player.membership !== null){
+        this.error("player already assigned role!"); continue;
+      }
       if(nLiberals > 0){
         this.memberships[PID] = 0;
         player.membership = 0;
@@ -108,6 +112,12 @@ class Hitler{
   reconnectPlayer(socket){
     let theirPID = this.lobby._sidpid[socket.id];
     this.activateGameSignals(socket);
+    socket.emit('full game info', this.getFullGameInfo(theirPID));
+  }
+  
+  initSpectator(socket){
+    //No incoming game signals from spectators.
+    let theirPID = this.lobby._sidpid[socket.id];
     socket.emit('full game info', this.getFullGameInfo(theirPID));
   }
 

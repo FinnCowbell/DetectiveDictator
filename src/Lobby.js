@@ -17,6 +17,7 @@ export default class Lobby extends React.Component{
       players: {},
       username: null,
       gameInfo: null,
+      spectating: null
     }
     this.disconnector = null;
     this.RECONNECT_TIME = 5000;
@@ -54,7 +55,7 @@ export default class Lobby extends React.Component{
       this.disconnector = setTimeout(()=>this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`),this.RECONNECT_TIME)
     })
     socket.on('reconnect', ()=>{
-      clearTimeout(this.disconnector)
+      clearTimeout(this.disconnector);
     })
     socket.on('alert', (alert)=>{
       this.props.setAlert(alert);
@@ -64,6 +65,7 @@ export default class Lobby extends React.Component{
   }
   componentWillUnmount(){
     this.props.socket.close();
+    clearTimeout(this.disconnector);
   }
   leaveLobby(reason = null){
     if(reason){
@@ -98,54 +100,53 @@ export default class Lobby extends React.Component{
   }
   spectateGame(){
     this.props.socket.emit('spectator init');
+    this.setState({
+      'spectating': true,
+    })
   }
   render(){
-    let connectionForm;
+    let bottomButton;
     const lobbyID = this.props.lobbyID;
     const lobbyExists = this.state.lobbyExists;
     const inLobby = this.state.inLobby;
     const gameInfo = this.state.gameInfo;
     const players = this.state.players;
-    const you = this.state.players && this.state.players[this.state.PID];
+    const you = players && players[this.state.PID];
     const isLeader = you && you.isLeader;
-    //If the game is running, only reconnects are allowed.
-    connectionForm = (gameInfo && gameInfo.isRunning) ? 
-    <ReconnectPlayerForm players={this.state.players} reconnect={this.reconnect}/> : 
-    <NewPlayerForm connect={this.connect}/>; 
+    const spectating = this.state.spectating;
+    if(!inLobby){
+      bottomButton = <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
+    } else if(isLeader){
+      bottomButton = <button className="game-start" onClick={this.startGame}>Start Game</button>
+    } else if(gameInfo && gameInfo.isRunning){
+      bottomButton = <button className="spectate"onClick={this.spectateGame}>Spectate!</button>
+    }
     return(
       <div className="window">
         {(!inLobby || !gameInfo.isRunning) && (
-        <div className="lobby-window">
+        <div className={`lobby-window`}>
           <div className="content">
             <Header lobbyID ={lobbyID}/>
-            {!lobbyExists && <LoadingMessage leaveLobby={()=>{this.leaveLobby(null)}}/>}
-            {(lobbyExists && !inLobby) && connectionForm}
+            <LobbyStatus
+              connect={this.connect}
+              gameInfo={gameInfo}
+              lobbyExists={lobbyExists}
+              inLobby={inLobby}
+              />
             <LobbyPlayerList PID={this.state.PID} 
-                        players={this.state.players}
+                        players={players}
+                        reconnect={this.reconnect}
                         kickPlayer={this.kickPlayer}
                         />
             <div className="bottom-button">
-              {(isLeader) &&(
-                <button 
-                  className="game-start" 
-                  onClick={this.startGame}>
-                  Start Game
-                </button>)}
-              {(gameInfo && gameInfo.isRunning) &&(
-                <button 
-                  className="spectate"
-                  onClick={this.spectateGame}>
-                  Spectate
-                </button>
-              )}
+              {bottomButton}
             </div>
           </div>
         </div>)}
-        {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username}/>)}
         <Suspense fallback={<div className="game-window"></div>}>
-          <Game lobbyID={lobbyID} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
+          <Game lobbyID={lobbyID} spectating={spectating}yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
         </Suspense>
-        
+        {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username} spectating={spectating}/>)}
       </div>
     )
   }
@@ -191,20 +192,37 @@ class NewPlayerForm extends React.Component{
   }
 }
 
+function LobbyStatus(props){
+  let status;
+  if(!props.lobbyExists){
+    status = (<h2>Loading Lobby...</h2>)
+  } else if(props.gameInfo && props.gameInfo.isRunning){
+    status = (<h2>Game in Progress!</h2>)
+  } else if(props.inLobby){
+    status = null;
+  } else{
+    status = <NewPlayerForm connect={props.connect}></NewPlayerForm>
+  } 
+  return(
+    <div className="lobby-status">
+      {status}
+    </div>
+  )
+}
+
 function ReconnectPlayerForm(props){
   if(!props.players){return null}
   let iterablePlayers = Object.values(props.players);
   let disconnectedPlayers = iterablePlayers.map((player)=>(
     !player.connected ? (
-      <button key={player.username} onClick={()=>{props.reconnect(player.PID)}}>
+      <div key={player.username} onClick={()=>{props.reconnect(player.PID)}}>
         {player.username}
-      </button>) : null
+      </div>) : null
   ))
   return(
     <div className="rejoin-form">
       <h2>Game in Progress!</h2>
       {disconnectedPlayers.length && disconnectedPlayers}
-      <button className="spectate-button" onClick={props.spectate}>Spectate</button>
     </div>
   )
 }
@@ -222,13 +240,24 @@ function LobbyPlayerList(props){
   let yourPID = props.PID;
   let you = props.players && props.players[yourPID];
   let iterablePlayers = Object.values(props.players);
-  let listItems = null;
+  let connectedPlayers, disconnectedPlayers = [null, null];
   if(props.players){
-    listItems = iterablePlayers.map((player)=>(
+    connectedPlayers = iterablePlayers.map((player)=>( player.connected && 
       <li key={player.username} 
           className={(player.isLeader ? "leader " : "" )+
-                     (!player.connected ? "disconnected " : "")+
                      ((player.PID == yourPID) ? "you " : "")}>
+        {player.username}
+        {(you && you.isLeader && player.PID != yourPID) &&
+          <button className="kick-button" onClick={()=>props.kickPlayer(player.PID)}>
+            Kick
+          </button>
+        }
+      </li>
+    ))
+    disconnectedPlayers = iterablePlayers.map((player)=>(!player.connected && 
+      <li key={player.username} 
+          className="disconnected"
+          onClick={()=>{props.reconnect(player.PID)}}>
         {player.username}
         {(you && you.isLeader && player.PID != yourPID) &&
           <button className="kick-button" onClick={()=>props.kickPlayer(player.PID)}>
@@ -240,10 +269,23 @@ function LobbyPlayerList(props){
   }
   return(
     <div className="player-list">
-      <h3>Connected Players:</h3>
-      <ul>
-        {listItems}
-      </ul>
+      {true ? (
+        <div className="connected-players">
+          <h3>Connected Players:</h3>
+          <ul>
+            {connectedPlayers}
+          </ul>
+        </div>
+      ) : null}
+      {true ? (
+        <div className="disconnected-players">
+          <hr/>
+          {/* <h3>Disconnected Players:</h3> */}
+          <ul>
+            {disconnectedPlayers}
+          </ul>
+        </div>
+      ) : null}
     </div>
   )
 }

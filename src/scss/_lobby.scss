@@ -19,17 +19,26 @@ $background-color: #2b2b2b;
     font-family: Squada;
     display: grid;
     grid-template-areas: "header"
-    "prompt"
+    "status"
     "middle"
     "bottom";
     grid-template-rows: 175px auto 1fr 50px;
     width: 500px;
     height: 500px;
-    background-color: gray;
+    background-color: rgb(189, 189, 189);
     border-radius: 25px;
     border-bottom: 5px solid rgb(192, 192, 192);
     box-shadow: 5px 5px 10px rgb(0, 0, 0);
     padding: 20px;
+  }
+  .lobby-status{
+    grid-area: status;
+    display: flex;
+    justify-content: center;
+    font-family: Squada;
+    .new-player-form{
+      margin: 10px;
+    }
   }
   .site-header{
     grid-area: header;
@@ -40,7 +49,6 @@ $background-color: #2b2b2b;
     };
     .lobby-title{
       position: relative;
-      width: 250px;
       margin-left: auto;
       margin-right: auto;
       input{
@@ -62,7 +70,7 @@ $background-color: #2b2b2b;
         transition: 0s;
         position: absolute;
         right: 0px;
-        top: -.8rem;
+        // top: -.8rem;
         opacity: 0;
         font-size: 1rem;
         color: white;
@@ -70,7 +78,7 @@ $background-color: #2b2b2b;
     };
   }
   .new-lobby{
-    grid-area: prompt;
+    grid-area: status;
     font-size: 2em;
     width: 300px;
     border-radius: 10px;
@@ -87,13 +95,6 @@ $background-color: #2b2b2b;
     margin: 0px 30px;
     text-align: center;
     font-family: Squada;
-  }
-  .new-player-form{
-    grid-area: prompt;
-    display: flex;
-    justify-content: center;
-    font-family: Squada;
-    margin: 10px;
   }
   .bottom-button{
     grid-area: bottom;
@@ -113,9 +114,14 @@ $background-color: #2b2b2b;
       list-style-type: none;
     }
     .leader{
-      color: goldenrod;
+      color: rgb(149, 6, 6);
     }
-
+    .disconnected{
+      cursor: pointer;
+      &:hover{
+        color: black;
+      }
+    }
     .you{
       font-weight: bold;
     }
