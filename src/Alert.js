@@ -6,6 +6,7 @@ export default class Alert extends React.Component{
       previousState: false,
       open: false,
     }
+    this.timeout = null
     this.closeStatus = this.closeStatus.bind(this);
   }
   closeStatus(){
@@ -24,7 +25,8 @@ export default class Alert extends React.Component{
       this.setState((state, props)=>({
         previousState: props.toggledState,
       }));
-      setTimeout(this.closeStatus,5000);
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(this.closeStatus,5000);
     }
   }
   render(){
