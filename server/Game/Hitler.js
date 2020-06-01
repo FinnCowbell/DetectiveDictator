@@ -45,6 +45,33 @@ class Hitler{
   log(msg){
     this.lobby.log(msg);
   }
+  setInitialValues(){
+    this.memberships = {};
+    this.currentEvent = "pre game";
+    this.order = []; //Order of players by PID.
+    this.currentPlayer = 0; //Next President in order List.
+    this.presidentPID = null; 
+    this.chancellorPID = null;
+    this.previousPresPID = null;
+    this.previousChanPID = null;
+    this.hitler = null;
+    this.fasBoard = 0; //0-6
+    this.libBoard = 0; //0-6
+    this.marker = 0; //0-3. If it turns to 3 it should be set to 0.
+    this.nPlaying = 0;
+    this.nAlive = 0;
+    this.gameStyle = -1; // 0 is 5-6 players, 1 is 7-8, 2 is 9-10
+    this.policies = new CardDeck([0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1], true, true);;
+    this.rounds = [];
+    this.remainingPolicy = null;
+    //Used for voting
+    this.votes = {};
+    this.nVoted = 0;
+    this.yesCount = 0;
+    //Should only be used during executive actions.
+    this.investigatee = null;
+    this.victim = null;
+  }
   init(){
     //Let the lobby know the game is starting. Send the game info to the lobby.
     this.newGame();
@@ -52,14 +79,16 @@ class Hitler{
   }
   initPlayers(){
     //Sets the order of the players, Assigns their roles, Finalizes the player count.
-    let PID;
-    for(PID in this.players){ 
+    for(let PID in this.players){ 
       let player = this.players[PID];
-      player.alive = true;
       //If 0, liberal. If 1, Fascist. If 2, Hitler. -1 is spectating.
-      if(player.membership != -1){//Do not include spectators
-        player.membership = null;
+      if(player.isSpectating){//Do not include spectators
+        player.membership = -1;
+        this.memberships[PID] = -1;
+        continue;
       }
+      player.alive = true;
+      player.membership = null;
       this.nPlaying++; //reCalculate player count.
       this.nAlive++;
       this.order.push(PID);
@@ -179,38 +208,28 @@ class Hitler{
     return players;
   }
   knowsMemberships(PID){
+    //memberships are only put in this.memberships at the beginning of the game. 
+    //Therefore, only spectators that were in the game since the game started can see roles.
     let memberships = this.memberships;
-    if(memberships[PID] == 1 || (memberships[PID] == 2 && this.gameStyle == 0)){
+    if(memberships[PID] == 1 || 
+      (memberships[PID] == 2 && this.gameStyle == 0) ||
+      (memberships[PID] == -1)){
       return true;
     }
     return false;
   }
 
   newGame(){
-    //Reset all "state" variables.
-    this.rounds = [];
-    this.order = []; //Order of players by PID.
-    this.currentPlayer = 0; //Next President in order List.
-    this.presidentPID = null; 
-    this.chancellorPID = null;
-    this.previousPresPID = null;
-    this.previousChanPID = null;
-    this.hitler = null;
-    this.currentEvent = "pre game";
-    this.fasBoard = 0;
-    this.libBoard = 0;
-    this.marker = 0;
-    this.nPlaying = 0;
-    this.nAlive = 0;
+    this.setInitialValues();
     this.initPlayers();
     this.policies.shuffleCards();
     this.initPlayerSignals();
     this.running = true;
-    //
     this.buildNewRound();
+    this.sendFullGameInfo();
     this.currentEvent="chancellor pick";
     this.buildEvent();
-    this.sendFullGameInfo();
+    this.sendLatestEvent();
   }
   sendFullGameInfo(){
     let PID;

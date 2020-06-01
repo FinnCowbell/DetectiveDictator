@@ -115,7 +115,16 @@ export default class Lobby extends React.Component{
     const isLeader = you && you.isLeader;
     const spectating = this.state.spectating;
     if(!inLobby){
-      bottomButton = <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
+      if(lobbyExists){
+        bottomButton = (
+          <div>
+            <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
+            <button className="spectate"onClick={this.spectateGame}>Spectate!</button>
+          </div>
+        )
+      } else{
+        bottomButton = <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
+      }
     } else if(isLeader){
       bottomButton = <button className="game-start" onClick={this.startGame}>Start Game</button>
     } else if(gameInfo && gameInfo.isRunning){
