@@ -44,7 +44,11 @@ export default class Lobby extends React.Component{
       })
     });
     socket.on('kick', ()=>this.leaveLobby("You've been kicked From the lobby!"));
-    socket.on('end game', ()=>this.leaveLobby("The game has ended."));
+    // socket.on('end game', ()=>{
+    //   setTimeout(()=>{
+    //     this.leaveLobby("The game has ended.")
+    //   },100000)
+    // });
     socket.on('lobby update info', (arg)=>{
       this.setState({
         players: arg.lobbyInfo.players,
