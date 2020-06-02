@@ -23,10 +23,10 @@ class LibBoard extends React.Component{
     this.drawCenter = [85,337];
     this.discardCenter = [1970,337];
     this.fontType= "70px Squada";
-    this.cardXs =[312,610,906,1205,1506];
-    this.cardY = 158;
-    this.cardWidth = 242; 
-    this.cardHeight = 371; 
+    this.cardXs =[310,608,904,1203,1504];
+    this.cardY = 155;
+    this.cardWidth = 245; 
+    this.cardHeight = 373; 
   }
   componentDidMount(){
     this.update();
@@ -119,9 +119,9 @@ class FasBoard extends React.Component{
   constructor(props){
     super(props);
     this.cardY = 165;
-    this.cardXs =[170,466,765,1064,1364,1664];
-    this.cardWidth = 242; 
-    this.cardHeight = 371; 
+    this.cardXs =[169,466,765,1064,1364,1664];
+    this.cardWidth = 245; 
+    this.cardHeight = 373; 
   }
   componentDidMount(){
     this.update();
