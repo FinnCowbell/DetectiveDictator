@@ -305,8 +305,15 @@ h1, h2, h3, h4{
 .player-card{
   position: absolute;
   display: none;
-  left: 0;
+  height: 400px;
+  left: 0px;
   top: 100px;
+  img{
+    border-radius: 30px;
+    box-shadow: 1px 3px 4px black;
+    height: inherit;
+    width: inherit;
+  }
 }
 
 

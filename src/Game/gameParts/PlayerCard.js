@@ -11,8 +11,9 @@ const N_LIBERAL_CARDS = liberalCards.length;
 
 import fascist1 from '../media/player-cards/fascist1.png'
 import fascist2 from '../media/player-cards/fascist2.png'
-let fascistCards = [fascist1, fascist2];
-const N_FASCIST_CARDS = liberalCards.length;
+import fascist3 from '../media/player-cards/fascist3.png'
+let fascistCards = [fascist1, fascist2, fascist3];
+const N_FASCIST_CARDS = fascistCards.length;
 
 import hitler from '../media/player-cards/hitler.png'
 
