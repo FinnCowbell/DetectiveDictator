@@ -110,24 +110,24 @@ class Hitler{
     shuffle(this.order); //Shuffles the players, so we don't know who's getting what.
     let nLiberals = Math.ceil((this.nPlaying + 1)/2);
     let nFascists = this.nPlaying - nLiberals - 1; 
-    let PID;
+    let PID, player;
     for(PID of this.order){
-      let player = this.players[PID];
+      player = this.players[PID];
       if(player.membership !== null){
         this.error("player already assigned role!"); continue;
       }
-      if(nLiberals > 0){
-        this.memberships[PID] = 0;
-        player.membership = 0;
-        nLiberals--;
+      if(this.hitler === null){ //First Player in the list is always hitler, For compatibility.
+        this.memberships[PID] = 2;
+        player.membership = 2;
+        this.hitler = player;
       }else if(nFascists > 0){
         this.memberships[PID] = 1;
         player.membership = 1;
         nFascists--;
-      }else{ //Last player in the list is hitler.
-        this.memberships[PID] = 2;
-        player.membership = 2;
-        this.hitler = player;
+      } else {
+        this.memberships[PID] = 0;
+        player.membership = 0;
+        nLiberals--;
       }
     }
   }
