@@ -12,6 +12,7 @@ Whereas a website such as secrethitler.io was made to provide to a community of 
 
 * Multiple lobby creation for simultaneous games hosted on one server!
 * A user interface that stays true to the original game art style!
+* Spectator compatibility!
 * Handling client rejoins mid-game
 * A fun lil' built-in chat
 * Thumbs
