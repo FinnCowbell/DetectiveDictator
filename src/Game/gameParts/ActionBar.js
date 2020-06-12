@@ -88,6 +88,7 @@ export default class ActionBar extends React.Component{
     let selectedUsername = selectedPlayer && selectedPlayer.username;
     let yourPID = this.props.yourPID;
     let uiInfo = this.props.uiInfo;
+    let voted = uiInfo.voted || false;
     switch(this.props.action){
       case 'your chancellor pick':
         content = (<PickPlayer
@@ -99,7 +100,7 @@ export default class ActionBar extends React.Component{
         break;
       case 'chancellor vote':
         content = (
-          <JaNein confirm={this.castVote} voteReceived={uiInfo.voted[yourPID]} />
+          <JaNein confirm={this.castVote} voteReceived={voted[yourPID]} />
         )
         break;
       case 'your president discard':
@@ -116,7 +117,6 @@ export default class ActionBar extends React.Component{
             veto={this.sendVetoRequest}
             fasBoard={details.fasBoard}
             policies={details.secret.policies}
-
             />
         );
         break;
