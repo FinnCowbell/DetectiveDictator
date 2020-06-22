@@ -17,7 +17,8 @@ export default class Lobby extends React.Component{
       players: {},
       username: null,
       gameInfo: null,
-      spectating: null
+      nSpectators: 0,
+      isSpectating: false,
     }
     this.disconnector = null;
     this.RECONNECT_TIME = 5000;
@@ -53,6 +54,7 @@ export default class Lobby extends React.Component{
       this.setState({
         players: arg.lobbyInfo.players,
         gameInfo: arg.lobbyInfo.gameInfo,
+        nSpectators: arg.lobbyInfo.nSpectators
       })
     });
     socket.on('disconnect', ()=>{
@@ -105,7 +107,7 @@ export default class Lobby extends React.Component{
   spectateGame(){
     this.props.socket.emit('spectator init');
     this.setState({
-      'spectating': true,
+      'isSpectating': true,
     })
   }
   render(){
@@ -117,7 +119,7 @@ export default class Lobby extends React.Component{
     const players = this.state.players;
     const you = players && players[this.state.PID];
     const isLeader = you && you.isLeader;
-    const spectating = this.state.spectating;
+    const spectating = this.state.isSpectating;
     if(!inLobby){
       if(lobbyExists){
         bottomButton = (
@@ -146,18 +148,23 @@ export default class Lobby extends React.Component{
               lobbyExists={lobbyExists}
               inLobby={inLobby}
               />
-            <LobbyPlayerList PID={this.state.PID} 
-                        players={players}
-                        reconnect={this.reconnect}
-                        kickPlayer={this.kickPlayer}
-                        />
+            <LobbyPlayerList 
+              PID={this.state.PID} 
+              players={players}
+              reconnect={this.reconnect}
+              kickPlayer={this.kickPlayer}
+              />
             <div className="bottom-button">
               {bottomButton}
+            </div>
+            <div className="num-spectators">
+              <h3>Spectators: {this.state.nSpectators}</h3>
             </div>
           </div>
         </div>)}
         <Suspense fallback={<div className="game-window"></div>}>
-          <Game lobbyID={lobbyID} spectating={spectating}yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
+          {/* Lazy Loading Game Files */}
+          <Game lobbyID={lobbyID} spectating={spectating} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
         </Suspense>
         {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username} spectating={spectating}/>)}
       </div>

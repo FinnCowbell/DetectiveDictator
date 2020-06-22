@@ -23,16 +23,15 @@
 
 //ACTION BAR INTERFACE
 .action-bar-container{
+  grid-area: action; 
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  grid-area: action;
-  height: 250px;
 }
 .action-bar{
   background-color: gray;
-  border: 10px solid transparent;
-  border-image: url(./Game/media/border/action-border.png) 25 round;
+  border: 13px solid transparent;
+  border-image: url(./Game/media/border/action-border.png) 30 round;
   height: 200px;
   width: 600px;
   margin-top: 10px;

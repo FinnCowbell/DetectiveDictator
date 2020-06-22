@@ -102,8 +102,13 @@ $background-color: #2b2b2b;
     button{
       font-family: Germania;
       font-size: 1.5em;
-
     }
+  .num-spectators{
+     color: blue;
+     position: absolute;
+     bottom: 0;
+     left: 0;
+  }
   }
   .player-list{
     grid-area: middle;

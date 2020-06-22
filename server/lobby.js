@@ -93,7 +93,7 @@ class Lobby{
   connectNewPlayer(username,socket,spectating = false){
     // Error checking
     let SID = socket.id;
-    if(this.nPlayers >= this.MaxPlayers){
+    if(this.nPlayers >= this.MaxPlayers && spectating == false){
       socket.emit('alert', "Lobby is Full!");
       return false;
     }
@@ -112,6 +112,7 @@ class Lobby{
     this.players[PID] = player;
     if(spectating){
       player.isSpectating = true;
+      this.spectators[PID] = player;
       if(this.game.initSpectator && this.game.running){
         this.game.initSpectator(socket);
       }
@@ -207,7 +208,9 @@ class Lobby{
     if(player.isLeader){
       this.leader = null;
     }
-    this.nPlayers--;
+    if(player.isSpectating){
+      this.nPlayers--;
+    }
     this.log(`Player ${player.username} kicked from the lobby.`)
     player.socket.emit('kick');
     this.emitUpdateLobby();
@@ -241,7 +244,8 @@ class Lobby{
     let args = {
       "lobbyID": this.ID,
       "players": publicPlayers,
-      "gameInfo": gameInfo
+      "gameInfo": gameInfo,
+      "nSpectators": Object.keys(this.spectators).length
     }
     return args
   }

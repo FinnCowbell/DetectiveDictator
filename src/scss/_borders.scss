@@ -12,34 +12,34 @@ $status-path: './Game/media/border/status-border.png';
 
 @mixin liberal-border(){
   background-color: $liberal-blue;
-  border: solid 7px transparent;
+  border: solid 13px transparent;
   border-image-width: 15px;
   border-image: url(./Game/media/border/liberal-border.png) 26 round;
-  border-image-outset: 7px;
+  border-image-outset: 11px;
 }
 
 @mixin fascist-border(){
   background-color: $fascist-orange;
-  border: solid 7px transparent;
+  border: solid 13px transparent;
   border-image: url(./Game/media/border/fascist-border.png) 45 round;
   border-image-width: 15px;
   border-image-slice: 45 51 45 45;
-  border-image-outset: 7px;
+  border-image-outset: 11px;
 }
 
 @mixin hitler-border(){
-  border: solid 7px transparent;
+  border: solid 13px transparent;
   border-image: url(./Game/media/border/hitler-border.png) 45 round;
   border-image-width: 15px;
   border-image-slice: 45 51 45 45;
-  border-image-outset: 7px;
+  border-image-outset: 11px;
   background-color: $hitler-red;
 }
 
 @mixin unknown-border(){
   background-color: $unknown-color;
-  border: solid 7px transparent;
+  border: solid 13px transparent;
   border-image-width: 15px;
   border-image: url(./Game/media/border/unknown-border.png) 26 round;
-  border-image-outset: 7px;
+  border-image-outset: 11px;
 }

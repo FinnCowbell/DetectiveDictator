@@ -6,8 +6,8 @@
 @import 'scss/borders';
 @import 'scss/actionbar';
 
-$hand-vertical-offset: 5px;
-$hand-horizontal-offset: -53px;
+$hand-vertical-offset: -2px;
+$hand-horizontal-offset: -57px;
 
 h1, h2, h3, h4{
   margin-block-start: 0em;
@@ -106,25 +106,25 @@ h1, h2, h3, h4{
   grid-template-areas: "status" 
   "boards" 
   "action";
-  overflow-y: scroll;
   overflow-x: hidden;
-  width: 100%;
-  height: 100%;
-  grid-template-rows: 100px 6fr auto;
+  width: 100vw;
+  height: 100vh;
+  grid-template-rows: 100px 1fr 250px;
   grid-template-columns: 1fr;
   background-color: $background-color; 
   background-image: linear-gradient(to right, black 0%, #{$background-color} 20%, #{$background-color} 80%, black 100% );
   .boards{
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
     grid-area: boards;
+    // height: 100%;
     canvas{
+      // flex-grow: 1;
       height: auto;
       max-width: 950px;
-      min-width: 600px;
+      max-height: 400px;
       width: 100%;
     }
   }
@@ -163,7 +163,7 @@ h1, h2, h3, h4{
       flex-direction: row-reverse;
       justify-content: flex-start;
       width: inherit;
-      margin-top: 35px;
+      margin-top: 40px;
       .player-bar{
         display: flex;
         align-items: center;
@@ -227,19 +227,20 @@ h1, h2, h3, h4{
         height: 100%;
       }
       .hat{
-        width: 60px;
+        width: 55px;
         height: auto;
         position: absolute;
         filter: brightness(2);
         &.pres{
-          left: -30px;
-          top: -35px;
-          transform: rotate(-15deg);
+          width: 70px;
+          left: -50px;
+          top: -45px;
+          transform: rotate(-20deg);
         }
         &.chan{
-          left: -30px;
-          top: -30px;
-          transform: rotate(-10deg);
+          left: -40px;
+          top: -35px;
+          transform: rotate(-15deg);
         }
       }
       .username{
@@ -247,7 +248,7 @@ h1, h2, h3, h4{
       }
       order: 0;
       // padding: 10px;
-      height: 50px;
+      height: 40px;
       width: 200px;
       background-color: $unknown-color;
       color:white;
@@ -264,7 +265,6 @@ h1, h2, h3, h4{
       }
       &.selected{
         width: 220px;
-        border-left-width: 8px;
       }
     }
   }
