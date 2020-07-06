@@ -265,7 +265,12 @@ function LobbyPlayerList(props){
   let you = props.players && props.players[yourPID];
   let iterablePlayers = Object.values(props.players);
   let connectedPlayers, disconnectedPlayers = [null, null];
+  let nDisconnectedPlayers = 0;
   if(props.players){
+    //Counting the disconnected Players
+    iterablePlayers.forEach((player)=>{if(!player.connected){nDisconnectedPlayers++;}});
+    
+    //Creating the list of connected Players
     connectedPlayers = iterablePlayers.map((player)=>( player.connected && 
       <li key={player.username} 
           className={(player.isLeader ? "leader " : "" )+
@@ -278,6 +283,8 @@ function LobbyPlayerList(props){
         }
       </li>
     ))
+
+    //Creating the list of Disconnected Players
     disconnectedPlayers = iterablePlayers.map((player)=>(!player.connected && 
       <li key={player.username} 
           className="disconnected"
@@ -291,6 +298,7 @@ function LobbyPlayerList(props){
       </li>
     ))
   }
+  
   return(
     <div className="player-list">
       {true ? (
@@ -304,7 +312,8 @@ function LobbyPlayerList(props){
       {true ? (
         <div className="disconnected-players">
           <hr/>
-          {/* <h3>Disconnected Players:</h3> */}
+          {(nDisconnectedPlayers ? <h3>Disconnected Players:</h3> : null
+          )}
           <ul>
             {disconnectedPlayers}
           </ul>
@@ -313,9 +322,3 @@ function LobbyPlayerList(props){
     </div>
   )
 }
-
-// If we're in root or 
-// ReactDOM.render(
-//   <Lobby lobbyID={lobbyID}/>,
-//   document.getElementById('root')
-// )
