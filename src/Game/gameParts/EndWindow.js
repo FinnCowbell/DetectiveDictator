@@ -7,16 +7,11 @@ export default class EndWindow extends React.Component{
       open: true,
     }
     this.closeWindow = this.closeWindow.bind(this);
-    this.returnToLobby = this.returnToLobby.bind(this);
   }
   closeWindow(){
     this.setState({
       open: false,
     })
-  }
-  returnToLobby(){
-    this.closeWindow();
-    this.props.returnToLobby();
   }
   render(){
     let fascistsWon = this.props.winner;

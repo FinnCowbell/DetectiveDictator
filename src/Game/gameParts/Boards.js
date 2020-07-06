@@ -92,24 +92,6 @@ class LibBoard extends React.Component{
         <canvas ref="canvas" className="lib-canvas" width={2056} height={678}></canvas>
         <img ref="libBoard" onLoad={()=>{this.update()}} src={libBoard} style={{"display": "none"}}/>
         <img ref="policy" onLoad={()=>{this.update()}} src={libPolicy} style={{"display": "none"}}/>
-        {/*<div className="draw-pile">
-          <h2>DRAW PILE: {props.draw}</h2>
-        </div>
-        <div className="discard-pile">
-          <h2>DISCARD PILE: {props.discard}</h2>
-        </div>
-        <div className="card-slots">
-          <div className={props.nCards > 0 ? "filled" : "empty"}>{props.nCards > 0 ? "filled" : "empty"}</div>
-          <div className={props.nCards > 1 ? "filled" : "empty"}>{props.nCards > 1 ? "filled" : "empty"}</div>
-          <div className={props.nCards > 2 ? "filled" : "empty"}>{props.nCards > 2 ? "filled" : "empty"}</div>
-          <div className={props.nCards > 3 ? "filled" : "empty"}>{props.nCards > 3 ? "filled" : "empty"}</div>
-          <div className={props.nCards > 4 ? "filled" : "empty"}>{props.nCards > 4 ? "filled" : "empty"}</div>
-        </div>
-        <div className="marker-slots">
-          <div className={props.marker == 0 ? "filled" : "empty"}></div>
-          <div className={props.marker == 1 ? "filled" : "empty"}></div>
-          <div className={props.marker == 2 ? "filled" : "empty"}></div>
-        </div> */}
       </div>
     )
   }
@@ -148,9 +130,10 @@ class FasBoard extends React.Component{
   }
   render(){
     let fascistBoard;
-    if(this.props.gameStyle < 1){
+    let gameStyle = Math.floor((this.props.nPlayers - 5)/ 2)
+    if(gameStyle < 1){
       fascistBoard = Fascist56;
-    } else if(this.props.gameStyle == 1){
+    } else if(gameStyle == 1){
       fascistBoard = Fascist78;
     } else{
       fascistBoard = Fascist910;

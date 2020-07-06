@@ -34,7 +34,7 @@ export default class PlayerSidebar extends React.Component{
     })
   }
   getStatus(player){
-    let details = this.props.event.details;
+    let details = this.props.fullEvent.details;
     if(player.alive && player.PID == details.presidentPID){
       return "president";
     } else if(player.alive && player.PID == details.chancellorPID){
@@ -50,7 +50,7 @@ export default class PlayerSidebar extends React.Component{
     //Ja, Nein, or Sent.
     //Sent = event is 'chancellor vote' and vote is true.
     const showVoteEvents = new Set(['president discard', 'chancellor discard', 'liberal policy placed', 'fascist policy placed', 'chancellor not voted'])
-    let event = this.props.event;
+    let event = this.props.fullEvent;
     let votes = event.details.votes || {};
     let vote = votes[player.PID];
     let voted = this.props.uiInfo.voted || {};
@@ -67,13 +67,14 @@ export default class PlayerSidebar extends React.Component{
     return "hidden";
   }
   isPlayerSelectable(player){
-    //To be selectable:
-    //IF picking is president pick or chancellor pick, cannot be current President, Chancellor, previous president or chancellor.
-    //Player cannot be you.
-    //Player needs to be alive.
-    //You must be president
+    /*To be selectable:
+      -IF picking is president pick or chancellor pick, cannot be current President, Chancellor, 
+       previous president or chancellor.
+      -Player cannot be you.
+      -Player needs to be alive.
+      -You must be president*/
     const yourPID = this.props.yourPID;
-    let event = this.props.event;
+    let event = this.props.fullEvent;
     let presID = event.details.presidentPID;
     let chanID = event.details.chancellorPID;
     let prevPres = event.details.previousPresPID;
@@ -102,12 +103,11 @@ export default class PlayerSidebar extends React.Component{
     let yourPID = this.props.yourPID;
     let players = this.props.players;
     let memberships = this.props.memberships;
-    let eventDetails = this.props.event.details;
+    let eventDetails = this.props.fullEvent.details;
     let pres = eventDetails.presidentPID;
     let chan = eventDetails.chancellorPID;
     let uiInfo = this.props.uiInfo;
     let bulletIndex = this.props.uiInfo.bulletIndex;
-
 
     let playerList = order.map((PID, index)=>{
       let player = players[PID];
@@ -121,30 +121,23 @@ export default class PlayerSidebar extends React.Component{
       const membership = this.getMembership(player);
       const selectable = this.isPlayerSelectable(player);
       const isSelected = (PID == uiInfo.selectedPlayer);
-      const isKillingPlayer = (this.props.event.name == "president kill");
+      const isKillingPlayer = (this.props.fullEvent.name == "president kill");
       const hasBullet = (isSelected && isKillingPlayer);
       return (
       <div key={index} className={`player ${membership} ${isYou}`}>
-        {/* Next to the player content, we show a bullet OR the vote status, but not both. */}
         {isKillingPlayer && (
           <div className="bullet-holder">
-            {hasBullet &&
-              <img className="bullet" src={bullet}/>
-            }
+            {hasBullet && <img className="bullet" src={bullet}/>}
           </div>
          )}
 
         <div className={`player-bar ${(isSelected && !hasBullet ) ? "selected" : ""} ${selectable ? "selectable" : ""}`} 
-              onClick={()=>{
-                if(selectable){
-                  this.changeSelectedPlayer(PID)
-                }
-              }}>
+              onClick={()=>{if(selectable){this.changeSelectedPlayer(PID)}}}>
           {status == "president" && <img className="pres hat" src={presHat}/>/*He get hat*/}
           {status == "chancellor" && <img className="chan hat" src={chanHat}/>/*He also get hat*/}
           {status == "dead" && <img className="bullet-holes" src={bulletHole}/>}
           <div className={'vote ' + voteStatus}>
-            {voteStatus == "ja" ? (<img src={ja}/>) : null}
+            {voteStatus == "ja" ? (<img src={ja}/>):null}
             {voteStatus == "nein" ? (<img src={nein}/>):null}
             {voteStatus == "sent" ? (<img src={sent}/>):null}
           </div>
@@ -159,7 +152,7 @@ export default class PlayerSidebar extends React.Component{
           {playerList}
         </div>
         <button onClick={this.toggleState} className={`controller ${this.state.closed ? "toggled" : ""}`}>
-          <h1>></h1>
+          <h1>{">"}</h1>
         </button>
       </div>
     )

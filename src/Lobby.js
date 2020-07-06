@@ -283,7 +283,7 @@ function LobbyPlayerList(props){
         }
       </li>
     ))
-
+    
     //Creating the list of Disconnected Players
     disconnectedPlayers = iterablePlayers.map((player)=>(!player.connected && 
       <li key={player.username} 
@@ -298,7 +298,7 @@ function LobbyPlayerList(props){
       </li>
     ))
   }
-  
+
   return(
     <div className="player-list">
       {true ? (

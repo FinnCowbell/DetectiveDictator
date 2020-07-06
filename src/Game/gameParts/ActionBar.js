@@ -41,7 +41,7 @@ export default class ActionBar extends React.Component{
       "your president discard": (()=>this.props.socket.emit('president discarding', {policyIndex : policyIndex})),
       "your chancellor discard": (()=>this.props.socket.emit('chancellor discarding', {policyIndex : policyIndex})),
     }
-    actions[this.props.action]();
+    actions[this.props.fullEvent.action]();
   }
 
   sendVetoRequest(policyIndex){
@@ -83,13 +83,13 @@ export default class ActionBar extends React.Component{
   }
   render(){
     let content;
-    let details = this.props.event.details;
+    let details = this.props.fullEvent.details;
     let selectedPlayer =  this.props.players[this.props.uiInfo.selectedPlayer] || null;
     let selectedUsername = selectedPlayer && selectedPlayer.username;
     let yourPID = this.props.yourPID;
     let uiInfo = this.props.uiInfo;
     let voted = uiInfo.voted || false;
-    switch(this.props.action){
+    switch(this.props.fullEvent.action){
       case 'your chancellor pick':
         content = (<PickPlayer
           verb="Pick"

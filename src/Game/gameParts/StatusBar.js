@@ -6,12 +6,12 @@ export default function StatusBar(props){
   let investigatee, investigateePID, investigateeName;
   let victim, victimPID, victimName;
   let description = ""; 
-  let event = props.event;
-  let action = props.action;
+  let fullEvent = props.fullEvent;
+  let action = fullEvent.action;
   let players = props.players;
   let yourPID = props.yourPID;
   let you = players[yourPID] || null;
-  let details = event.details;
+  let details = fullEvent.details;
   presidentPID = details.presidentPID;
   chancellorPID = details.chancellorPID;
   investigateePID = details.investigatee;
@@ -102,18 +102,12 @@ export default function StatusBar(props){
   return(
     <div className="status-bar">
       <div className="status-div">
-        {event &&(
+        {fullEvent &&(
         <h2 className="status">
           {description.toUpperCase()}
         </h2>)
         }
       </div>
-      {/* <div className="you-are">
-        <h4>{you && `You are: ${you.username}`}</h4>
-      </div>
-      <div className="lobby-id">
-        <h4 className="lobby-id"> Lobby ID: {props.lobbyID}</h4>
-      </div> */}
     </div>
   );
 }
