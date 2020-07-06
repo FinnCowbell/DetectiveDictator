@@ -27,7 +27,7 @@ export default class EndWindow extends React.Component{
           <button className="close-window" onClick={this.closeWindow}>X</button>
           <h1>{"The " + (fascistsWon ? "Fascists" : "Liberals") + " Have Won."}</h1>
           <div className="buttons">
-            <button onClick={this.returnToLobby}>Return to Lobby</button>
+            <button onClick={this.props.joinNewLobby}>New Game</button>
             <button onClick={this.props.leaveLobby}>Quit</button>
           </div>
         </div>

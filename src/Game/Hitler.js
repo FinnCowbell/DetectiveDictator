@@ -57,6 +57,7 @@ export default class Hitler extends React.Component{
    this.clearUIInfo = this.clearUIInfo.bind(this);
    this.sendUIInfo = this.sendUIInfo.bind(this);
    this.recieveUIInfo = this.recieveUIInfo.bind(this);
+   this.joinNewLobby = this.joinNewLobby.bind(this);
   }
   clearUIInfo(){
     let uiInfo = {
@@ -68,7 +69,6 @@ export default class Hitler extends React.Component{
       uiInfo: uiInfo,
     });
   }
-
   sendUIInfo(arg){
     //arg contains arg.name and other required arg info.
     //All shared UI events pass are sent to other players.
@@ -76,7 +76,6 @@ export default class Hitler extends React.Component{
     this.props.socket.emit('send ui info', arg);
     this.recieveUIInfo(arg);
   }
-
   recieveUIInfo(arg){
     const uiInfo = this.state.uiInfo;
     switch(arg.name){
@@ -92,6 +91,10 @@ export default class Hitler extends React.Component{
     this.setState({
       uiInfo: uiInfo
     })
+  }
+  joinNewLobby(){
+    console.log('joining new lobby');
+    this.props.socket.emit('join new lobby');
   }
 
   componentDidMount(){
@@ -274,6 +277,7 @@ export default class Hitler extends React.Component{
           winner={action.includes("liberal") ? 0 : 1}
           leaveLobby={this.props.leaveLobby}
           returnToLobby={()=>this.leaveLobby()}
+          joinNewLobby={()=>this.joinNewLobby()}
         />
       )}
       </div>

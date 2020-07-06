@@ -16,14 +16,13 @@ class Lobbies {
     if(nLobbies >= maxLobbies - 1){
       this.idWordLength++;
     }
-    
     //Confirms we dontt overwrite existing lobbies.
     do{
       lobbyID = this.generateLobbyID(this.idWordLength);
       lobbyKey = lobbyID.toLowerCase();
     } while(this.getLobby(lobbyKey));
     
-    lobby = new Lobby(this.io,lobbyID,devMode, 1, Hitler, 5, 10 );
+    lobby = new Lobby(this.io,lobbyID,this,devMode, 1, Hitler, 5, 10 );
     this.lobbies[lobbyKey] = lobby;
     return this.lobbies[lobbyKey];
   }
@@ -45,10 +44,11 @@ class Lobbies {
 }
 
 class Lobby{
-  constructor(io, lobbyID, devMode = false, startingPID, Game=Hitler, min = 0, max = 100){
+  constructor(io, lobbyID, lobbies, devMode = false, startingPID, Game=Hitler, min = 0, max = 100){
     let lobbyKey = lobbyID.toLowerCase();
     let ourio = io.of(`/${lobbyKey}`)
     this.ID = lobbyID;
+    this.lobbies = lobbies;
     this.key = lobbyKey;
     this.io = ourio;
     this.players = {};
@@ -65,8 +65,8 @@ class Lobby{
     this.devMode = devMode;
     this.activateSignals();
     this.log("Lobby Created");
+    this.nextLobbyID = null
   }
-
   error(message){
     this.log("<ERROR> " + message);
     return -1;
@@ -82,14 +82,31 @@ class Lobby{
       console.log(`_________`);
     }
   }
-
+  activateSignals(){
+    this.io.on('connect', (socket)=>{
+      this.log("Connected with SID:" + socket.id)
+      socket.on('disconnect',()=>{
+        //If the player was in the lobby, then we need to disconnect him.
+        if(this.getPlayerBySocketID(socket.id)){
+          this.disconnectPlayer(socket);
+        }
+      })
+      socket.on('connection init request', ()=>socket.emit('lobby init info', {initInfo: this.getLobbyInfo()}));
+      socket.on('join lobby', (arg) => {this.connectNewPlayer(arg.username, socket)})
+      socket.on('spectator init', ()=>{this.connectNewPlayer('SPECTATOR', socket, true)})
+      socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
+      socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
+      socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
+      socket.on('game init', ()=>this.initializeGame(socket));
+      socket.on('join new lobby', ()=>this.joinNextLobby(socket));
+    })
+  }
   getNewPID(){
     let PID = this.nextPID;
     this.nextPID++;
     return PID;
     //Every player gets a player ID.
   }
-
   connectNewPlayer(username,socket,spectating = false){
     // Error checking
     let SID = socket.id;
@@ -258,23 +275,12 @@ class Lobby{
     }
     this.game.init();
   }
-  activateSignals(){
-    this.io.on('connect', (socket)=>{
-      this.log("Connected with SID:" + socket.id)
-      socket.on('disconnect',()=>{
-        //If the player was in the lobby, then we need to disconnect him.
-        if(this.getPlayerBySocketID(socket.id)){
-          this.disconnectPlayer(socket);
-        }
-      })
-      socket.on('connection init request', ()=>socket.emit('lobby init info', {initInfo: this.getLobbyInfo()}));
-      socket.on('join lobby', (arg) => {this.connectNewPlayer(arg.username, socket)})
-      socket.on('spectator init', ()=>{this.connectNewPlayer('SPECTATOR', socket, true)})
-      socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
-      socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
-      socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
-      socket.on('game init', ()=>this.initializeGame(socket));
-    })
+  joinNextLobby(socket){
+    if(this.nextLobbyID == null){
+      let lobby = this.lobbies.createLobby(this.devMode);
+      this.nextLobbyID = lobby.ID;
+    }
+    socket.emit('change lobby',{ID: this.nextLobbyID})
   }
 }
 

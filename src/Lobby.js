@@ -44,6 +44,10 @@ export default class Lobby extends React.Component{
         PID: arg.PID,
       })
     });
+    socket.on("change lobby", (arg)=>{
+      this.leaveLobby();
+      this.props.setLobbyID(arg.ID);
+    })
     socket.on('kick', ()=>this.leaveLobby("You've been kicked From the lobby!"));
     // socket.on('end game', ()=>{
     //   setTimeout(()=>{
