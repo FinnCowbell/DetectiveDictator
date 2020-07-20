@@ -225,7 +225,7 @@ class Lobby{
     if(player.isLeader){
       this.leader = null;
     }
-    if(player.isSpectating){
+    if(!player.isSpectating){
       this.nPlayers--;
     }
     this.log(`Player ${player.username} kicked from the lobby.`)
@@ -271,8 +271,10 @@ class Lobby{
       socket.emit('alert', `You need at least ${this.MinPlayers} to play.`);
       return false; //Only condition to not play game
     } else if(!this.getPlayerBySocketID(socket.id).isLeader){
-      socket.emit('alert', "You cannot start the game!")
+      socket.emit('alert', "You cannot start the game!");
+      return false;
     }
+
     this.game.init();
   }
   joinNextLobby(socket){
