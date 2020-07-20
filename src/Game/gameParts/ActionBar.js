@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import liberalPolicy from '../media/liberal-policy.png';
 import fascistPolicy from '../media/fascist-policy.png';
 import liberalMembership from '../media/liberal-membership.png';
 import fascistMembership from '../media/fascist-membership.png';
-import ja from '../media/hands/ja.png';
-import nein from '../media/hands/nein.png';
+import jaPic from '../media/hands/ja.png';
+import neinPic from '../media/hands/nein.png';
 
 export default class ActionBar extends React.Component{
   constructor(props){
@@ -34,7 +34,7 @@ export default class ActionBar extends React.Component{
     this.props.socket.emit('cast vote', {vote: isJa});
   }
   discardPolicy(policyIndex){
-    if(policyIndex == null){
+    if(policyIndex === null){
       return;
     }
     let actions = {
@@ -45,7 +45,7 @@ export default class ActionBar extends React.Component{
   }
 
   sendVetoRequest(policyIndex){
-    if(policyIndex == null){
+    if(policyIndex === null){
       return;
     }
     this.props.socket.emit('veto request', {policyIndex: policyIndex});
@@ -105,14 +105,14 @@ export default class ActionBar extends React.Component{
         break;
       case 'your president discard':
         content = (
-          <DiscardPresident
+          <Discard
             confirm={this.discardPolicy} 
             policies={details.secret.policies}/>
         );
         break;
       case 'your chancellor discard':
         content = (
-          <DiscardChancellor 
+          <Discard 
             confirm={this.discardPolicy} 
             veto={this.sendVetoRequest}
             fasBoard={details.fasBoard}
@@ -216,178 +216,96 @@ function PickPlayer(props){
   )
 }
 
-class JaNein extends React.Component{
-  //JaNein holds its own internal state: Nothing needs its data until its ready.
-  constructor(props){
-    super(props)
-    this.state={
-      isJa: null, //Null means the vote hasnt been cast yet.
-    }
-    this.setJa = this.setJa.bind(this);
-    this.setNein = this.setNein.bind(this);
-    this.tryConfirm = this.tryConfirm.bind(this);
-  }
-  setJa(){
-    if(this.state.isJa !== true){
-      this.setState({isJa: true});
-    }
-  }
-  setNein(){
-    if(this.state.isJa !== false){
-      this.setState({isJa: false});
-    }
-  }
-  tryConfirm(){
-    const isJa = this.state.isJa;
-    if(isJa === null){
-      return;
-    } else{
-      this.props.confirm(isJa);
-    }
-  }
-  render(){
-    let isJa = this.state.isJa;
-    if(this.props.voteReceived){
-      return(
-        <div className="action ja-nein">
-        <div className="vote-options">
-        {isJa ? (
-          <div className={`option`}>
-            <img className={"selected"} src={ja}/>
-          </div>
-        ):(
-          <div  className={`option`}>
-            <img className={"selected"} src={nein}/>
-          </div>
-        )}
-        </div>
-      </div>        
-      )
-    }
+function JaNein(props){
+  const [isJa, setIsJa] = useState(null);
+  if(props.voteReceived){
     return (
       <div className="action ja-nein">
-        <div className="vote-options">
-          <div className={`option ${(isJa && this.props.voteReceived) ? "hidden" : ""}`}>
-            <img className={isJa ? "selected" : ""} onClick={this.setJa} src={ja}/>
-          </div>
-          <div  className={`option  ${(!isJa && this.props.voteReceived) ? "hidden" : ""}`}>
-            <img className={isJa === false ? "selected" : ""} onClick={this.setNein} src={nein}/>
-          </div>
+      <div className="vote-options">
+        <div className={"option"}>
+          <img className={"selected"} src={isJa === true ? jaPic : neinPic}/>
         </div>
-        <button onClick={this.tryConfirm} className={`vote-button ${this.props.voteReceived ? "hidden" : ""}`}>
-          <h2>
-            Cast Vote
-          </h2>
-        </button>
       </div>
+    </div>
     )
-  }
+  } //else
+  return(
+    <div className="action ja-nein">
+      <div className="vote-options">
+        <div className="option">
+          <img className={isJa ? "selected" : ""} onClick={()=>setIsJa(true)} src={jaPic}/>
+        </div>
+        <div className="option">
+          <img className={isJa === false ? "selected" : ""} onClick={()=>setIsJa(false)} src={neinPic}/>
+        </div>
+      </div>
+      <button onClick={()=>props.confirm(isJa)} className={`vote-button ${props.voteReceived ? 'hidden' : ''}`}>
+        <h2>Cast Vote</h2>
+      </button>
+    </div>
+  )
 }
 
-class DiscardPresident extends React.Component{
-  constructor(props){
-    super(props)
-    this.state={
-      selectedCard: null //Will be 0, 1 or 2. 
-    }
-    this.selectCard = this.selectCard.bind(this);
-    this.trySubmit = this.trySubmit.bind(this);
+function DiscardPresident(props){
+  return Discard(props)
+  const [selectedCard, setSelectedCard] = useState(null);
+  function selectCard(i){
+    if(i < 0 || i > props.policies.length){return;};
+    setSelectedCard(i);
   }
-  selectCard(i){
-    if(i < 0 || i > this.props.policies.length){return;};
-    this.setState({selectedCard: i});
-  }
-  trySubmit(){
-    const selectedCard = this.state.selectedCard
-    if(selectedCard !== null){
-      this.props.confirm(selectedCard)
-    }
-  }
-  render(){
-    let policyValues = this.props.policies;
-    let cards = policyValues.map((value, index)=>(
-      <PolicyCard
-        key={index}
-        isSelected={index == this.state.selectedCard}
-        isFascist={value}
-        onClick={()=>this.selectCard(index)}
-      />
-    ))
-    return (
-      <div className="action discard">
-        <div className="policy-cards">
-          {cards}
-        </div>
-        <div className="discard-button" onClick={this.trySubmit}>
-          <h2>
-            Discard
-          </h2>
-        </div>
-      </div>
-    )
-  }
+  let cards = props.policies.map((value, index)=>(
+    <PolicyCard
+      key={index}
+      isSelected={index == selectedCard}
+      isFascist={value}
+      onClick={()=>setSelectedCard(index)}
+    />
+  ))
+  return(
+    <div className="action discard">
+    <div className="policy-cards">
+      {cards}
+    </div>
+    <div className="discard-button" onClick={()=>props.confirm(selectedCard)}>
+      <h2>Discard</h2>
+    </div>
+  </div>
+  )
 }
 
-class DiscardChancellor extends React.Component{
-  //Same as President, but with Veto logic and 2 cards.
-  constructor(props){
-    super(props)
-    this.state={
-      selectedCard: null //Will be 0, 1 or 2. 
-    }
-    this.selectCard = this.selectCard.bind(this);
-    this.trySubmit = this.trySubmit.bind(this);
-    this.tryVeto = this.tryVeto.bind(this);
+function Discard(props){
+  const [selectedCard, setSelectedCard] = useState(null);
+  function selectCard(i){
+    if(i < 0 || i > props.policies.length){return;};
+    setSelectedCard(i);
   }
-  selectCard(i){
-    if(i < 0 || i > this.props.policies.length){return;};
-    this.setState({selectedCard: i});
-  }
-  trySubmit(){
-    const selectedCard = this.state.selectedCard
-    if(selectedCard !== null){
-      this.props.confirm(selectedCard)
-    }
-  }
-  tryVeto(){
-    const selectedCard = this.state.selectedCard
-    if(selectedCard !== null){
-      this.props.veto(selectedCard)
-    }
-  }
-  render(){
-    let policyValues = this.props.policies;
-    let cards = policyValues.map((value, index)=>(
-      <PolicyCard
-        key={index}
-        isSelected={index == this.state.selectedCard}
-        isFascist={value}
-        onClick={()=>this.selectCard(index)}
-      />
-    ))
-    let button = (
-      <div className="discard-button" onClick={this.trySubmit}><h2>Discard</h2></div>
-    );
-    if(this.props.fasBoard == 5){
-      button = (
-        <div className="stacked-buttons">
-          <div className="discard-button" onClick={this.trySubmit}>
-            <h3>Discard</h3>
-          </div>
-          <div className="veto-button" onClick={this.tryVeto}>
-            <h3>Veto</h3>
-          </div></div>
-      )
-    }
-    return (
-      <div className="action discard">
-        <div className="policy-cards">
-          {cards}
+  let cards = props.policies.map((value, index)=>(
+    <PolicyCard
+      key={index}
+      isSelected={index == selectedCard}
+      isFascist={value}
+      onClick={()=>selectCard(index)}
+    />
+  ))
+  return(
+    <div className="action discard">
+    <div className="policy-cards">
+      {cards}
+    </div>
+    {props.fasBoard == 5 && props.veto ? (
+      <div className="stacked-buttons">
+        <div className="discard-button" onClick={()=>props.confirm(selectedCard)}>
+          <h3>Discard</h3>
         </div>
-        {button}
+        <div className="veto-button" onClick={()=>props.veto(selectedCard)}>
+          <h3>Veto</h3>
+        </div>
       </div>
-    )
-  }
+    ) : (
+      <div className="discard-button" onClick={()=>props.confirm(selectedCard)}><h2>Discard</h2></div>
+    )}
+  </div>
+  )
 }
 
 function PolicyCard(props){
