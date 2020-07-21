@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import liberalPolicy from '../media/liberal-policy.png';
-import fascistPolicy from '../media/fascist-policy.png';
-import liberalMembership from '../media/liberal-membership.png';
-import fascistMembership from '../media/fascist-membership.png';
-import jaPic from '../media/hands/ja.png';
-import neinPic from '../media/hands/nein.png';
+import liberalPolicy from '../../media/liberal-policy.png';
+import fascistPolicy from '../../media/fascist-policy.png';
+import liberalMembership from '../../media/liberal-membership.png';
+import fascistMembership from '../../media/fascist-membership.png';
+import jaPic from '../../media/hands/ja.png';
+import neinPic from '../../media/hands/nein.png';
 
 export default class ActionBar extends React.Component{
   constructor(props){

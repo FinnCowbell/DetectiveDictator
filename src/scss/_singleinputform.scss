@@ -1,0 +1,26 @@
+.single-input-form {
+  display:flex;
+  flex-direction: row;
+  width: 100%;
+  outline: 1px solid gray;
+  background-color: white;
+  .input-box{
+    transition: .5s;
+    flex-grow:1;
+    border:none;
+    outline: unset;
+    box-shadow: -1px -1 1px 2px black;
+  }
+  &.error{
+  outline-color: red;
+  }
+  button{
+    border: unset;
+    outline: unset;
+    height: 100%;
+    cursor: pointer;
+    &:hover{
+      filter: brightness(.9);
+    }
+  }
+}

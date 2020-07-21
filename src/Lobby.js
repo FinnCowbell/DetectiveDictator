@@ -1,10 +1,11 @@
 import React, { Suspense } from 'react';
 
-import Header from './Lobby/Header.js'
-import ChatRoom from './Lobby/ChatRoom.js'
+import Header from './parts/Header.js'
+import ChatRoom from './parts/ChatRoom.js'
+import SingleInputForm from './parts/SingleInputForm'
 //Lazy Load the game in the background, as it is not neccessary for loading the lobby.
-const Game = React.lazy(() => import('./Game/Hitler.js'));
-// import {default as Game} from './Game/Hitler.js';
+const Game = React.lazy(() => import('./Hitler.js'));
+// import {default as Game} from './Hitler.js';
 
 export default class Lobby extends React.Component{
   constructor(props){
@@ -182,25 +183,10 @@ class NewPlayerForm extends React.Component{
     this.state = {
       username: ""
     }
-    this.MAX_LENGTH = 30;//30 is generous >:(
-    this.handleEnter = this.handleEnter.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.MAX_LENGTH = 30;//30 is generous CHRIS >:(
+    this.join = this.join.bind(this);
   }
-  handleEnter(e){
-    if(e.keyCode == 13){
-      this.handleSubmit(e);
-    }
-  }
-  handleChange(e){
-    let msg = e.target.value;
-    if(msg.length > this.MAX_LENGTH){
-      msg = msg.split('').splice(0,this.MAX_LENGTH).join('');
-    }
-    this.setState({username:msg});
-  }
-  handleSubmit(e){
-    let username = this.state.username;
+  join(username){
     if(username != ""){
       this.props.connect(username);
     }
@@ -208,9 +194,10 @@ class NewPlayerForm extends React.Component{
   render(){
     return(
       <div className="new-player-form">
+        <SingleInputForm className="username-input" button="Join"
+         MAX_LENGTH={this.MAX_LENGTH} submit={this.join}>
         <label>Enter your Name:</label>
-        <input className="username-input" type="text" value={this.state.username} onKeyDown={this.handleEnter} onChange={this.handleChange}></input>
-        <button onClick={this.handleSubmit}>Join</button>
+        </SingleInputForm>
       </div>
     )
   }

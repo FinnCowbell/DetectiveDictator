@@ -1,12 +1,12 @@
 import React from 'react';
 import io from 'socket.io-client'
 
-import {LibBoard,FasBoard} from './gameParts/Boards.js'
-import ActionBar from './gameParts/ActionBar.js'
-import StatusBar from './gameParts/StatusBar.js'
-import PlayerSidebar from './gameParts/PlayerSidebar.js'
-import PlayerCard from './gameParts/PlayerCard.js'
-import EndWindow from './gameParts/EndWindow.js'
+import {LibBoard,FasBoard} from './parts/gameParts/Boards.js'
+import ActionBar from './parts/gameParts/ActionBar.js'
+import StatusBar from './parts/gameParts/StatusBar.js'
+import PlayerSidebar from './parts/gameParts/PlayerSidebar.js'
+import PlayerCard from './parts/gameParts/PlayerCard.js'
+import EndWindow from './parts/gameParts/EndWindow.js'
 
 export default class Hitler extends React.Component{
   constructor(props){

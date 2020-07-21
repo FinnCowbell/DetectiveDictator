@@ -84,7 +84,7 @@ class Lobby{
   }
   activateSignals(){
     this.io.on('connect', (socket)=>{
-      this.log("Connected with SID:" + socket.id)
+      this.log("Connection with SID: " + socket.id)
       socket.on('disconnect',()=>{
         //If the player was in the lobby, then we need to disconnect him.
         if(this.getPlayerBySocketID(socket.id)){
@@ -135,7 +135,7 @@ class Lobby{
       }
     } else{
       this.nPlayers++;
-      this.log(`${player.username} successfully connected and assigned PID=${PID} SID=${SID}`);
+      this.log(`${player.username} joined lobby and assigned PID=${PID}`);
       //Update the Lobby
       //Let the player know their PID.
     }
@@ -147,8 +147,7 @@ class Lobby{
     //Disconnects a player by socket.
     //Disconnects occur when the player closes the lobby window. 
     //The only information we have on disconnect is the socket.
-    //If the game isn't running, disconnects should kick the player.
-    let SID = socket.id;
+    //If the game isn't running, disconnects should just kick the player.
     let player = this.getPlayerBySocketID(socket.id);
     let PID = player.PID;
     //Should this logic be elsewhere?
@@ -170,7 +169,7 @@ class Lobby{
   reconnectPlayer(PID, socket){ 
     //Linking disconnected player PID to socket.
     if(!this.disconnectedPlayers[PID]){
-      return this.error("Reconnect: Player not in disconnected list! (were they kicked?)");
+      return this.error("Player tried reconnecting, but not in disconnected list!");
     }
     let SID = socket.id
     let player = this.disconnectedPlayers[PID];
@@ -180,16 +179,14 @@ class Lobby{
     player.SID = socket.id;
     player.connected = true;
     this.nConnected++;
-    this.log(`${player.username} and PID ${PID} reconnected with SID = ${SID}`)
+    this.log(`${player.username} and PID ${PID} reconnected.`)
 
-    //If the game's running and the game handles reconnecting, 
+    //If the game's running and the game has a process for reconnecting, 
     if(this.game.reconnectPlayer && this.game.running){
       this.game.reconnectPlayer(socket);
     }
-    let arg = {
-      "PID": PID
-    }
-    socket.emit('lobby joined', arg);
+    
+    socket.emit('lobby joined', {"PID": PID});
     this.emitUpdateLobby();
   }
 
@@ -198,8 +195,8 @@ class Lobby{
     if(!player){
       return false;
     }
-    //A quick check to confirm all data is updated.
-    if(player[SID] != SID && player[SID]){
+    //A quick check to confirm all data is updated and linked correctly.
+    if(player[SID] && player[SID].SID != SID){
       this.error("Incorrect Player Returned by SID");
     }
     return player

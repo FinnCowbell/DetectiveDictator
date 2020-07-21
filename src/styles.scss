@@ -5,6 +5,7 @@
 @import 'scss/colors';
 @import 'scss/borders';
 @import 'scss/actionbar';
+@import 'scss/singleinputform';
 
 $hand-vertical-offset: -2px;
 $hand-horizontal-offset: -57px;
@@ -65,7 +66,6 @@ h1, h2, h3, h4{
     margin-bottom: 15px;
   }
   .sent-messages{
-
     overflow-y: scroll;
     overflow-x: hidden;
     word-wrap: break-word;
@@ -73,7 +73,7 @@ h1, h2, h3, h4{
   }
   .chat-input{
     margin-bottom: 10px;
-    width: calc(100% - 50px);
+    width: 100%;
   }
   &.closed{
     bottom: -350px;

@@ -1,32 +1,18 @@
 import React from 'react'
+import SingleInputForm from './SingleInputForm';
 export default class ChatRoom extends React.Component{
   constructor(props){
-    super(props)
+    super(props);
     this.state={
       message: "",
       messages: [],
     }
-    this.MAX_LENGTH = 150;
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleChange = this.handleChange.bind(this)
+    this.MAX_LENGTH = 120;
     this.postChat = this.postChat.bind(this)
     this.sendChat = this.sendChat.bind(this)
   }
   componentDidMount(){
     this.props.socket.on('chat recv msg', (arg)=>this.postChat(arg.msg));
-  }
-  handleSubmit(e){
-    if(e.keyCode == 13){
-      this.sendChat(this.state.message);
-    }
-    }
-  handleChange(e){
-    let msg = e.target.value;
-    if(msg.length > this.MAX_LENGTH){
-      //Truncate anything that's pasted to the first MAX.LENGTH characters.
-      msg = msg.split('').splice(0,this.MAX_LENGTH).join('');
-    }
-    this.setState({message: msg})
   }
   postChat(msg){
     const messages = this.state.messages;
@@ -37,23 +23,25 @@ export default class ChatRoom extends React.Component{
     sentWindow.scrollTo({behavior: "smooth", top: sentWindow.scrollHeight});
   }
 
-  sendChat(){
-    if(this.state.message == ''){return};
+  sendChat(message){
+    if(message == ''){
+      return false
+    };
     let msg = {
       username: this.props.username,
-      message: this.state.message,
+      message: message,
     }
     this.props.socket.emit('chat send msg', {msg: msg});
-    this.setState({
-      message: ""
-    });
+    return true
   }
-
   render(){
     let chats = this.state.messages.map((msg, i)=>(
-      <p key={i} className="message">
-        <strong>{msg.username}: </strong>{msg.message}
-      </p>
+      <div className="message">
+        <p key={i}>
+          <strong>{msg.username}: </strong>{msg.message}
+        </p>
+        <hr/>
+      </div>
     ));
     return(
       <div className="chat-window">
@@ -62,10 +50,8 @@ export default class ChatRoom extends React.Component{
           {chats}
         </div>
         {!this.props.spectating && (
-          <div className="input-section">
-            <input className="chat-input" value={this.state.message} onKeyDown={this.handleSubmit} onChange={this.handleChange}/>
-            <button onClick={this.sendChat}>Send</button>
-          </div>
+          <SingleInputForm className="chat-input" button="Send"
+           MAX_LENGTH={this.MAX_LENGTH} submit={this.sendChat}/>
         )}
       </div>
     )

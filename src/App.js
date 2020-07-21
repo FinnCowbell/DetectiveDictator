@@ -2,7 +2,7 @@ import { hot } from "react-hot-loader/root";
 import React from 'react';
 import io from 'socket.io-client'
 
-import Alert from './Alert.js';
+import Alert from './parts/Alert.js';
 import Lobby from './Lobby.js';
 import MainMenu from './MainMenu.js';
 

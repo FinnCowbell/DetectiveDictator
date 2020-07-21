@@ -1,12 +1,12 @@
 import React from 'react'
 
-import bullet from '../media/sidebar/bullet.png';
-import ja from '../media/hands/ja.png';
-import nein from '../media/hands/nein.png';
-import sent from '../media/hands/fist.png';
-import presHat from '../media/sidebar/president-hat.png';
-import chanHat from '../media/sidebar/chancellor-hat.png';
-import bulletHole from '../media/sidebar/bullet-holes.png'
+import bullet from '../../media/sidebar/bullet.png';
+import ja from '../../media/hands/ja.png';
+import nein from '../../media/hands/nein.png';
+import sent from '../../media/hands/fist.png';
+import presHat from '../../media/sidebar/president-hat.png';
+import chanHat from '../../media/sidebar/chancellor-hat.png';
+import bulletHole from '../../media/sidebar/bullet-holes.png'
 
 export default class PlayerSidebar extends React.Component{
   constructor(props){

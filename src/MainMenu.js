@@ -1,5 +1,6 @@
 import React from 'react';
-import Header from './Lobby/Header.js'
+import Header from './parts/Header.js'
+import SingleInputForm from './parts/SingleInputForm'
 
 export default class MainMenu extends React.Component{
   constructor(props){
@@ -38,30 +39,20 @@ export default class MainMenu extends React.Component{
   }
 }
 
-class LobbyInput extends React.Component{
-  constructor(props){
-    super(props)
-    this.state={
-      lobbyName: ""
+function LobbyInput(props){
+
+  function joinLobby(lobbyName){
+    if(lobbyName != ""){
+      props.joinLobby(lobbyName);
     }
   }
-  handleSubmit(e){
-    if(e.keyCode == 13 && this.state.lobbyName != ""){
-      this.props.joinLobby(this.state.lobbyName);
-    }
-  }
-  handleChange(e){
-    this.setState({lobbyName: e.target.value})
-  }
-  render(){
-    return(
-      <div className="existing-lobby">
-        <h4>Join an Existing Lobby</h4>
-        <div>
-          <input className="lobby-input" value={this.state.lobbyName} onKeyDown={(e)=>this.handleSubmit(e)} onChange={(e)=>this.handleChange(e)}/>
-          <button onClick={()=>this.props.joinLobby(this.state.lobbyName)}>Join</button>
-        </div>
+  return(
+    <div className="existing-lobby">
+      <h4>Join an Existing Lobby</h4>
+      <div>
+        <SingleInputForm className="lobby-input" button="Join"
+        submit={(name)=>joinLobby(name)}/>
       </div>
-    )
-  }
+    </div>
+  )
 }
