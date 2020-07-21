@@ -1,10 +1,10 @@
 @import './colors';
 
-$status-path: './Game/media/border/status-border.png';
+$border-path: './media/border/';
 
 @mixin status-border(){
   background-color: $status-background;
-  border-image: url($status-path) round;
+  border-image: url($border-path + 'status-border.png') round;
   border-image-outset: 20px;
   border-image-slice:54 45 52 45;
   border-image-width: 20px;
@@ -14,14 +14,14 @@ $status-path: './Game/media/border/status-border.png';
   background-color: $liberal-blue;
   border: solid 13px transparent;
   border-image-width: 15px;
-  border-image: url(./Game/media/border/liberal-border.png) 26 round;
+  border-image: url($border-path + 'liberal-border.png') 26 round;
   border-image-outset: 11px;
 }
 
 @mixin fascist-border(){
   background-color: $fascist-orange;
   border: solid 13px transparent;
-  border-image: url(./Game/media/border/fascist-border.png) 45 round;
+  border-image: url($border-path + 'fascist-border.png') 45 round;
   border-image-width: 15px;
   border-image-slice: 45 51 45 45;
   border-image-outset: 11px;
@@ -29,7 +29,7 @@ $status-path: './Game/media/border/status-border.png';
 
 @mixin hitler-border(){
   border: solid 13px transparent;
-  border-image: url(./Game/media/border/hitler-border.png) 45 round;
+  border-image: url($border-path + 'hitler-border.png') 45 round;
   border-image-width: 15px;
   border-image-slice: 45 51 45 45;
   border-image-outset: 11px;
@@ -40,6 +40,6 @@ $status-path: './Game/media/border/status-border.png';
   background-color: $unknown-color;
   border: solid 13px transparent;
   border-image-width: 15px;
-  border-image: url(./Game/media/border/unknown-border.png) 26 round;
+  border-image: url($border-path + 'unknown-border.png') 26 round;
   border-image-outset: 11px;
 }
