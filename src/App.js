@@ -32,6 +32,11 @@ class App extends React.Component{
       lobbyID: newID || null,
       socket: io.connect(this.props.socketURL + (newID ? `/${newID.toLowerCase()}` : "/menu"))
     });
+    if(newID){
+      window.location.href = '#lobby=' + newID
+    } else{
+      window.location.href = "/#"
+    }
   }
 
   setAlert(message){

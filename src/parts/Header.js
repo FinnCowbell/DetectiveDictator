@@ -4,7 +4,7 @@ export default class Header extends React.Component{
     super(props)
   }
   getLobbyURL(){
-    return `${window.location.origin}${window.location.pathname}?lobby=${this.props.lobbyID}`
+    return `${window.location.origin}${window.location.pathname}#lobby=${this.props.lobbyID}`
   }
   copyLobbyURL(){
     let text = this.refs.url;
