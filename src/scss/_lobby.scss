@@ -52,9 +52,12 @@ $background-color: #2b2b2b;
   .site-header{
     grid-area: header;
     text-align: center;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
     .site-title{
-      font-family: FasterOne;
-      font-size: 2em;
+      font-family: Potsdam;
+      font-size: 1.5em;
     };
     .lobby-title{
       position: relative;
@@ -83,6 +86,8 @@ $background-color: #2b2b2b;
         opacity: 0;
         font-size: 1rem;
         color: white;
+        text-shadow: 1px 1px 1px black;
+
       }
     };
   }
