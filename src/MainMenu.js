@@ -27,13 +27,15 @@ export default class MainMenu extends React.Component{
   render(){
     return(
       <div className="menu-window">
-        <div className="content">
-          <Header lobbyID={null}/>
-          <button className="new-lobby" onClick={this.createLobby}>
-            <h4>Create Game</h4>
-          </button>
-          <LobbyInput joinLobby={this.joinLobby}/>
-        </div>
+          <div className="content">
+            <Header lobbyID={null}/>
+            <button className="new-lobby" onClick={this.createLobby}>
+              <h4>Create Game</h4>
+            </button>
+            <LobbyInput joinLobby={this.joinLobby}/>
+            <div className="background"/>
+          </div>
+          <div className="wave-background"/>
       </div>
     )
   }

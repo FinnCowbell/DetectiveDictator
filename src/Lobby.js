@@ -145,7 +145,9 @@ export default class Lobby extends React.Component{
       <div className="window">
         {(!inLobby || !gameInfo.isRunning) && (
         <div className={`lobby-window`}>
+          <div className="wave-background"/>
           <div className="content">
+            <div className="background"/>
             <Header lobbyID ={lobbyID}/>
             <LobbyStatus
               connect={this.connect}

@@ -1,9 +1,7 @@
-@use '_fonts.scss';
+@import '_fonts.scss';
+@import '_colors.scss';
+
 $background-color: #2b2b2b;
-@font-face {
-  font-family: 'FasterOne';
-  src: url(./fonts/FasterOne-Regular.ttf) format('truetype');
-}
 .lobby-window, .menu-window{
   position: fixed;
   display: flex;
@@ -13,9 +11,10 @@ $background-color: #2b2b2b;
   left: 0;
   width: 100%;
   height:100%;
-  background-color: rgba(0, 0, 0, 0.671);
   z-index: 99;
   .content{
+    border: 5px solid black;
+    position: relative;
     font-family: Squada;
     display: grid;
     grid-template-areas: "header"
@@ -25,11 +24,21 @@ $background-color: #2b2b2b;
     grid-template-rows: 175px auto 1fr 50px;
     width: 500px;
     height: 500px;
-    background-color: rgb(189, 189, 189);
-    border-radius: 25px;
-    border-bottom: 5px solid rgb(192, 192, 192);
-    box-shadow: 5px 5px 10px rgb(0, 0, 0);
     padding: 20px;
+    .background{
+      position: absolute;
+      top: 0;
+      width: 500px;
+      height: 500px;
+      margin-top: 10px;
+      margin-left: 10px;
+      background-color: rgb(189, 189, 189);
+      z-index: -1;
+      padding: 20px;
+    }
+    *{ 
+      z-index: 3;    
+    }
   }
   .lobby-status{
     grid-area: status;
@@ -135,14 +144,25 @@ $background-color: #2b2b2b;
 
 @keyframes waveBackground{
   0%{
-    background-color: #5fc8d8;
+    background-color: $liberal-blue;
   }
   100%{
-    background-color: rgb(250, 124, 124);
+    background-color: $fascist-orange;
   }
 }
 
-.menu-window{
+.lobby-window{
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.wave-background{
+  opacity: .55;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -2;
+  height: 100vh;
+  width: 100vw;
   animation: waveBackground;
   animation-iteration-count: infinite;
   animation-direction: alternate-reverse;
