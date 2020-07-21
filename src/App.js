@@ -10,34 +10,41 @@ import MainMenu from './MainMenu.js';
 class App extends React.Component{
   constructor(props){
     super(props)
-    let socket;
-    if(this.props.lobbyID){
-      socket = io.connect(this.props.socketURL + `/${this.props.lobbyID.toLowerCase()}`);
-    } else{
-      socket = io.connect(this.props.socketURL + `/menu`);
-    }
     this.state={
+      urlVars: {},
       lobbyID: this.props.lobbyID || null,
-      socket: socket,
       alertMessage: "",
       alertMessageState: 0,
+      rerenderLobby: true,
     }
     this.setLobbyID = this.setLobbyID.bind(this);
     this.setAlert = this.setAlert.bind(this);
   }
+  componentDidMount(){
+
+    this.updateURLVars();
+    window.onpopstate = ()=>this.updateURLVars();
+  }
+
+  updateURLVars(){
+    let URLVars = getURLVars();
+    if(URLVars.lobby && URLVars.lobby != this.state.lobbyID){
+      this.setLobbyID(URLVars.lobby);
+    }
+  }
 
   setLobbyID(newID){
-    this.state.socket.close();
     this.setState({
       lobbyID: newID || null,
-      socket: io.connect(this.props.socketURL + (newID ? `/${newID.toLowerCase()}` : "/menu"))
     });
     if(newID){
       window.location.href = '#lobby=' + newID
+      this.setState({rerender: true})
     } else{
       window.location.href = "/#"
     }
   }
+ 
 
   setAlert(message){
     if(typeof message == 'string' && message != null){
@@ -49,9 +56,13 @@ class App extends React.Component{
   }
   
   render(){
+    if(this.state.rerender){
+      this.setState({rerender:false});
+      return(<div></div>);
+    }
     let content = this.state.lobbyID ? 
-      <Lobby socket={this.state.socket} lobbyID={this.state.lobbyID} setAlert={this.setAlert} setLobbyID={this.setLobbyID}/> : 
-      <MainMenu socket={this.state.socket} setLobbyID={this.setLobbyID}/>;
+      <Lobby socketURL={this.props.socketURL} lobbyID={this.state.lobbyID} setAlert={this.setAlert} setLobbyID={this.setLobbyID}/> : 
+      <MainMenu socketURL={this.props.socketURL} setLobbyID={this.setLobbyID}/>;
     return(
       <div>
         <Alert toggledState={this.state.alertMessageState}>{this.state.alertMessage}</Alert>
@@ -59,6 +70,14 @@ class App extends React.Component{
       </div>
     )
   }
+}
+//Stack Overflow Functions :^)
+function getURLVars() {
+  let urlVars = {}
+  var parts = window.location.href.replace(/[#&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+      urlVars[key] = value;
+  });
+  return urlVars;
 }
 
 export default hot(App);

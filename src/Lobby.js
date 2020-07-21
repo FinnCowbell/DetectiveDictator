@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import io from 'socket.io-client'
 
 import Header from './parts/Header.js'
 import ChatRoom from './parts/ChatRoom.js'
@@ -9,8 +10,10 @@ const Game = React.lazy(() => import('./Hitler.js'));
 
 export default class Lobby extends React.Component{
   constructor(props){
+    let socket = io.connect(props.socketURL + `/${props.lobbyID.toLowerCase()}`)
     super(props);
     this.state = {
+      socket: socket,
       PID: null,
       username: null,
       lobbyExists: false,
@@ -31,7 +34,7 @@ export default class Lobby extends React.Component{
     this.spectateGame = this.spectateGame.bind(this);
   }
   componentDidMount(){
-    let socket = this.props.socket;
+    let socket = this.state.socket;
     socket.on('lobby init info',(arg)=>{
       this.setState({
         lobbyExists: true,
@@ -62,20 +65,26 @@ export default class Lobby extends React.Component{
         nSpectators: arg.lobbyInfo.nSpectators
       })
     });
+
     socket.on('disconnect', ()=>{
       this.disconnector = setTimeout(()=>this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`),this.RECONNECT_TIME)
     })
+
     socket.on('reconnect', ()=>{
       clearTimeout(this.disconnector);
     })
+    
     socket.on('alert', (alert)=>{
       this.props.setAlert(alert);
     });
-    //establishing lobby connection needs to occur AFTer signals have been triggered.
-    socket.emit('connection init request');
+    //establishing lobby connection needs to occur After signals have been triggered.
+    socket.on('connect', ()=>{
+      socket.emit('connection init request');
+    })
   }
+
   componentWillUnmount(){
-    this.props.socket.close();
+    this.state.socket.close();
     clearTimeout(this.disconnector);
   }
   leaveLobby(reason = null){
@@ -85,7 +94,7 @@ export default class Lobby extends React.Component{
     this.props.setLobbyID(null);
   }
   connect(username){
-    this.props.socket.emit("join lobby", {
+    this.state.socket.emit("join lobby", {
       username: username,
     });
     this.setState({
@@ -96,21 +105,21 @@ export default class Lobby extends React.Component{
     let arg = {
       PID: PID,
     }
-    this.props.socket.emit("rejoin lobby", arg);
+    this.state.socket.emit("rejoin lobby", arg);
   }
   kickPlayer(PID){
     const you = this.state.players[this.state.PID];
     if(you.isLeader){
-      this.props.socket.emit('request kick', {
+      this.state.socket.emit('request kick', {
         kickee: PID,
       });
     }
   }
   startGame(){
-    this.props.socket.emit('game init');
+    this.state.socket.emit('game init');
   }
   spectateGame(){
-    this.props.socket.emit('spectator init');
+    this.state.socket.emit('spectator init');
     this.setState({
       'isSpectating': true,
     })
@@ -130,7 +139,7 @@ export default class Lobby extends React.Component{
         bottomButton = (
           <div>
             <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
-            <button className="spectate"onClick={this.spectateGame}>Spectate!</button>
+            <button className="spectate"onClick={this.spectateGame}>Spectate With{gameInfo && gameInfo.isRunning && "out"} Roles</button>
           </div>
         )
       } else{
@@ -138,8 +147,6 @@ export default class Lobby extends React.Component{
       }
     } else if(isLeader){
       bottomButton = <button className="game-start" onClick={this.startGame}>Start Game</button>
-    } else if(gameInfo && gameInfo.isRunning){
-      bottomButton = <button className="spectate"onClick={this.spectateGame}>Spectate!</button>
     }
     return(
       <div className="window">
@@ -171,9 +178,9 @@ export default class Lobby extends React.Component{
         </div>)}
         <Suspense fallback={<div className="game-window"></div>}>
           {/* Lazy Loading Game Files */}
-          <Game lobbyID={lobbyID} spectating={spectating} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.props.socket}/>
+          <Game lobbyID={lobbyID} spectating={spectating} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.state.socket}/>
         </Suspense>
-        {inLobby && (<ChatRoom socket={this.props.socket} username={this.state.username} spectating={spectating}/>)}
+        {inLobby && (<ChatRoom socket={this.state.socket} username={this.state.username} spectating={spectating}/>)}
       </div>
     )
   }

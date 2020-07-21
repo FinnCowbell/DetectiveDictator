@@ -1,24 +1,28 @@
 import React from 'react';
 import Header from './parts/Header.js'
 import SingleInputForm from './parts/SingleInputForm'
+import io from 'socket.io-client'
 
 export default class MainMenu extends React.Component{
   constructor(props){
     super(props);
+    this.state = {
+      socket: io.connect(this.props.socketURL + "/menu"),
+    }
     this.joinLobby = this.joinLobby.bind(this);
     this.createLobby = this.createLobby.bind(this);
   }
   componentDidMount(){
-    const socket = this.props.socket;
+    const socket = this.state.socket;
     socket.on("lobby created", (arg)=>{
       this.joinLobby(arg.ID);
     })
   }
   componentWillUnmount(){
-    this.props.socket.close();
+    this.state.socket.close();
   }
   createLobby(){
-    const socket = this.props.socket;
+    const socket = this.state.socket;
     socket.emit("create lobby");
   }
   joinLobby(lobbyID){
