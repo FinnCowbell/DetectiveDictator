@@ -45,6 +45,7 @@ $background-color: #2b2b2b;
     display: flex;
     justify-content: center;
     font-family: Squada;
+    color: $unknown-color;
     .new-player-form{
       margin: 10px;
     }
@@ -63,6 +64,7 @@ $background-color: #2b2b2b;
       position: relative;
       margin-left: auto;
       margin-right: auto;
+      color: $hitler-red;
       input{
         position: fixed;
         z-index: -1;
@@ -95,7 +97,6 @@ $background-color: #2b2b2b;
     grid-area: status;
     font-size: 2em;
     width: 300px;
-    border-radius: 10px;
     border-bottom: 5px solid black;
     margin: auto;
   }
@@ -109,6 +110,9 @@ $background-color: #2b2b2b;
     margin: 0px 30px;
     text-align: center;
     font-family: Squada;
+    h4{
+      padding-bottom: 20px;
+    }
   }
   .bottom-button{
     grid-area: bottom;

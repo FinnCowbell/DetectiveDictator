@@ -20,7 +20,6 @@ class App extends React.Component{
     this.setAlert = this.setAlert.bind(this);
   }
   componentDidMount(){
-
     this.updateURLVars();
     window.onpopstate = ()=>this.updateURLVars();
   }
@@ -31,21 +30,23 @@ class App extends React.Component{
     var parts = window.location.href.replace(/[#&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
         urlVars[key] = value;
     });
-    console.log
     if(urlVars.lobby != this.state.lobbyID){
-      this.setLobbyID(urlVars.lobby);
+      // Don't change the URL, because that's what we just read from!
+      this.setLobbyID(urlVars.lobby, false);
     }
   }
 
-  setLobbyID(newID = null){
-    console.log(newID)
+  setLobbyID(lobbyID = null, changeURL=true){
+    console.log(lobbyID);
     this.setState({
-      lobbyID: newID,
+      lobbyID: lobbyID,
     });
-    if(newID){
-      window.location.href = '#lobby=' + newID
-    } else{
-      window.location.href = "/"
+    if(changeURL){
+      if(lobbyID){
+        window.location.href = '#lobby=' + lobbyID
+      } else{
+        window.location.href = "#"
+      }
     }
   }
  

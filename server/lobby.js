@@ -139,8 +139,8 @@ class Lobby{
       //Update the Lobby
       //Let the player know their PID.
     }
-    socket.emit('lobby joined', {PID: PID})
     this.emitUpdateLobby();
+    socket.emit('lobby joined', {PID: PID})
   }
 
   disconnectPlayer(socket){

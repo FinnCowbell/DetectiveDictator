@@ -27,11 +27,9 @@ export default class Lobby extends React.Component{
       socket: socket,
       gameInfo: null,
       PID: null,
-      username: null,
       lobbyExists: false,
       inLobby: false,
       players: {},
-      username: null,
       gameInfo: null,
       nSpectators: 0,
       isSpectating: false,
@@ -43,6 +41,7 @@ export default class Lobby extends React.Component{
   }
   
   componentDidUpdate(prevProps){
+    console.log("lobby update");
     if(this.props.lobbyID != prevProps.lobbyID){
       this.state.socket.close();
       clearTimeout(this.disconnector);
@@ -54,11 +53,16 @@ export default class Lobby extends React.Component{
   }
 
   componentWillUnmount(){
+    console.log("lobby close");
     this.state.socket.close();
     clearTimeout(this.disconnector);
   }
 
   initializeSignals(socket){
+    // If the lobby isn't connecting, we shouldn't stick around.
+    clearTimeout(this.disconnector);
+    this.disconnector = setTimeout(()=>this.leaveLobby("Lobby can't be found!"),this.RECONNECT_TIME*2);
+
     socket.on('lobby init info',(arg)=>{
       this.setState({
         lobbyExists: true,
@@ -73,15 +77,9 @@ export default class Lobby extends React.Component{
       })
     });
     socket.on("change lobby", (arg)=>{
-      this.leaveLobby();
-      this.props.setLobbyID(arg.ID);
+      this.props.setLobbyID(arg.ID, true);
     })
     socket.on('kick', ()=>this.leaveLobby("You've been kicked From the lobby!"));
-    // socket.on('end game', ()=>{
-    //   setTimeout(()=>{
-    //     this.leaveLobby("The game has ended.")
-    //   },100000)
-    // });
     socket.on('lobby update info', (arg)=>{
       this.setState({
         players: arg.lobbyInfo.players,
@@ -89,7 +87,6 @@ export default class Lobby extends React.Component{
         nSpectators: arg.lobbyInfo.nSpectators
       })
     });
-
     socket.on('disconnect', ()=>{
       this.disconnector = setTimeout(()=>this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`),this.RECONNECT_TIME)
     })
@@ -104,21 +101,19 @@ export default class Lobby extends React.Component{
     //establishing lobby connection needs to occur After signals have been triggered.
     socket.on('connect', ()=>{
       socket.emit('connection init request');
+      clearTimeout(this.disconnector);
     })
   }
   leaveLobby(reason = null){
     if(reason){
       this.props.setAlert(reason);
     }
-    this.props.setLobbyID(null);
+    this.props.setLobbyID();
   }
   connect(username){
     this.state.socket.emit("join lobby", {
       username: username,
     });
-    this.setState({
-      'username': username,
-    })
   }
   reconnect(PID){
     let arg = {
@@ -144,7 +139,7 @@ export default class Lobby extends React.Component{
     })
   }
   render(){
-    let bottomButton;
+    let navButtons;
     const lobbyID = this.props.lobbyID;
     const lobbyExists = this.state.lobbyExists;
     const inLobby = this.state.inLobby;
@@ -155,17 +150,17 @@ export default class Lobby extends React.Component{
     const spectating = this.state.isSpectating;
     if(!inLobby){
       if(lobbyExists){
-        bottomButton = (
+        navButtons = (
           <div>
             <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
             <button className="spectate"onClick={this.spectateGame}>Spectate With{gameInfo && gameInfo.isRunning && "out"} Roles</button>
           </div>
         )
       } else{
-        bottomButton = <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
+        navButtons = <button className="menu-exit" onClick={this.leaveLobby}>Return to Menu</button>
       }
     } else if(isLeader){
-      bottomButton = <button className="game-start" onClick={this.startGame}>Start Game</button>
+      navButtons = <button className="game-start" onClick={this.startGame}>Start Game</button>
     }
     return(
       <div className="window">
@@ -188,7 +183,7 @@ export default class Lobby extends React.Component{
               kickPlayer={this.kickPlayer}
               />
             <div className="bottom-button">
-              {bottomButton}
+              {navButtons}
             </div>
             <div className="num-spectators">
               <h3>Spectators: {this.state.nSpectators}</h3>
@@ -199,7 +194,8 @@ export default class Lobby extends React.Component{
           {/* Lazy Loading Game Files */}
           <Game lobbyID={lobbyID} spectating={spectating} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.state.socket}/>
         </Suspense>
-        {inLobby && (<ChatRoom socket={this.state.socket} username={this.state.username} spectating={spectating}/>)}
+        {inLobby && 
+          <ChatRoom socket={this.state.socket} username={you.username} spectating={spectating}/>}
       </div>
     )
   }
