@@ -10,20 +10,8 @@ const Game = React.lazy(() => import('./Hitler.js'));
 
 export default class Lobby extends React.Component{
   constructor(props){
-    let socket = io.connect(props.socketURL + `/${props.lobbyID.toLowerCase()}`)
     super(props);
-    this.state = {
-      socket: socket,
-      PID: null,
-      username: null,
-      lobbyExists: false,
-      inLobby: false,
-      players: {},
-      username: null,
-      gameInfo: null,
-      nSpectators: 0,
-      isSpectating: false,
-    }
+    this.state = this.getDefaultState();
     this.disconnector = null;
     this.RECONNECT_TIME = 5000;
     this.leaveLobby = this.leaveLobby.bind(this);
@@ -33,8 +21,44 @@ export default class Lobby extends React.Component{
     this.startGame = this.startGame.bind(this);
     this.spectateGame = this.spectateGame.bind(this);
   }
+  getDefaultState(){
+    let socket = io.connect(this.props.socketURL + `/${this.props.lobbyID.toLowerCase()}`)
+    return ({
+      socket: socket,
+      gameInfo: null,
+      PID: null,
+      username: null,
+      lobbyExists: false,
+      inLobby: false,
+      players: {},
+      username: null,
+      gameInfo: null,
+      nSpectators: 0,
+      isSpectating: false,
+    })
+  }
+
   componentDidMount(){
-    let socket = this.state.socket;
+    this.initializeSignals(this.state.socket);
+  }
+  
+  componentDidUpdate(prevProps){
+    if(this.props.lobbyID != prevProps.lobbyID){
+      this.state.socket.close();
+      clearTimeout(this.disconnector);
+
+      let defaultState = this.getDefaultState()
+      this.setState(defaultState)
+      this.initializeSignals(defaultState.socket);
+    }  
+  }
+
+  componentWillUnmount(){
+    this.state.socket.close();
+    clearTimeout(this.disconnector);
+  }
+
+  initializeSignals(socket){
     socket.on('lobby init info',(arg)=>{
       this.setState({
         lobbyExists: true,
@@ -81,11 +105,6 @@ export default class Lobby extends React.Component{
     socket.on('connect', ()=>{
       socket.emit('connection init request');
     })
-  }
-
-  componentWillUnmount(){
-    this.state.socket.close();
-    clearTimeout(this.disconnector);
   }
   leaveLobby(reason = null){
     if(reason){

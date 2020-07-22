@@ -15,7 +15,6 @@ class App extends React.Component{
       lobbyID: this.props.lobbyID || null,
       alertMessage: "",
       alertMessageState: 0,
-      rerenderLobby: true,
     }
     this.setLobbyID = this.setLobbyID.bind(this);
     this.setAlert = this.setAlert.bind(this);
@@ -27,21 +26,26 @@ class App extends React.Component{
   }
 
   updateURLVars(){
-    let URLVars = getURLVars();
-    if(URLVars.lobby && URLVars.lobby != this.state.lobbyID){
-      this.setLobbyID(URLVars.lobby);
+    let urlVars = {}
+    //Stack Overflow Functions :^)
+    var parts = window.location.href.replace(/[#&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        urlVars[key] = value;
+    });
+    console.log
+    if(urlVars.lobby != this.state.lobbyID){
+      this.setLobbyID(urlVars.lobby);
     }
   }
 
-  setLobbyID(newID){
+  setLobbyID(newID = null){
+    console.log(newID)
     this.setState({
-      lobbyID: newID || null,
+      lobbyID: newID,
     });
     if(newID){
       window.location.href = '#lobby=' + newID
-      this.setState({rerender: true})
     } else{
-      window.location.href = "/#"
+      window.location.href = "/"
     }
   }
  
@@ -56,10 +60,6 @@ class App extends React.Component{
   }
   
   render(){
-    if(this.state.rerender){
-      this.setState({rerender:false});
-      return(<div></div>);
-    }
     let content = this.state.lobbyID ? 
       <Lobby socketURL={this.props.socketURL} lobbyID={this.state.lobbyID} setAlert={this.setAlert} setLobbyID={this.setLobbyID}/> : 
       <MainMenu socketURL={this.props.socketURL} setLobbyID={this.setLobbyID}/>;
@@ -71,13 +71,6 @@ class App extends React.Component{
     )
   }
 }
-//Stack Overflow Functions :^)
-function getURLVars() {
-  let urlVars = {}
-  var parts = window.location.href.replace(/[#&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-      urlVars[key] = value;
-  });
-  return urlVars;
-}
+
 
 export default hot(App);
