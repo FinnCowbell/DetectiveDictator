@@ -2,9 +2,7 @@
 
 An Online Version of the Mafia-style WWII Electon Game!
 
-## Huh?
-
-Ok, It's the board game Secret Hitler, but in you and your friends browsers!
+It's the board game Secret Hitler, but in you and your friends browsers!
 
 Whereas a website such as secrethitler.io was made to provide to a community of online Secret Hitler players, I made this version for social-distancing game lovers who want to get their friends together for a Zoom board game night!
 
