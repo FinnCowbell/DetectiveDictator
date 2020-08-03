@@ -1,13 +1,13 @@
 var CardDeck = require('./CardDeck');
+var GameModule = require('./GameModule');
 //Generally: 0 = Liberal, >0 = Fascist.
 
-class Hitler{
-  constructor(io, devMode, players, lobby){
-    this.lobby = lobby;
+class Hitler extends GameModule{
+  constructor(lobby){
+    super(lobby);
+    this.MAX_PLAYERS = 5;
+    this.MIN_PLAYERS = 10;
     this.running = false;
-    this.io = io;
-    this.isDevMode = devMode;
-    this.players = players;
     this.memberships = {};
     this.currentEvent = "pre game";
     this.order = []; //Order of players by PID.
@@ -144,10 +144,12 @@ class Hitler{
     socket.emit('full game info', this.getFullGameInfo(theirPID));
   }
   
-  initSpectator(socket){
+  connectSpectator(socket){
     //No incoming game signals from spectators.
     let theirPID = this.lobby._sidpid[socket.id];
-    socket.emit('full game info', this.getFullGameInfo(theirPID));
+    if(this.running){
+      socket.emit('full game info', this.getFullGameInfo(theirPID));
+    };
   }
 
   getLobbyGameInfo(){
@@ -233,8 +235,8 @@ class Hitler{
   }
   sendFullGameInfo(){
     let PID;
-    for(PID of Object.keys(this.players)){
-      let socket = this.players[PID].socket;
+    for(PID of Object.keys(this.lobby.players)){
+      let socket = this.lobby.players[PID].socket;
       if(socket){//In case player is disconnected for any reason.
         socket.emit('full game info', this.getFullGameInfo(PID));
       }
@@ -251,7 +253,7 @@ class Hitler{
   buildNewRound(nextPresident = null, playersWereElected = true){
     //Each round has player info stored with it.
     //Players don't change very much (Except on round-ending events).
-    if(this.isDevMode){
+    if(this.lobby.devMode){
       playersWereElected = false;
     }
 

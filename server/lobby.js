@@ -1,13 +1,14 @@
 var Hitler = require('./Game/Hitler')
 class Lobbies {
-  constructor(io,Game){
+  constructor(io, devMode = false, ...GameModules){
     this.io = io;
     this.idWordLength = 2;
-    this.Game = Game;
+    this.GameModules = GameModules;
+    this.devMode = devMode;
     this.lobbies = {};
     this.words = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
    }
-  createLobby(devMode=false){
+  createLobby(){
     //LobbyID = what is printed. lobbyKey = an all-lowercase lobbyID.
     let lobbyID, lobbyKey, lobby, nLobbies, maxLobbies; 
     //If we're running out of words at our current length, increase the length.
@@ -16,13 +17,13 @@ class Lobbies {
     if(nLobbies >= maxLobbies - 1){
       this.idWordLength++;
     }
-    //Confirms we dontt overwrite existing lobbies.
+    //Confirms we dont overwrite existing lobbies.
     do{
       lobbyID = this.generateLobbyID(this.idWordLength);
       lobbyKey = lobbyID.toLowerCase();
     } while(this.getLobby(lobbyKey));
     
-    lobby = new Lobby(this.io,lobbyID,this,devMode, 1, Hitler, 5, 10 );
+    lobby = new Lobby(lobbyID, this, ...this.GameModules);
     this.lobbies[lobbyKey] = lobby;
     return this.lobbies[lobbyKey];
   }
@@ -44,28 +45,42 @@ class Lobbies {
 }
 
 class Lobby{
-  constructor(io, lobbyID, lobbies, devMode = false, startingPID, Game=Hitler, min = 0, max = 100){
-    let lobbyKey = lobbyID.toLowerCase();
-    let ourio = io.of(`/${lobbyKey}`)
-    this.ID = lobbyID;
+  constructor(lobbyID, lobbies, ...GameModules){
+    let ourio = lobbies.io.of(`/${lobbyID.toLowerCase()}`);
+
     this.lobbies = lobbies;
-    this.key = lobbyKey;
     this.io = ourio;
-    this.players = {};
+    this.ID = lobbyID;
+    this.nextLobbyID = null;
+    this.key = lobbyID.toLowerCase();
     this.leader = null;
+    this.players = {};
     this.spectators = {};
     this.disconnectedPlayers = {};
     this._sidpid = {};
-    this.nextPID = startingPID;
-    this.game = new Game(ourio, devMode, this.players, this);
+    this.nextPID = 1;
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
-    this.MinPlayers = min;
-    this.MaxPlayers = max;
-    this.devMode = devMode;
+    this.devMode = this.lobbies.devMode;
     this.activateSignals();
+
+    //Generate the Game Modules.
+    let gameModules = [];
+    let game = null;
+    for(let GameModule of GameModules){
+      let generatedModule = new GameModule(this);
+      if(!game){
+        game = generatedModule
+      }
+      gameModules.push(generatedModule);
+    }
+
+    this.game = game;
+    this.gameModules = gameModules;
+    this.MIN_PLAYERS = gameModules[0].MIN_PLAYERS;
+    this.MAX_PLAYERS = gameModules[0].MAX_PLAYERS;
+
     this.log("Lobby Created");
-    this.nextLobbyID = null
   }
   error(message){
     this.log("<ERROR> " + message);
@@ -96,7 +111,6 @@ class Lobby{
       socket.on('spectator init', ()=>{this.connectNewPlayer('SPECTATOR', socket, true)})
       socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
       socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
-      socket.on('chat send msg', (arg)=>this.io.emit('chat recv msg', (arg)));
       socket.on('game init', ()=>this.initializeGame(socket));
       socket.on('join new lobby', ()=>this.joinNextLobby(socket));
     })
@@ -105,12 +119,12 @@ class Lobby{
     let PID = this.nextPID;
     this.nextPID++;
     return PID;
-    //Every player gets a player ID.
+    //Every player gets a unique numeric ID.
   }
-  connectNewPlayer(username,socket,spectating = false){
+  connectNewPlayer(username,socket, spectating = false){
     // Error checking
     let SID = socket.id;
-    if(this.nPlayers >= this.MaxPlayers && spectating == false){
+    if(this.nPlayers >= this.MAX_PLAYERS && spectating == false){
       socket.emit('alert', "Lobby is Full!");
       return false;
     }
@@ -127,15 +141,15 @@ class Lobby{
     }
     this._sidpid[SID] = PID;
     this.players[PID] = player;
+    
     if(spectating){
       player.isSpectating = true;
       this.spectators[PID] = player;
-      if(this.game.initSpectator && this.game.running){
-        this.game.initSpectator(socket);
-      }
+      this.gameModules.forEach((m)=>m.connectSpectator(socket));
     } else{
       this.nPlayers++;
       this.log(`${player.username} joined lobby and assigned PID=${PID}`);
+      this.gameModules.forEach((m)=>m.connectNewPlayer(socket));
       //Update the Lobby
       //Let the player know their PID.
     }
@@ -181,10 +195,12 @@ class Lobby{
     this.nConnected++;
     this.log(`${player.username} and PID ${PID} reconnected.`)
 
-    //If the game's running and the game has a process for reconnecting, 
-    if(this.game.reconnectPlayer && this.game.running){
-      this.game.reconnectPlayer(socket);
-    }
+    //Reconnect all the gameModules
+    this.gameModules.forEach((m)=>m.reconnectPlayer(socket));
+    
+    // if(this.game.reconnectPlayer && this.game.running){
+    //   this.game.reconnectPlayer(socket);
+    // }
     
     socket.emit('lobby joined', {"PID": PID});
     this.emitUpdateLobby();
@@ -264,15 +280,15 @@ class Lobby{
     return args
   }
   initializeGame(socket){
-    if(this.nPlayers < this.MinPlayers && !this.devMode){
-      socket.emit('alert', `You need at least ${this.MinPlayers} to play.`);
+    if(this.nPlayers < this.MIN_PLAYERS && !this.devMode){
+      socket.emit('alert', `You need at least ${this.MIN_PLAYERS} to play.`);
       return false; //Only condition to not play game
     } else if(!this.getPlayerBySocketID(socket.id).isLeader){
       socket.emit('alert', "You cannot start the game!");
       return false;
     }
 
-    this.game.init();
+    this.gameModules.forEach((m)=>m.init());
   }
   joinNextLobby(socket){
     if(this.nextLobbyID == null){
@@ -284,25 +300,18 @@ class Lobby{
 }
 
 class Player{
-  constructor(username="definitelyLiberal", PID, SID, socket = null){
+  constructor(username, PID, SID, socket = null){
     this.username = username;
     this.isLeader = false;
     this.isSpectating = false;
+    this.connected = true;
     this.PID = PID;
-    this.SID = SID;
     this.socket = socket;
-    this.connected = true; //Changes to false on disconnect.
+    this.SID = SID;
   }
   getPublicInfo(){
-    //publicInfo: the stuff that every player gets to know.
-    //This should mostly be used for initializing the game.
-    let arg = {"username": this.username, 
-               "isLeader": this.isLeader, 
-               "isSpectating": this.isSpectating,
-               "connected": this.connected,
-               "PID": this.PID
-              }
-    return arg;
+    //Keeps structure pretty much the same, but removes information that could be deemed "secret"
+    return {...this, SID: undefined, socket: undefined};
   }
 }
 
