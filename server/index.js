@@ -6,6 +6,8 @@ var http = require('http').Server(app)
 var io = require('socket.io')(http)
 var {Lobbies, Lobby, Player} = require('./lobby');
 var Game = require('./Game/Hitler');
+var Chat = require('./Game/ChatModule');
+const LobbyModules = [Game, Chat]
 //env.PORT = Heroku. DD_PORT = my implementation.
 let port = process.env.DD_PORT || process.env.PORT || 1945;
 
@@ -36,7 +38,7 @@ if(front){
 }
 
 //Initializing storage for all lobbies
-var lobbies = new Lobbies(io, Game);
+var lobbies = new Lobbies(io, devMode, ...LobbyModules);
 fs.readFile(__dirname + "/util/wwii.txt", 'utf8', (err, data) =>{
   if(err){
     console.error(err)
@@ -51,7 +53,7 @@ io.of('/menu').on("connection", (socket)=>{//When we get a new connection
     console.log("[Menu]: User disconnected");
   });
   socket.on("create lobby", (arg) =>{
-    let lobby = lobbies.createLobby(devMode = devMode);
+    let lobby = lobbies.createLobby();
     socket.emit("lobby created",{"ID": lobby.ID});
   })
 });

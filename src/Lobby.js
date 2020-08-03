@@ -41,7 +41,6 @@ export default class Lobby extends React.Component{
   }
   
   componentDidUpdate(prevProps){
-    console.log("lobby update");
     if(this.props.lobbyID != prevProps.lobbyID){
       this.state.socket.close();
       clearTimeout(this.disconnector);
@@ -53,7 +52,6 @@ export default class Lobby extends React.Component{
   }
 
   componentWillUnmount(){
-    console.log("lobby close");
     this.state.socket.close();
     clearTimeout(this.disconnector);
   }
@@ -195,7 +193,7 @@ export default class Lobby extends React.Component{
           <Game lobbyID={lobbyID} spectating={spectating} yourPID={this.state.PID} leaveLobby={this.leaveLobby} socket={this.state.socket}/>
         </Suspense>
         {inLobby && 
-          <ChatRoom socket={this.state.socket} username={you.username} spectating={spectating}/>}
+          <ChatRoom socket={this.state.socket} you={you} spectating={spectating}/>}
       </div>
     )
   }
@@ -273,16 +271,15 @@ function LoadingMessage(props){
 
 function LobbyPlayerList(props){
   let yourPID = props.PID;
-  let you = props.players && props.players[yourPID];
+  let you = props.players ? props.players[yourPID] : null;
   let iterablePlayers = Object.values(props.players);
   let connectedPlayers, disconnectedPlayers = [null, null];
   let nDisconnectedPlayers = 0;
   if(props.players){
-    //Counting the disconnected Players
-    iterablePlayers.forEach((player)=>{if(!player.connected){nDisconnectedPlayers++;}});
-    
+    //Counting the disconnected Players using a nasty one-liner
+    iterablePlayers.forEach((player)=>{if(player.connected == false){nDisconnectedPlayers++;}});
     //Creating the list of connected Players
-    connectedPlayers = iterablePlayers.map((player)=>( player.connected && 
+    connectedPlayers = iterablePlayers.map((player)=>(player.connected && (
       <li key={player.username} 
           className={(player.isLeader ? "leader " : "" )+
                      ((player.PID == yourPID) ? "you " : "")}>
@@ -292,11 +289,11 @@ function LobbyPlayerList(props){
             Kick
           </button>
         }
-      </li>
+      </li>)
     ))
     
     //Creating the list of Disconnected Players
-    disconnectedPlayers = iterablePlayers.map((player)=>(!player.connected && 
+    disconnectedPlayers = iterablePlayers.map((player)=>(!player.connected &&
       <li key={player.username} 
           className="disconnected"
           onClick={()=>{props.reconnect(player.PID)}}>
@@ -309,7 +306,6 @@ function LobbyPlayerList(props){
       </li>
     ))
   }
-
   return(
     <div className="player-list">
       {true ? (
@@ -320,11 +316,10 @@ function LobbyPlayerList(props){
           </ul>
         </div>
       ) : null}
-      {true ? (
+      {nDisconnectedPlayers > 0 ? (
         <div className="disconnected-players">
           <hr/>
-          {(nDisconnectedPlayers ? <h3>Disconnected Players:</h3> : null
-          )}
+          <h3>Disconnected Players:</h3>
           <ul>
             {disconnectedPlayers}
           </ul>

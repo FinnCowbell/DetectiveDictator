@@ -10,10 +10,21 @@ export default class ChatRoom extends React.Component{
     this.MAX_LENGTH = 120;
     this.postChat = this.postChat.bind(this)
     this.sendChat = this.sendChat.bind(this)
+    this.setMessages = this.setMessages.bind(this)
   }
   componentDidMount(){
-    this.props.socket.on('chat recv msg', (arg)=>this.postChat(arg.msg));
+    let socket = this.props.socket
+    socket.on('chat incoming', (arg)=>this.postChat(arg));
+    socket.on('full chat history', (chats)=>this.setMessages(chats));
+    socket.emit('full chat request');
   }
+
+  setMessages(newMessages){
+    this.setState({
+      messages: newMessages
+    })
+  }
+
   postChat(msg){
     const messages = this.state.messages;
     let sentWindow = this.refs.sent;
@@ -27,17 +38,14 @@ export default class ChatRoom extends React.Component{
     if(message == ''){
       return false
     };
-    let msg = {
-      username: this.props.username,
-      message: message,
-    }
-    this.props.socket.emit('chat send msg', {msg: msg});
+    this.props.socket.emit('chat send', {message: message});
     return true
   }
+
   render(){
     let chats = this.state.messages.map((msg, i)=>(
-      <div className="message">
-        <p key={i}>
+      <div key={i} className="message">
+        <p>
           <strong>{msg.username}: </strong>{msg.message}
         </p>
         <hr/>
