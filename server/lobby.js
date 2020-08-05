@@ -62,20 +62,16 @@ class Lobby{
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
     this.devMode = this.lobbies.devMode;
+    this.gameRunning = false;
     this.activateSignals();
 
     //Generate the Game Modules.
     let gameModules = [];
-    let game = null;
-    for(let GameModule of GameModules){
-      let generatedModule = new GameModule(this);
-      if(!game){
-        game = generatedModule
-      }
-      gameModules.push(generatedModule);
-    }
+    GameModules.forEach((m)=>{
+      gameModules.push(new m(this));
+    })
 
-    this.game = game;
+    this.game = gameModules[0];
     this.gameModules = gameModules;
     this.MIN_PLAYERS = gameModules[0].MIN_PLAYERS;
     this.MAX_PLAYERS = gameModules[0].MAX_PLAYERS;
@@ -108,10 +104,10 @@ class Lobby{
       })
       socket.on('connection init request', ()=>socket.emit('lobby init info', {initInfo: this.getLobbyInfo()}));
       socket.on('join lobby', (arg) => {this.connectNewPlayer(arg.username, socket)})
-      socket.on('spectator init', ()=>{this.connectNewPlayer('SPECTATOR', socket, true)})
+      socket.on('spectator init', ()=>{this.connectSpectator(socket)})
       socket.on('request kick', (arg)=>{this.requestKick(arg.kickee,socket);});
       socket.on('rejoin lobby', (arg)=>{this.reconnectPlayer(arg.PID, socket)})
-      socket.on('game init', ()=>this.initializeGame(socket));
+      socket.on('game init', ()=>this.startGame(socket));
       socket.on('join new lobby', ()=>this.joinNextLobby(socket));
     })
   }
@@ -121,38 +117,48 @@ class Lobby{
     return PID;
     //Every player gets a unique numeric ID.
   }
-  connectNewPlayer(username,socket, spectating = false){
-    // Error checking
+
+  connectSpectator(socket){
+    //Might overlap with connectNewPlayer too much
+    if(this._sidpid[socket.id] != undefined){
+      this.error(`Player already connected with that Socket ID!`);
+      return false
+    }
+    let PID = this.getNewPID();
+    let spectator = new Player("Spectator", PID, socket.id, socket);
+    this._sidpid[socket.id] = PID;
+    spectator.isSpectating = true;
+    this.players[PID] = spectator;
+    this.spectators[PID] = spectator;
+    this.gameModules.forEach((m)=>m.connectSpectator(socket));
+    this.emitUpdateLobby();
+    socket.emit('lobby joined', {PID: PID})
+  }
+
+  connectNewPlayer(username,socket){
     let SID = socket.id;
-    if(this.nPlayers >= this.MAX_PLAYERS && spectating == false){
+    if(this.nPlayers >= this.MAX_PLAYERS){
+      this.log(this.nPlayers);
       socket.emit('alert', "Lobby is Full!");
       return false;
     }
-    if(this._sidpid[SID] != undefined){
+    if(this._sidpid[socket.id] != undefined){
       this.error(`Player already connected with that Socket ID!`);
       return false
     }
     let PID = this.getNewPID()
-    let player = new Player(username, PID, SID, socket);
+    let player = new Player(username, PID, socket.id, socket);
 
-    if(this.leader === null && !spectating){
+    if(this.leader === null){
       player.isLeader = true;
       this.leader = player;
     }
-    this._sidpid[SID] = PID;
+    this._sidpid[socket.id] = PID;
     this.players[PID] = player;
     
-    if(spectating){
-      player.isSpectating = true;
-      this.spectators[PID] = player;
-      this.gameModules.forEach((m)=>m.connectSpectator(socket));
-    } else{
-      this.nPlayers++;
-      this.log(`${player.username} joined lobby and assigned PID=${PID}`);
-      this.gameModules.forEach((m)=>m.connectNewPlayer(socket));
-      //Update the Lobby
-      //Let the player know their PID.
-    }
+    this.nPlayers++;
+    this.log(`${player.username} joined lobby and assigned PID=${PID}`);
+    this.gameModules.forEach((m)=>m.connectNewPlayer(socket));
     this.emitUpdateLobby();
     socket.emit('lobby joined', {PID: PID})
   }
@@ -165,7 +171,7 @@ class Lobby{
     let player = this.getPlayerBySocketID(socket.id);
     let PID = player.PID;
     //Should this logic be elsewhere?
-    if(!this.game.running){
+    if(!this.gameRunning){
       return this.kickPlayer(PID);
     }
     // Unlink socketID to playerID.
@@ -198,10 +204,6 @@ class Lobby{
     //Reconnect all the gameModules
     this.gameModules.forEach((m)=>m.reconnectPlayer(socket));
     
-    // if(this.game.reconnectPlayer && this.game.running){
-    //   this.game.reconnectPlayer(socket);
-    // }
-    
     socket.emit('lobby joined', {"PID": PID});
     this.emitUpdateLobby();
   }
@@ -221,7 +223,7 @@ class Lobby{
   kickPlayer(PID){
     //Kicking != Disconnecting. 
     //Kicking completely gets rid of a user, as opposed to moving them to this.disconnected.
-    //To be safe, kicking should work if a player has been disconnected already.
+    //To be safe, kicking should also work if a player has been disconnected already.
     let player = this.players[PID];
     if(player == undefined){
       this.error("Kick: Player does not exist.");
@@ -264,7 +266,6 @@ class Lobby{
   }
   getLobbyInfo(){
     //Lobby info compiles some basic information about the lobby to be sent.
-    let gameInfo = this.game.getLobbyGameInfo();
     let publicPlayers = {};
     for(var PID in this.players){
       if(!this.players[PID].isSpectating){
@@ -274,12 +275,14 @@ class Lobby{
     let args = {
       "lobbyID": this.ID,
       "players": publicPlayers,
-      "gameInfo": gameInfo,
+      "gameInfo": { //FIX This
+        "isRunning": this.gameRunning,
+      },
       "nSpectators": Object.keys(this.spectators).length
     }
     return args
   }
-  initializeGame(socket){
+  startGame(socket){
     if(this.nPlayers < this.MIN_PLAYERS && !this.devMode){
       socket.emit('alert', `You need at least ${this.MIN_PLAYERS} to play.`);
       return false; //Only condition to not play game
@@ -287,7 +290,7 @@ class Lobby{
       socket.emit('alert', "You cannot start the game!");
       return false;
     }
-
+    this.gameRunning = true;
     this.gameModules.forEach((m)=>m.init());
   }
   joinNextLobby(socket){
