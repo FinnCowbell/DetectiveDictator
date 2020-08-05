@@ -1,20 +1,22 @@
-@import './colors';
+@import "./colors";
 
-@mixin action-bar-button($rotation){
-  border:none;
+@mixin action-bar-button($rotation) {
+  border: none;
   font-family: Germania;
   color: #65c4a3;
   background-color: $action-bar-dark-color;
   display: flex;
   align-items: center;
   cursor: pointer;
-  h1{
+  h1 {
     font-family: Potsdam;
   }
-  h1, h2, h3{
+  h1,
+  h2,
+  h3 {
     transform: rotate($rotation);
     cursor: pointer;
-    user-select:none;
+    user-select: none;
     font-size: 2em;
     text-align: center;
     width: 100%;
@@ -22,13 +24,13 @@
 }
 
 //ACTION BAR INTERFACE
-.action-bar-container{
-  grid-area: action; 
+.action-bar-container {
+  grid-area: action;
   width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
-.action-bar{
+.action-bar {
   background-color: gray;
   border: 13px solid transparent;
   border-image: url(./media/border/action-border.png) 30 round;
@@ -40,14 +42,17 @@
   border-image-outset: 6px;
   background-color: #65c4a3;
 }
-.action{
+.action {
   $inner-border-width: 15px;
   border: $inner-border-width solid $action-bar-dark-color;
   width: calc(100% - #{$inner-border-width * 2});
   height: calc(100% - #{$inner-border-width * 2});
-  &.discard, &.view-three, &.ja-nein{
-  display:flex;
-    .policy-cards, .vote-options{
+  &.discard,
+  &.view-three,
+  &.ja-nein {
+    display: flex;
+    .policy-cards,
+    .vote-options {
       order: 0;
       flex-grow: 1;
       display: flex;
@@ -56,49 +61,51 @@
       width: 100%;
       height: 100%;
       padding: 0 10px;
-      transition: .25s width;
+      transition: 0.25s width;
     }
-    .policy-cards .policy{
+    .policy-cards .policy {
       height: calc(100% - 20px);
-      transition: .25s filter;
-      img{
+      transition: 0.25s filter;
+      img {
         height: 100%;
       }
       filter: grayscale(0%);
-      &:hover{
+      &:hover {
         filter: grayscale(50%);
       }
-      &.selected{
+      &.selected {
         filter: grayscale(100%);
       }
     }
-    .vote-options{
+    .vote-options {
       margin: 20px 0px;
       height: calc(100% - 40px);
-      .option{
+      .option {
         height: 100%;
-        img{
-          transition: .25s transform;
+        img {
+          transition: 0.25s transform;
           height: inherit;
-          transform: scale(.9);
-          &:hover{
+          transform: scale(0.9);
+          &:hover {
             transform: scale(1);
           }
-          &.selected{
+          &.selected {
             transform: scale(1.2);
           }
         }
       }
     }
-    .discard-button, .continue-button, .vote-button{
+    .discard-button,
+    .continue-button,
+    .vote-button {
       order: 1;
       @include action-bar-button(90deg);
       margin-right: -5px;
     }
-    .stacked-buttons{
-      display:flex;
+    .stacked-buttons {
+      display: flex;
       flex-direction: column;
-      div{
+      div {
         order: 1;
         flex-grow: 1;
         border: 3px solid rgb(255, 255, 255);
@@ -106,40 +113,41 @@
       }
     }
   }
-  &.ja-nein{
-    .hidden{
+  &.ja-nein {
+    .hidden {
       display: none;
     }
-    .vote-button.hidden{
+    .vote-button.hidden {
       display: none;
     }
   }
-  &.membership{
-    display:flex;
+  &.membership {
+    display: flex;
     justify-content: space-between;
-    .membership-card{
+    .membership-card {
       display: flex;
       justify-content: center;
       padding: 10px;
       height: calc(100% - 10px);
       flex-grow: 1;
       order: 0;
-      img{
-        height:inherit;
+      img {
+        height: inherit;
       }
     }
-    .continue-button{
+    .continue-button {
       flex-grow: 0;
       order: 1;
       @include action-bar-button(90deg);
-      height:100%;
+      height: 100%;
       margin-right: -5px;
     }
   }
-  &.pick-player, &.exit{
+  &.pick-player,
+  &.exit {
     display: flex;
-    button{
-      border:none;
+    button {
+      border: none;
       text-align: center;
       margin: 20px 90px;
       font-size: 1em;

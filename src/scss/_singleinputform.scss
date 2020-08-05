@@ -1,31 +1,31 @@
 @use './fonts';
 .single-input-form {
-  display:flex;
+  display: flex;
   flex-direction: row;
   width: 100%;
   border: 1px solid gray;
   border-bottom-width: 2px;
   background-color: white;
-  transition: .5s;
-  .input-box{
-    flex-grow:1;
-    border:none;
+  transition: 0.5s;
+  .input-box {
+    flex-grow: 1;
+    border: none;
     outline: unset;
     box-shadow: -1px -1 1px 2px black;
   }
   &.focus {
-    border-color:teal
+    border-color: teal;
   }
-  &.error{
+  &.error {
     border-color: red;
   }
-  button{
+  button {
     border: unset;
     outline: unset;
     height: 100%;
     cursor: pointer;
-    &:hover{
-      filter: brightness(.9);
+    &:hover {
+      filter: brightness(0.9);
     }
   }
 }

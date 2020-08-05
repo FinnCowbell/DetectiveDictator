@@ -1,4 +1,4 @@
-.alert-bar{
+.alert-bar {
   position: fixed;
   display: flex;
   align-items: center;
@@ -13,21 +13,21 @@
   padding: 0px;
   transition: 1s top;
   z-index: 999;
-  .message{
+  .message {
     font-family: Potsdam;
   }
-  button{
+  button {
     position: absolute;
     margin-right: 5px;
     right: 0px;
     align-self: end;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
     height: 100%;
     background: unset;
     border: 1px solid black;
     font-size: 25px;
   }
-  &.closed{
+  &.closed {
     top: -75px;
   }
 }

@@ -1,35 +1,38 @@
-class GameModule{
-  // The Default Game Module.
-  constructor(lobby){
+class GameModule {
+  // The Default Module.
+  constructor(lobby) {
     this.lobby = lobby;
     this.io = lobby.io;
     this.players = lobby.players;
     this.MIN_PLAYERS = 0;
     this.MAX_PLAYERS = Infinity;
-  } 
-  error(msg){
+  }
+  error(msg) {
     this.lobby.error(msg);
   }
-  log(msg){
+  log(msg) {
     this.lobby.log(msg);
   }
-  init(){
-    return;
-  }
-  connectNewPlayer(socket){
+
+  init() {
     return;
   }
 
-  connectSpectator(socket){
+  connectNewPlayer(socket) {
     return;
   }
 
-  reconnectPlayer(socket){
+  connectSpectator(socket) {
     return;
   }
 
-  disconnectPlayer(socket){
+  reconnectPlayer(socket) {
+    return;
+  }
+
+  disconnectPlayer(socket) {
     return;
   }
 }
+
 module.exports = GameModule;

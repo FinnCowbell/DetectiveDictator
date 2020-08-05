@@ -1,67 +1,64 @@
-import React from 'react'
-import libBoard from '../../media/boards/liberal.png';
-import Fascist56 from '../../media/boards/fascist56.png';
-import Fascist78 from '../../media/boards/fascist78.png';
-import Fascist910 from '../../media/boards/fascist910.png'
+import React from "react";
+import libBoard from "../../media/boards/liberal.png";
+import Fascist56 from "../../media/boards/fascist56.png";
+import Fascist78 from "../../media/boards/fascist78.png";
+import Fascist910 from "../../media/boards/fascist910.png";
 import libPolicy from "../../media/liberal-policy.png";
 import fasPolicy from "../../media/fascist-policy.png";
 //Boards don't need a state.
-class LibBoard extends React.Component{
-  constructor(props){
+class LibBoard extends React.Component {
+  constructor(props) {
     super(props);
     this.markerColor = "#2e8768";
     this.liberalText = "#5fc7d8";
-    this.markerLocations = [[
-      710,599
-    ],[
-      912,599
-    ],[
-      1113,599
-    ],[
-      1315,599
-    ]];
-    this.drawCenter = [85,337];
-    this.discardCenter = [1970,337];
-    this.fontType= "70px Squada";
-    this.cardXs =[310,608,904,1203,1504];
+    this.markerLocations = [
+      [710, 599],
+      [912, 599],
+      [1113, 599],
+      [1315, 599],
+    ];
+    this.drawCenter = [85, 337];
+    this.discardCenter = [1970, 337];
+    this.fontType = "70px Squada";
+    this.cardXs = [310, 608, 904, 1203, 1504];
     this.cardY = 155;
-    this.cardWidth = 245; 
-    this.cardHeight = 373; 
+    this.cardWidth = 245;
+    this.cardHeight = 373;
   }
-  componentDidMount(){
+  componentDidMount() {
     this.update();
   }
-  update(){
+  update() {
     this.drawImage();
     this.updateMarker();
     this.updatePiles();
-    this.updateCards()
+    this.updateCards();
   }
-  drawImage(){
-    let ctx = this.refs.canvas.getContext('2d');
+  drawImage() {
+    let ctx = this.refs.canvas.getContext("2d");
     ctx.drawImage(this.refs.libBoard, 0, 0);
   }
-  updateMarker(){
-    let ctx = this.refs.canvas.getContext('2d');
-    let x,y;
+  updateMarker() {
+    let ctx = this.refs.canvas.getContext("2d");
+    let x, y;
     x = this.markerLocations[this.props.marker || 0][0];
     y = this.markerLocations[this.props.marker || 0][1];
     ctx.beginPath();
     ctx.fillStyle = this.markerColor;
     ctx.strokeStyle = this.markerColor;
-    ctx.arc(x,y,25,0,2*Math.PI);
+    ctx.arc(x, y, 25, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
   }
-  updatePiles(){
-    let ctx = this.refs.canvas.getContext('2d');
+  updatePiles() {
+    let ctx = this.refs.canvas.getContext("2d");
     ctx.save();
     ctx.fillStyle = this.liberalText;
     ctx.strokeStyle = this.liberalText;
     ctx.font = this.fontType;
     ctx.textAlign = "center";
-    ctx.translate(this.drawCenter[0], this.drawCenter[1])
-    ctx.rotate(Math.PI/2);
+    ctx.translate(this.drawCenter[0], this.drawCenter[1]);
+    ctx.rotate(Math.PI / 2);
     ctx.fillText(`DRAW PILE: ${this.props.draw}`, 0, 0);
     ctx.restore();
     ctx.save();
@@ -69,83 +66,128 @@ class LibBoard extends React.Component{
     ctx.strokeStyle = this.liberalText;
     ctx.font = this.fontType;
     ctx.textAlign = "center";
-    ctx.translate(this.discardCenter[0],this.discardCenter[1]);
-    ctx.rotate(3*Math.PI/2);
+    ctx.translate(this.discardCenter[0], this.discardCenter[1]);
+    ctx.rotate((3 * Math.PI) / 2);
     ctx.fillText(`DISCARD PILE: ${this.props.discard}`, 0, 0);
     ctx.restore();
   }
-  updateCards(){
-    let ctx = this.refs.canvas.getContext('2d');
+  updateCards() {
+    let ctx = this.refs.canvas.getContext("2d");
     let policyImg = this.refs.policy;
     let card = 0;
-    while(card < this.props.nCards){
-      ctx.drawImage(policyImg, this.cardXs[card], this.cardY, this.cardWidth, this.cardHeight);
+    while (card < this.props.nCards) {
+      ctx.drawImage(
+        policyImg,
+        this.cardXs[card],
+        this.cardY,
+        this.cardWidth,
+        this.cardHeight
+      );
       card++;
     }
   }
-  componentDidUpdate(){
+  componentDidUpdate() {
     this.update();
   }
-  render(){
-    return(
+  render() {
+    return (
       <div className="liberal board">
-        <canvas ref="canvas" className="lib-canvas" width={2056} height={678}></canvas>
-        <img ref="libBoard" onLoad={()=>{this.update()}} src={libBoard} style={{"display": "none"}}/>
-        <img ref="policy" onLoad={()=>{this.update()}} src={libPolicy} style={{"display": "none"}}/>
+        <canvas
+          ref="canvas"
+          className="lib-canvas"
+          width={2056}
+          height={678}
+        ></canvas>
+        <img
+          ref="libBoard"
+          onLoad={() => {
+            this.update();
+          }}
+          src={libBoard}
+          style={{ display: "none" }}
+        />
+        <img
+          ref="policy"
+          onLoad={() => {
+            this.update();
+          }}
+          src={libPolicy}
+          style={{ display: "none" }}
+        />
       </div>
-    )
+    );
   }
 }
 
-class FasBoard extends React.Component{
-  constructor(props){
+class FasBoard extends React.Component {
+  constructor(props) {
     super(props);
     this.cardY = 165;
-    this.cardXs =[169,466,765,1064,1364,1664];
-    this.cardWidth = 245; 
-    this.cardHeight = 373; 
+    this.cardXs = [169, 466, 765, 1064, 1364, 1664];
+    this.cardWidth = 245;
+    this.cardHeight = 373;
   }
-  componentDidMount(){
+  componentDidMount() {
     this.update();
   }
-  update(){
+  update() {
     this.drawImage();
-    this.updateCards()
+    this.updateCards();
   }
-  drawImage(){
-    let ctx = this.refs.canvas.getContext('2d');
+  drawImage() {
+    let ctx = this.refs.canvas.getContext("2d");
     ctx.drawImage(this.refs.board, 0, 0);
   }
-  updateCards(){
-    let ctx = this.refs.canvas.getContext('2d');
+  updateCards() {
+    let ctx = this.refs.canvas.getContext("2d");
     let policyImg = this.refs.policy;
     let card = 0;
-    while(card < this.props.nCards){
-      ctx.drawImage(policyImg, this.cardXs[card], this.cardY, this.cardWidth, this.cardHeight);
+    while (card < this.props.nCards) {
+      ctx.drawImage(
+        policyImg,
+        this.cardXs[card],
+        this.cardY,
+        this.cardWidth,
+        this.cardHeight
+      );
       card++;
     }
   }
-  componentDidUpdate(){
+  componentDidUpdate() {
     this.update();
   }
-  render(){
+  render() {
     let fascistBoard;
-    let gameStyle = Math.floor((this.props.nPlayers - 5)/ 2)
-    if(gameStyle < 1){
+    let gameStyle = Math.floor((this.props.nPlayers - 5) / 2);
+    if (gameStyle < 1) {
       fascistBoard = Fascist56;
-    } else if(gameStyle == 1){
+    } else if (gameStyle == 1) {
       fascistBoard = Fascist78;
-    } else{
+    } else {
       fascistBoard = Fascist910;
     }
-    return(
+    return (
       <div className="fascist board">
         <canvas ref="canvas" width={2074} height={687}></canvas>
-        <img ref="board" onLoad={()=>{this.update()}} src={fascistBoard} style={{'display': "none"}}/>
-        <img ref="policy" onLoad={()=>{this.update()}} src={fasPolicy} style={{'display': "none"}}/>
+        <img
+          ref="board"
+          onLoad={() => {
+            this.update();
+          }}
+          src={fascistBoard}
+          style={{ display: "none" }}
+        />
+        <img
+          ref="policy"
+          onLoad={() => {
+            this.update();
+          }}
+          src={fasPolicy}
+          style={{ display: "none" }}
+        />
       </div>
-    )
+    );
   }
 }
 
-export {LibBoard, FasBoard}
+export { LibBoard, FasBoard };

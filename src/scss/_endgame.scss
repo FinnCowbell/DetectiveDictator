@@ -1,16 +1,16 @@
-@import './colors';
-@import './borders';
+@import "./colors";
+@import "./borders";
 
-$part1-duration: .5s;
-$part2-duration: .5s;
-.animation-overlay{
+$part1-duration: 0.5s;
+$part2-duration: 0.5s;
+.animation-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  .content{
+  .content {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -25,96 +25,96 @@ $part2-duration: .5s;
     opacity: 0;
     animation-name: fadeIn;
     animation-fill-mode: both;
-    animation-delay: $part1-duration + .25s;
+    animation-delay: $part1-duration + 0.25s;
     animation-duration: $part2-duration;
-    h1{
+    h1 {
       font-family: Potsdam;
       font-size: 2.75em;
       text-align: center;
     }
-    .buttons{
+    .buttons {
       display: flex;
       font-family: Squada;
       justify-content: space-around;
     }
-    .close-window{
+    .close-window {
       position: absolute;
-      top: 0; 
+      top: 0;
       right: 0;
       font-family: Squada;
     }
-    button{
+    button {
       font-family: inherit;
       font-size: 2em;
       @include fascist-border();
       border: 10px solid transparent;
       outline: none;
       cursor: pointer;
-      transition: .1s;
-      &:hover{
-        filter: brightness(.9);
+      transition: 0.1s;
+      &:hover {
+        filter: brightness(0.9);
       }
     }
   }
-  .slidein-background{
+  .slidein-background {
     height: 100%;
     position: fixed;
     top: 0;
     left: 0;
-    opacity: .5;
+    opacity: 0.5;
     animation-name: fillWidth;
     animation-fill-mode: forwards;
     animation-timing-function: ease-in-out;
     animation-duration: $part1-duration;
     z-index: 10000;
   }
-  &.liberal{
-    .content{
+  &.liberal {
+    .content {
       @include unknown-border();
       background-color: $liberal-blue;
     }
-    .slidein-background{
+    .slidein-background {
       background-color: $liberal-blue;
     }
-    button{
+    button {
       @include unknown-border();
       color: white;
     }
   }
-  &.fascist{
-    .content{
+  &.fascist {
+    .content {
       border: 15px solid transparent;
       @include hitler-border();
       background-color: $fascist-orange;
     }
-    .slidein-background{
+    .slidein-background {
       background-color: $hitler-red;
       right: 0;
     }
-    button{
+    button {
       @include hitler-border();
       color: white;
     }
   }
-  &.hidden{
+  &.hidden {
     display: none;
   }
 }
 
-@keyframes fillWidth{
-  0%{
+@keyframes fillWidth {
+  0% {
     width: 0%;
   }
-  100%{
+  100% {
     width: 100%;
   }
 }
 
-@keyframes fadeIn{
-  0%{
-    opacity:0;
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
   }
-  100%{
+  100% {
     opacity: 1;
   }
 }

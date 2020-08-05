@@ -1,8 +1,9 @@
-@import '_fonts.scss';
-@import '_colors.scss';
+@import "_fonts.scss";
+@import "_colors.scss";
 
 $background-color: #2b2b2b;
-.lobby-window, .menu-window{
+.lobby-window,
+.menu-window {
   position: fixed;
   display: flex;
   align-items: center;
@@ -10,22 +11,23 @@ $background-color: #2b2b2b;
   top: 0;
   left: 0;
   width: 100%;
-  height:100%;
+  height: 100%;
   z-index: 99;
-  .content{
+  .content {
     border: 5px solid black;
     position: relative;
     font-family: Squada;
     display: grid;
-    grid-template-areas: "header"
-    "status"
-    "middle"
-    "bottom";
+    grid-template-areas:
+      "header"
+      "status"
+      "middle"
+      "bottom";
     grid-template-rows: 175px auto 1fr 50px;
     width: 500px;
     height: 500px;
     padding: 20px;
-    .background{
+    .background {
       position: absolute;
       top: 0;
       width: 500px;
@@ -36,36 +38,36 @@ $background-color: #2b2b2b;
       z-index: -1;
       padding: 20px;
     }
-    *{ 
-      z-index: 3;    
+    * {
+      z-index: 3;
     }
   }
-  .lobby-status{
+  .lobby-status {
     grid-area: status;
     display: flex;
     justify-content: center;
     font-family: Squada;
     color: $unknown-color;
-    .new-player-form{
+    .new-player-form {
       margin: 10px;
     }
   }
-  .site-header{
+  .site-header {
     grid-area: header;
     text-align: center;
-    display:flex;
+    display: flex;
     flex-direction: column;
     justify-content: center;
-    .site-title{
+    .site-title {
       font-family: Potsdam;
       font-size: 1.5em;
-    };
-    .lobby-title{
+    }
+    .lobby-title {
       position: relative;
       margin-left: auto;
       margin-right: auto;
       color: $hitler-red;
-      input{
+      input {
         position: fixed;
         z-index: -1;
         top: -100px;
@@ -74,13 +76,13 @@ $background-color: #2b2b2b;
       font-family: Squada;
       font-size: 1.5em;
       cursor: pointer;
-      &:hover{
+      &:hover {
         color: rgb(32, 32, 32);
-        span{
+        span {
           opacity: 1;
         }
       }
-      span{
+      span {
         transition: 0s;
         position: absolute;
         right: 0px;
@@ -89,18 +91,17 @@ $background-color: #2b2b2b;
         font-size: 1rem;
         color: white;
         text-shadow: 1px 1px 1px black;
-
       }
-    };
+    }
   }
-  .new-lobby{
+  .new-lobby {
     grid-area: status;
     font-size: 2em;
     width: 300px;
     border-bottom: 5px solid black;
     margin: auto;
   }
-  .existing-lobby{
+  .existing-lobby {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -110,62 +111,62 @@ $background-color: #2b2b2b;
     margin: 0px 30px;
     text-align: center;
     font-family: Squada;
-    h4{
+    h4 {
       padding-bottom: 20px;
     }
   }
-  .bottom-button{
+  .bottom-button {
     grid-area: bottom;
     margin: auto;
-    button{
+    button {
       font-family: Germania;
       font-size: 1.5em;
     }
-  .num-spectators{
-     color: blue;
-     position: absolute;
-     bottom: 0;
-     left: 0;
+    .num-spectators {
+      color: blue;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
   }
-  }
-  .player-list{
+  .player-list {
     grid-area: middle;
     font-family: Squada;
     font-size: 1.25em;
-    transition: .25s height;
-    ul{
+    transition: 0.25s height;
+    ul {
       list-style-type: none;
     }
-    .leader{
+    .leader {
       color: rgb(149, 6, 6);
     }
-    .disconnected{
+    .disconnected {
       cursor: pointer;
-      &:hover{
+      &:hover {
         color: black;
       }
     }
-    .you{
+    .you {
       font-weight: bold;
     }
   }
 }
 
-@keyframes waveBackground{
-  0%{
+@keyframes waveBackground {
+  0% {
     background-color: $liberal-blue;
   }
-  100%{
+  100% {
     background-color: $fascist-orange;
   }
 }
 
-.lobby-window{
+.lobby-window {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-.wave-background{
-  opacity: .55;
+.wave-background {
+  opacity: 0.55;
   position: fixed;
   top: 0;
   left: 0;
