@@ -40,7 +40,6 @@ class App extends React.Component {
   }
 
   setLobbyID(lobbyID = null, changeURL = true) {
-    console.log(lobbyID);
     this.setState({
       lobbyID: lobbyID,
     });

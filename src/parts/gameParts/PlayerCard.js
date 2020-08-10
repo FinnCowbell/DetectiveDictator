@@ -8,7 +8,6 @@ import liberal5 from "../../media/player-cards/liberal5.png";
 import liberal6 from "../../media/player-cards/liberal6.png";
 let liberalCards = [liberal1, liberal2, liberal3, liberal4, liberal5, liberal6];
 const N_LIBERAL_CARDS = liberalCards.length;
-
 import fascist1 from "../../media/player-cards/fascist1.png";
 import fascist2 from "../../media/player-cards/fascist2.png";
 import fascist3 from "../../media/player-cards/fascist3.png";
@@ -18,17 +17,18 @@ const N_FASCIST_CARDS = fascistCards.length;
 import hitler from "../../media/player-cards/hitler.png";
 
 export default function PlayerCard(props) {
-  //membership and PID
+  let you = props.you;
   let cardIMG = "";
-  let membership = props.memberships[props.PID];
-  if (membership == 0) {
-    cardIMG = liberalCards[props.PID % N_LIBERAL_CARDS];
-  } else if (membership == 1) {
-    cardIMG = fascistCards[props.PID % N_FASCIST_CARDS];
-  } else if (membership == 2) {
+  if (you && you.membership == 0) {
+    cardIMG = liberalCards[you.PID % N_LIBERAL_CARDS];
+  } else if (you && you.membership == 1) {
+    cardIMG = fascistCards[you.PID % N_FASCIST_CARDS];
+  } else if (you && you.membership == 2) {
     cardIMG = hitler;
   }
   return (
-    <figure className="player-card">{cardIMG && <img src={cardIMG} />}</figure>
+    <figure className="player-card">
+      <img src={cardIMG} />
+    </figure>
   );
 }

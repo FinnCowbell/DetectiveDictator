@@ -47,7 +47,7 @@ export default class ActionBar extends React.Component {
           policyIndex: policyIndex,
         }),
     };
-    actions[this.props.fullEvent.action]();
+    actions[this.props.currentState.action]();
   }
 
   sendVetoRequest(policyIndex) {
@@ -91,14 +91,14 @@ export default class ActionBar extends React.Component {
   }
   render() {
     let content;
-    let details = this.props.fullEvent.details;
+    let currentState = this.props.currentState;
     let selectedPlayer =
       this.props.players[this.props.uiInfo.selectedPlayer] || null;
     let selectedUsername = selectedPlayer && selectedPlayer.username;
-    let yourPID = this.props.yourPID;
+    let you = this.props.you;
     let uiInfo = this.props.uiInfo;
     let voted = uiInfo.voted || false;
-    switch (this.props.fullEvent.action) {
+    switch (currentState.action) {
       case "your chancellor pick":
         content = (
           <PickPlayer
@@ -111,15 +111,12 @@ export default class ActionBar extends React.Component {
         break;
       case "chancellor vote":
         content = (
-          <JaNein confirm={this.castVote} voteReceived={voted[yourPID]} />
+          <JaNein confirm={this.castVote} voteReceived={voted[you.PID]} />
         );
         break;
       case "your president discard":
         content = (
-          <Discard
-            confirm={this.discardPolicy}
-            policies={details.secret.policies}
-          />
+          <Discard confirm={this.discardPolicy} policies={you.hand.policies} />
         );
         break;
       case "your chancellor discard":
@@ -127,8 +124,8 @@ export default class ActionBar extends React.Component {
           <Discard
             confirm={this.discardPolicy}
             veto={this.sendVetoRequest}
-            fasBoard={details.fasBoard}
-            policies={details.secret.policies}
+            fasBoard={currentState.fasBoard}
+            policies={you.hand.policies}
           />
         );
         break;
@@ -138,7 +135,7 @@ export default class ActionBar extends React.Component {
       case "your president peek":
         content = (
           <PresidentPeek
-            policies={details.secret.policies}
+            policies={you.hand.policies}
             confirm={this.doneViewing}
           />
         );
@@ -180,7 +177,7 @@ export default class ActionBar extends React.Component {
       case "your president investigated":
         content = (
           <ViewMembership
-            membership={details.secret.membership}
+            membership={you.hand.investigatedMembership}
             confirm={this.doneViewing}
           />
         );
@@ -259,36 +256,6 @@ function JaNein(props) {
   );
 }
 
-function DiscardPresident(props) {
-  return Discard(props);
-  const [selectedCard, setSelectedCard] = useState(null);
-  function selectCard(i) {
-    if (i < 0 || i > props.policies.length) {
-      return;
-    }
-    setSelectedCard(i);
-  }
-  let cards = props.policies.map((value, index) => (
-    <PolicyCard
-      key={index}
-      isSelected={index == selectedCard}
-      isFascist={value}
-      onClick={() => setSelectedCard(index)}
-    />
-  ));
-  return (
-    <div className="action discard">
-      <div className="policy-cards">{cards}</div>
-      <div
-        className="discard-button"
-        onClick={() => props.confirm(selectedCard)}
-      >
-        <h2>Discard</h2>
-      </div>
-    </div>
-  );
-}
-
 function Discard(props) {
   const [selectedCard, setSelectedCard] = useState(null);
   function selectCard(i) {
@@ -342,21 +309,6 @@ function PolicyCard(props) {
       }`}
     >
       <img src={props.isFascist ? fascistPolicy : liberalPolicy}></img>
-    </div>
-  );
-}
-
-function PickPresident(props) {
-  //Requires: this.props.selected = Name of selected player.
-  //this.props.confirm = lock in answer.
-  return (
-    <div className="action pick-president">
-      <button
-        className={!this.props.selected ? "disabled" : ""}
-        onClick={this.props.confirm}
-      >
-        Pick {this.props.selected || ""}
-      </button>
     </div>
   );
 }

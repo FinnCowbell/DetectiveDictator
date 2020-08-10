@@ -7,5 +7,6 @@ let socketURL = "";
 if (process.env.DD_SERVER) {
   socketURL = `${process.env.DD_SERVER}:${process.env.DD_PORT}`;
 }
+console.log(socketURL);
 // pathname is now ./#lobby=KyleKyle, and can be obtained with the fuction below.
 ReactDOM.render(<App socketURL={socketURL} />, document.getElementById("root"));

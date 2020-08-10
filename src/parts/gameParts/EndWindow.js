@@ -14,7 +14,13 @@ export default class EndWindow extends React.Component {
     });
   }
   render() {
-    let fascistsWon = this.props.winner;
+    const endPhrases = {
+      "liberal win cards": "The Liberals Have Secured Germany.",
+      "fascist win cards": "The Fascists Have Secured Germany.",
+      "liberal win hitler": "Hitler Has Been Killed.",
+      "fascist win hitler": "Hitler has been Elected.",
+    };
+    let fascistsWon = this.props.reason.includes("fascist") ? 1 : 0;
     return (
       <div
         className={`animation-overlay ${fascistsWon ? "fascist" : "liberal"} ${
@@ -26,9 +32,7 @@ export default class EndWindow extends React.Component {
           <button className="close-window" onClick={this.closeWindow}>
             X
           </button>
-          <h1>
-            {"The " + (fascistsWon ? "Fascists" : "Liberals") + " Have Won."}
-          </h1>
+          <h1>{endPhrases[this.props.reason]}</h1>
           <div className="buttons">
             <button onClick={this.props.joinNewLobby}>New Game</button>
             <button onClick={this.props.leaveLobby}>Quit</button>

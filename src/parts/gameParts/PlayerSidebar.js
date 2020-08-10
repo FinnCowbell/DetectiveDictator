@@ -30,7 +30,7 @@ export default class PlayerSidebar extends React.Component {
       1: "fascist",
       2: "hitler",
     };
-    return membershipClasses[this.props.memberships[player.PID]] || "";
+    return membershipClasses[player.membership] || "";
   }
   changeSelectedPlayer(PID) {
     this.props.sendUIInfo({
@@ -39,10 +39,10 @@ export default class PlayerSidebar extends React.Component {
     });
   }
   getStatus(player) {
-    let details = this.props.fullEvent.details;
-    if (player.alive && player.PID == details.presidentPID) {
+    let currentState = this.props.currentState;
+    if (player.alive && player.PID == currentState.presidentPID) {
       return "president";
-    } else if (player.alive && player.PID == details.chancellorPID) {
+    } else if (player.alive && player.PID == currentState.chancellorPID) {
       return "chancellor";
     } else if (!player.alive) {
       return "dead";
@@ -61,14 +61,14 @@ export default class PlayerSidebar extends React.Component {
       "fascist policy placed",
       "chancellor not voted",
     ]);
-    let event = this.props.fullEvent;
-    let votes = event.details.votes || {};
+    let currentState = this.props.currentState;
+    let votes = currentState.votes || {};
     let vote = votes[player.PID];
     let voted = this.props.uiInfo.voted || {};
-    if (event.name == "chancellor vote" && voted[player.PID]) {
+    if (currentState.currentEvent == "chancellor vote" && voted[player.PID]) {
       return "sent";
     }
-    if (showVoteEvents.has(event.name)) {
+    if (showVoteEvents.has(currentState.currentEvent)) {
       if (vote == true) {
         return "ja";
       } else if (vote == false) {
@@ -84,14 +84,18 @@ export default class PlayerSidebar extends React.Component {
       -Player cannot be you.
       -Player needs to be alive.
       -You must be president*/
-    const yourPID = this.props.yourPID;
-    let event = this.props.fullEvent;
-    let presID = event.details.presidentPID;
-    let chanID = event.details.chancellorPID;
-    let prevPres = event.details.previousPresPID;
-    let prevChan = event.details.previousChanPID;
-    const youArePresident = yourPID == presID;
-    if (yourPID != presID) {
+    if (Object.keys(this.props.players).length < 5) {
+      //Dev mode assumed.
+      return true;
+    }
+    let currentState = this.props.currentState;
+    let currentEvent = currentState.currentEvent;
+    let presID = currentState.presidentPID;
+    let chanID = currentState.chancellorPID;
+    let prevPres = currentState.previousPresPID;
+    let prevChan = currentState.previousChanPID;
+    let you = this.props.you;
+    if (!you || you.PID != presID) {
       return false;
     }
     let cantSelect = new Set();
@@ -101,18 +105,18 @@ export default class PlayerSidebar extends React.Component {
       "president kill",
       "president investigate",
     ]);
-    if (event.name == "chancellor pick") {
+    if (currentEvent == "chancellor pick") {
       cantSelect.add(prevChan);
       cantSelect.add(prevPres);
       cantSelect.add(presID);
-    } else if (event.name == "president pick") {
+    } else if (currentEvent == "president pick") {
       cantSelect.add(presID);
       cantSelect.add(chanID);
     }
     if (
       player.alive &&
-      !cantSelect.has("" + player.PID) &&
-      selectEvents.has(event.name)
+      !cantSelect.has(player.PID) &&
+      selectEvents.has(currentEvent)
     ) {
       return true;
     }
@@ -120,31 +124,27 @@ export default class PlayerSidebar extends React.Component {
   }
   render() {
     let order = this.props.order;
-    let yourPID = this.props.yourPID;
     let players = this.props.players;
-    let memberships = this.props.memberships;
-    let eventDetails = this.props.fullEvent.details;
-    let pres = eventDetails.presidentPID;
-    let chan = eventDetails.chancellorPID;
+    let currentState = this.props.currentState;
+    let you = this.props.you || {};
+    let pres = currentState.presidentPID;
+    let chan = currentState.chancellorPID;
     let uiInfo = this.props.uiInfo;
     let bulletIndex = this.props.uiInfo.bulletIndex;
 
     let playerList = order.map((PID, index) => {
       let player = players[PID];
-      if (!player) {
-        console.log(`No player with PID ${PID}`);
-        return null;
-      }
-      const isYou = PID == yourPID ? "you " : "";
+      const isYou = PID == you.PID ? "you " : "";
       const status = this.getStatus(player);
-      const voteStatus = this.getVoteClass(player); //Outputs event.votes[PID] if both exist. null/undefined otherwise.
-      const membership = this.getMembership(player);
+      const voteStatus = this.getVoteClass(player); //Null/undefined if doesnt exist.
+      const membershipClass = this.getMembership(player);
       const selectable = this.isPlayerSelectable(player);
       const isSelected = PID == uiInfo.selectedPlayer;
-      const isKillingPlayer = this.props.fullEvent.name == "president kill";
+      const isKillingPlayer =
+        this.props.currentState.currentEvent == "president kill";
       const hasBullet = isSelected && isKillingPlayer;
       return (
-        <div key={index} className={`player ${membership} ${isYou}`}>
+        <div key={index} className={`player ${membershipClass} ${isYou}`}>
           {isKillingPlayer && (
             <div className="bullet-holder">
               {hasBullet && <img className="bullet" src={bullet} />}

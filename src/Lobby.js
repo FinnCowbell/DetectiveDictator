@@ -13,7 +13,7 @@ export default class Lobby extends React.Component {
     super(props);
     this.state = this.getDefaultState();
     this.disconnector = null;
-    this.RECONNECT_TIME = 5000;
+    this.RECONNECT_TIME = 7500;
     this.leaveLobby = this.leaveLobby.bind(this);
     this.kickPlayer = this.kickPlayer.bind(this);
     this.connect = this.connect.bind(this);
@@ -46,7 +46,6 @@ export default class Lobby extends React.Component {
     if (this.props.lobbyID != prevProps.lobbyID) {
       this.state.socket.close();
       clearTimeout(this.disconnector);
-
       let defaultState = this.getDefaultState();
       this.setState(defaultState);
       this.initializeSignals(defaultState.socket);
@@ -63,7 +62,7 @@ export default class Lobby extends React.Component {
     clearTimeout(this.disconnector);
     this.disconnector = setTimeout(
       () => this.leaveLobby("Lobby can't be found!"),
-      this.RECONNECT_TIME * 2
+      this.RECONNECT_TIME
     );
 
     socket.on("lobby init info", (arg) => {
@@ -80,6 +79,7 @@ export default class Lobby extends React.Component {
       });
     });
     socket.on("change lobby", (arg) => {
+      this.leaveLobby();
       this.props.setLobbyID(arg.ID, true);
     });
     socket.on("kick", () =>
@@ -95,7 +95,7 @@ export default class Lobby extends React.Component {
     socket.on("disconnect", () => {
       this.disconnector = setTimeout(
         () => this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`),
-        this.RECONNECT_TIME
+        this.RECONNECT_TIME * 2
       );
     });
 

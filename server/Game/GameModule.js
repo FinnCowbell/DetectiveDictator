@@ -18,19 +18,24 @@ class GameModule {
     return;
   }
 
-  connectNewPlayer(socket) {
+  prototypeModuleInfo(Player) {
+    //Gives the Player class new attributes used by the module.
+    Player.prototype.exampleProperty = "default";
+  }
+
+  connectNewPlayer(player) {
     return;
   }
 
-  connectSpectator(socket) {
+  connectSpectator(player) {
     return;
   }
 
-  reconnectPlayer(socket) {
+  reconnectPlayer(player) {
     return;
   }
 
-  disconnectPlayer(socket) {
+  disconnectPlayer(player) {
     return;
   }
 }

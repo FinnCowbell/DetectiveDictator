@@ -67,10 +67,8 @@ class Lobby {
 
     //Generate the Game Modules.
     let gameModules = [];
-    GameModules.forEach((m) => {
-      gameModules.push(new m(this));
-    });
-
+    GameModules.forEach((m) => gameModules.push(new m(this)));
+    gameModules.forEach((m) => m.prototypeModuleInfo(Player));
     this.game = gameModules[0];
     this.gameModules = gameModules;
     this.MIN_PLAYERS = gameModules[0].MIN_PLAYERS;
@@ -135,12 +133,12 @@ class Lobby {
       return false;
     }
     let PID = this.getNewPID();
-    let spectator = new Player("Spectator", PID, socket.id, socket);
+    let spectator = new Player("Spectator", PID, socket);
     this._sidpid[socket.id] = PID;
     spectator.isSpectating = true;
     this.players[PID] = spectator;
     this.spectators[PID] = spectator;
-    this.gameModules.forEach((m) => m.connectSpectator(socket));
+    this.gameModules.forEach((m) => m.connectSpectator(spectator));
     this.emitUpdateLobby();
     socket.emit("lobby joined", { PID: PID });
   }
@@ -157,7 +155,7 @@ class Lobby {
       return false;
     }
     let PID = this.getNewPID();
-    let player = new Player(username, PID, socket.id, socket);
+    let player = new Player(username, PID, socket);
 
     if (this.leader === null) {
       player.isLeader = true;
@@ -168,7 +166,7 @@ class Lobby {
 
     this.nPlayers++;
     this.log(`${player.username} joined lobby and assigned PID=${PID}`);
-    this.gameModules.forEach((m) => m.connectNewPlayer(socket));
+    this.gameModules.forEach((m) => m.connectNewPlayer(player));
     this.emitUpdateLobby();
     socket.emit("lobby joined", { PID: PID });
   }
@@ -188,7 +186,6 @@ class Lobby {
     //We're not using this socket ID again, so we want to get rid of it.
     delete this._sidpid[socket.id];
     player.socket = null;
-    player.SID = null;
     this.disconnectedPlayers[PID] = this.players[PID];
     player.connected = false;
     this.nConnected--;
@@ -203,18 +200,16 @@ class Lobby {
         "Player tried reconnecting, but not in disconnected list!"
       );
     }
-    let SID = socket.id;
     let player = this.disconnectedPlayers[PID];
     delete this.disconnectedPlayers[PID];
-    this._sidpid[SID] = PID;
+    this._sidpid[socket.id] = PID;
     player.socket = socket;
-    player.SID = socket.id;
     player.connected = true;
     this.nConnected++;
     this.log(`${player.username} and PID ${PID} reconnected.`);
 
     //Reconnect all the gameModules
-    this.gameModules.forEach((m) => m.reconnectPlayer(socket));
+    this.gameModules.forEach((m) => m.reconnectPlayer(player));
 
     socket.emit("lobby joined", { PID: PID });
     this.emitUpdateLobby();
@@ -226,7 +221,7 @@ class Lobby {
       return false;
     }
     //A quick check to confirm all data is updated and linked correctly.
-    if (player[SID] && player[SID].SID != SID) {
+    if (player[SID] && player[SID].socket.id != SID) {
       this.error("Incorrect Player Returned by SID");
     }
     return player;
@@ -241,7 +236,7 @@ class Lobby {
       this.error("Kick: Player does not exist.");
       return false;
     }
-    let SID = player.SID;
+    let SID = player.socket.id;
     delete this._sidpid[SID];
     delete this.players[PID];
     if (player.connected) {
@@ -279,11 +274,12 @@ class Lobby {
   getLobbyInfo() {
     //Lobby info compiles some basic information about the lobby to be sent.
     let publicPlayers = {};
-    for (var PID in this.players) {
-      if (!this.players[PID].isSpectating) {
-        publicPlayers[PID] = this.players[PID].getPublicInfo();
-      }
-    }
+    Object.values(this.players)
+      .filter((p) => !p.isSpectating)
+      .forEach((p) => {
+        publicPlayers[p.PID] = p.getLobbyInfo();
+      });
+
     let args = {
       lobbyID: this.ID,
       players: publicPlayers,
@@ -316,18 +312,22 @@ class Lobby {
 }
 
 class Player {
-  constructor(username, PID, SID, socket = null) {
+  constructor(username, PID, socket = null) {
+    this.socket = socket;
     this.username = username;
+    this.PID = PID;
     this.isLeader = false;
     this.isSpectating = false;
     this.connected = true;
-    this.PID = PID;
-    this.socket = socket;
-    this.SID = SID;
   }
-  getPublicInfo() {
-    //Keeps structure pretty much the same, but removes information that could be deemed "secret"
-    return { ...this, SID: undefined, socket: undefined };
+  getLobbyInfo() {
+    //Grabs the information only the lobby uses.
+    let { username, isLeader, isSpectating, connected, PID } = { ...this };
+    return { username, isLeader, isSpectating, connected, PID };
+  }
+  getInfo() {
+    //Removes socket, but keeps everything else.
+    return { ...this, socket: undefined };
   }
 }
 

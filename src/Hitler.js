@@ -1,70 +1,25 @@
 import React from "react";
 import io from "socket.io-client";
 
-import { LibBoard, FasBoard } from "./parts/gameParts/Boards.js";
-import ActionBar from "./parts/gameParts/ActionBar.js";
-import StatusBar from "./parts/gameParts/StatusBar.js";
-import PlayerSidebar from "./parts/gameParts/PlayerSidebar.js";
-import PlayerCard from "./parts/gameParts/PlayerCard.js";
-import EndWindow from "./parts/gameParts/EndWindow.js";
+import { LibBoard, FasBoard } from "./parts/gameParts/Boards";
+import ActionBar from "./parts/gameParts/ActionBar";
+import StatusBar from "./parts/gameParts/StatusBar";
+import PlayerSidebar from "./parts/gameParts/PlayerSidebar";
+import PlayerCard from "./parts/gameParts/PlayerCard";
+import EndWindow from "./parts/gameParts/EndWindow";
+
+import defaultGameState from "./parts/gameParts/context/defaultState";
+import defaultState from "./parts/gameParts/context/defaultState";
 
 export default class Hitler extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      order: [101, 102, 103, 104, 105, 106, 107],
-      memberships: {
-        101: 1,
-        102: 0,
-        103: 2,
-        104: 0,
-        105: 0,
-        106: 0,
-        107: 0,
-      },
-      rounds: [
-        {
-          players: {
-            // Testing Players, for now.
-            101: { PID: 101, username: "Karl", alive: true },
-            102: { PID: 102, username: "Joseph", alive: true },
-            103: { PID: 103, username: "Adolf", alive: false },
-            104: { PID: 104, username: "Franklin", alive: true },
-            105: { PID: 105, username: "Paul", alive: true },
-            106: { PID: 106, username: "Winston", alive: true },
-            107: { PID: 107, username: "Chiang", alive: true },
-          },
-          events: [
-            {
-              name: "pre game",
-              details: {
-                LibBoard: 4,
-                FasBoard: 3,
-                marker: 2,
-                presidentPID: 101,
-                chancellorPID: 103,
-                previousPresidentPID: null,
-                previousChancellorPID: null,
-                votes: null,
-                nInDiscard: null,
-                nInDraw: 5,
-                nInDiscard: 12,
-              },
-            },
-          ],
-        },
-      ],
-      //UIInfo is for visual information that doesn't impact gameplay.
-      uiInfo: {
-        selectedPlayer: null,
-        voteReceived: false,
-        voted: {},
-      },
-    };
+    this.state = defaultGameState;
     this.clearUIInfo = this.clearUIInfo.bind(this);
     this.sendUIInfo = this.sendUIInfo.bind(this);
     this.recieveUIInfo = this.recieveUIInfo.bind(this);
     this.joinNewLobby = this.joinNewLobby.bind(this);
+    this.activateGameSignals = this.activateGameSignals.bind(this);
   }
   clearUIInfo() {
     let uiInfo = {
@@ -99,31 +54,39 @@ export default class Hitler extends React.Component {
       uiInfo: uiInfo,
     });
   }
+
   joinNewLobby() {
     this.props.socket.emit("join new lobby");
   }
+
   componentDidMount() {
+    this.activateGameSignals();
+  }
+  componentDidUpdate(prevProps) {
+    if (this.props.socket != prevProps.socket) {
+      this.activateGameSignals();
+    }
+  }
+
+  activateGameSignals() {
     let socket = this.props.socket;
     socket.on("full game info", (arg) => {
       this.setState({
-        order: arg.order,
-        memberships: arg.memberships,
-        rounds: arg.rounds,
+        rounds: [arg.round],
       });
     });
     socket.on("new round", (arg) => {
       const rounds = this.state.rounds;
-      let newRound = arg.newRound;
+      let newRound = arg.round;
       this.clearUIInfo();
       this.setState({
         rounds: rounds.concat([newRound]),
       });
     });
-    socket.on("new event", (arg) => {
+    socket.on("new state", (arg) => {
       const rounds = this.state.rounds;
-      let events = rounds[rounds.length - 1].events;
-      events = events.concat([arg.event]);
-      rounds[rounds.length - 1].events = events;
+      const states = rounds[rounds.length - 1].states;
+      rounds[rounds.length - 1].states = states.concat([arg.state]);
       this.clearUIInfo();
       this.setState({
         rounds: rounds,
@@ -133,7 +96,6 @@ export default class Hitler extends React.Component {
       let endState = arg.endState;
       const rounds = this.state.rounds;
       this.setState({
-        memberships: endState.memberships,
         rounds: rounds.concat([endState]),
       });
     });
@@ -141,15 +103,13 @@ export default class Hitler extends React.Component {
     socket.on("ui event", (arg) => this.recieveUIInfo(arg));
   }
 
-  getPlayerAction(event) {
+  getPlayerAction(currentState) {
     //Based on event info, constructs the 'action' for the specific player.
     //The action guides what shows up in the action bar, as well as the game status message.
     let action = "";
-    let eventName = event.name;
-    let youArePresident = this.props.yourPID == event.details.presidentPID;
-    let youAreChancellor = this.props.yourPID == event.details.chancellorPID;
-
-    switch (eventName) {
+    let youArePresident = this.props.yourPID == currentState.presidentPID;
+    let youAreChancellor = this.props.yourPID == currentState.chancellorPID;
+    switch (currentState.currentEvent) {
       case "chancellor pick":
         action = youArePresident ? "your chancellor pick" : "chancellor pick";
         break;
@@ -186,101 +146,63 @@ export default class Hitler extends React.Component {
           : "president investigated";
         break;
       case "end game":
-        action = event.details.reason;
+        action = event.reason;
         break;
       default:
-        action = eventName;
+        action = currentState.currentEvent;
         break;
     }
     return action;
   }
-  getFullEvent(roundIndex = null, eventIndex = null) {
-    /*Game events are sent by the server with the changes that have occurred.
-    This function compiles all changes from the a round. 
-    The current round is the default. 
-    Optionally, a specific round or event can be referenced.*/
-    let roundEvents,
-      event,
-      details = {};
-    if (roundIndex == null) {
-      roundIndex = this.state.rounds.length - 1;
-    }
-    roundEvents = this.state.rounds[roundIndex].events;
-    if (eventIndex == null) {
-      eventIndex = roundEvents.length - 1;
-    }
-    //the first event is always new round.
-    details = {};
-    for (let i = 0; i <= eventIndex; i++) {
-      event = roundEvents[i].details;
-      //Remember: 'in' references the property, 'of' references the value.
-      for (const change in event) {
-        details[change] = event[change];
-      }
-    }
-    let fullEvent = {
-      name: roundEvents[eventIndex].name,
-      details: details,
-    };
-    fullEvent["action"] = this.getPlayerAction(fullEvent);
-    return fullEvent;
-  }
+
   render() {
     let rounds = this.state.rounds;
     let round = rounds[rounds.length - 1];
+    let currentState = round.states[round.states.length - 1];
+    currentState.action = this.getPlayerAction(currentState);
+    let you = currentState.you || round.players[this.props.yourPID];
     let players = round.players;
-    let order = this.state.order;
-    let fullEvent = this.getFullEvent();
-    let memberships = this.state.memberships;
-    let action = this.getPlayerAction(fullEvent);
-    let yourPID = this.props.yourPID;
-
-    let aliveAndPlaying = players[yourPID] && players[yourPID].alive;
+    let order = round.gameInfo.order;
+    let aliveAndPlaying = you && you.alive;
 
     return (
       <div className="game-window">
         <StatusBar
           lobbyID={this.props.lobbyID}
-          yourPID={yourPID}
-          fullEvent={fullEvent}
+          currentState={currentState}
           players={players}
-          memberships={memberships}
         />
-        <PlayerCard PID={yourPID} memberships={memberships} />
+        <PlayerCard you={you} />
         <PlayerSidebar
           order={order}
-          yourPID={yourPID}
-          fullEvent={fullEvent}
+          currentState={currentState}
+          you={you}
           players={players}
-          memberships={memberships}
           uiInfo={this.state.uiInfo}
           sendUIInfo={this.sendUIInfo}
         />
         <div className="boards">
           <LibBoard
-            draw={fullEvent.details.nInDraw}
-            discard={fullEvent.details.nInDiscard}
-            marker={fullEvent.details.marker}
-            nCards={fullEvent.details.libBoard}
+            draw={currentState.nInDraw}
+            discard={currentState.nInDiscard}
+            marker={currentState.marker}
+            nCards={currentState.libBoard}
           />
-          <FasBoard
-            nCards={fullEvent.details.fasBoard}
-            nPlayers={order.length}
-          />
+          <FasBoard nCards={currentState.fasBoard} nPlayers={order.length} />
         </div>
         {aliveAndPlaying && (
           <ActionBar
             socket={this.props.socket}
-            fullEvent={fullEvent}
+            currentState={currentState}
             players={players}
-            yourPID={yourPID}
+            you={you}
             leaveLobby={this.props.leaveLobby}
             uiInfo={this.state.uiInfo}
           />
         )}
-        {fullEvent.name == "end game" && (
+        {currentState.currentEvent == "end game" && (
           <EndWindow
-            winner={fullEvent.action.includes("liberal") ? 0 : 1}
+            reason={round.reason}
             leaveLobby={this.props.leaveLobby}
             joinNewLobby={() => this.joinNewLobby()}
           />
