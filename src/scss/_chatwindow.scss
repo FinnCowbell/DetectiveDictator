@@ -1,7 +1,7 @@
 @import "./borders";
 @import "./scrollbar";
 .chat-window {
-  transition: left .1s;
+  transition: left 0.1s;
   $width: 220px;
   position: fixed;
   bottom: 0px;
@@ -24,8 +24,7 @@
     margin-bottom: 15px;
   }
   .sent-messages {
-    @include scroll-bar(#CCCA);
-    background-image: linear-gradient(to top, transparent 0%, transparent 80%, black 100);
+    @include scroll-bar(#ccca);
     overflow-y: scroll;
     overflow-x: hidden;
     word-wrap: break-word;
@@ -36,13 +35,13 @@
     margin-bottom: 10px;
     width: 100%;
   }
-  &.closed{
+  &.closed {
     left: -$width;
   }
-  &.open{
+  &.open {
     left: 0;
   }
-  .toggle-button{
+  .toggle-button {
     position: absolute;
     right: -60px;
     width: 50px;
@@ -51,30 +50,30 @@
     border-left: unset;
     border-image-width: 10px;
     border-image-outset: 5px;
-    &.notify{
+    &.notify {
       animation-name: blink;
       animation-iteration-count: infinite;
-      animation-duration: .5s;
+      animation-duration: 0.5s;
       animation-direction: alternate;
     }
   }
 }
 
-@media only screen and (min-width: 1500px){
+@media only screen and (min-width: 1500px) {
   .chat-window {
     left: 50px !important;
     display: block;
-    .sent-messages{
+    .sent-messages {
       height: 250px;
     }
-    .toggle-button{
+    .toggle-button {
       display: none;
     }
   }
 }
 
-@keyframes blink{
-  100%{
+@keyframes blink {
+  100% {
     color: green;
   }
 }

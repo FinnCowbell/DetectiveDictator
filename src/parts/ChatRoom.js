@@ -28,19 +28,19 @@ export default class ChatRoom extends React.Component {
     });
   }
 
-  toggleWindow(){
+  toggleWindow() {
     const oldPos = this.state.position;
     this.setState({
       position: oldPos == "open" ? "closed" : "open",
-      notifyClass: ""
-    })
+      notifyClass: "",
+    });
   }
 
   postChat(msg) {
     const messages = this.state.messages;
     let sentWindow = this.refs.sent;
     let notify = this.state.notifyClass;
-    if(this.state.position == "closed"){
+    if (this.state.position == "closed") {
       notify = "notify";
     }
     this.setState({
@@ -85,7 +85,10 @@ export default class ChatRoom extends React.Component {
             submit={this.sendChat}
           />
         )}
-        <button className={`toggle-button ${notifyClass}`} onClick={this.toggleWindow}>
+        <button
+          className={`toggle-button ${notifyClass}`}
+          onClick={this.toggleWindow}
+        >
           {this.state.position == "open" ? "Close" : "Open"} Chat
         </button>
       </div>
