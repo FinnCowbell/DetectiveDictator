@@ -12,7 +12,7 @@ $border-path: "./media/border/";
 
 @mixin liberal-border() {
   background-color: $liberal-blue;
-  border: solid 13px transparent;
+  border-width: 13px;
   border-image-width: 15px;
   border-image: url($border-path + "liberal-border.png") 26 round;
   border-image-outset: 11px;
@@ -20,7 +20,7 @@ $border-path: "./media/border/";
 
 @mixin fascist-border() {
   background-color: $fascist-orange;
-  border: solid 13px transparent;
+  border-width: 13px;
   border-image: url($border-path + "fascist-border.png") 45 round;
   border-image-width: 15px;
   border-image-slice: 45 51 45 45;
@@ -28,7 +28,7 @@ $border-path: "./media/border/";
 }
 
 @mixin hitler-border() {
-  border: solid 13px transparent;
+  border-width: 13px;
   border-image: url($border-path + "hitler-border.png") 45 round;
   border-image-width: 15px;
   border-image-slice: 45 51 45 45;
@@ -38,7 +38,7 @@ $border-path: "./media/border/";
 
 @mixin unknown-border() {
   background-color: $unknown-color;
-  border: solid 13px transparent;
+  border-width: 13px;
   border-image-width: 15px;
   border-image: url($border-path + "unknown-border.png") 26 round;
   border-image-outset: 11px;

@@ -1,0 +1,80 @@
+@import "./borders";
+@import "./scrollbar";
+.chat-window {
+  transition: left .1s;
+  $width: 220px;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: $width;
+  border-bottom: 0.1px transparent solid;
+  font-family: sans-serif;
+  border: 2px rgb(112, 112, 112) solid;
+  @include status-border();
+  h3 {
+    font-family: Germania;
+    text-align: center;
+    font-size: 2em;
+    margin: 0px 15px;
+    border-bottom: 3px solid black;
+    border-image: url($border-path + "chat-line.png") 33 round;
+    border-image-slice: 152 153 152 147;
+    border-image-width: 0px 0px 20px 0px;
+    border-image-outset: 15px;
+    margin-bottom: 15px;
+  }
+  .sent-messages {
+    @include scroll-bar(#CCCA);
+    background-image: linear-gradient(to top, transparent 0%, transparent 80%, black 100);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    height: calc(100vh - 200px);
+    scrollbar-width: none;
+  }
+  .chat-input {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  &.closed{
+    left: -$width;
+  }
+  &.open{
+    left: 0;
+  }
+  .toggle-button{
+    position: absolute;
+    right: -60px;
+    width: 50px;
+    bottom: 5px;
+    @include status-border();
+    border-left: unset;
+    border-image-width: 10px;
+    border-image-outset: 5px;
+    &.notify{
+      animation-name: blink;
+      animation-iteration-count: infinite;
+      animation-duration: .5s;
+      animation-direction: alternate;
+    }
+  }
+}
+
+@media only screen and (min-width: 1500px){
+  .chat-window {
+    left: 50px !important;
+    display: block;
+    .sent-messages{
+      height: 250px;
+    }
+    .toggle-button{
+      display: none;
+    }
+  }
+}
+
+@keyframes blink{
+  100%{
+    color: green;
+  }
+}

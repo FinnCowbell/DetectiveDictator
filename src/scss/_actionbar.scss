@@ -32,7 +32,7 @@
 }
 .action-bar {
   background-color: gray;
-  border: 13px solid transparent;
+  border: 13px solid black;
   border-image: url(./media/border/action-border.png) 30 round;
   height: 200px;
   width: 600px;
@@ -99,6 +99,7 @@
     .discard-button,
     .continue-button,
     .vote-button {
+      margin: unset;
       order: 1;
       @include action-bar-button(90deg);
       margin-right: -5px;

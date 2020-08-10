@@ -4,6 +4,7 @@
 @import "scss/endgame";
 @import "scss/colors";
 @import "scss/borders";
+@import "scss/chatwindow";
 @import "scss/actionbar";
 @import "scss/singleinputform";
 
@@ -46,40 +47,6 @@ h4 {
   }
 }
 
-.chat-window {
-  display: none;
-  font-family: sans-serif;
-  border: 2px rgb(112, 112, 112) solid;
-  position: fixed;
-  bottom: 0px;
-  left: 20px;
-  width: 200px;
-  border-bottom: 0.1px transparent solid;
-  @include status-border();
-  h3 {
-    font-family: Germania;
-    text-align: center;
-    font-size: 2em;
-    margin: 0px 15px;
-    border-bottom: 3px solid black;
-    border-image: url(./media/border/chat-line.png) 33 round;
-    border-image-slice: 152 153 152 147;
-    border-image-width: 0px 0px 20px 0px;
-    border-image-outset: 15px;
-    margin-bottom: 15px;
-  }
-  .sent-messages {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    word-wrap: break-word;
-    height: 300px;
-    scrollbar-width: none;
-  }
-  .chat-input {
-    margin-bottom: 10px;
-    width: 100%;
-  }
-}
 .window {
   position: fixed;
   top: 0;
@@ -358,9 +325,6 @@ h4 {
   .player-card {
     display: block;
   }
-  .chat-window {
-    display: block;
-  }
 }
 
 input {
@@ -368,6 +332,7 @@ input {
   font-size: 15px;
 }
 button {
+  background-color: #EEE;
   font-family: Squada;
   font-size: 15px;
 }

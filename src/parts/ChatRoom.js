@@ -4,13 +4,16 @@ export default class ChatRoom extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      message: "",
+      position: "closed",
       messages: [],
+      newChat: false,
+      notifyClass: "",
     };
     this.MAX_LENGTH = 120;
     this.postChat = this.postChat.bind(this);
     this.sendChat = this.sendChat.bind(this);
     this.setMessages = this.setMessages.bind(this);
+    this.toggleWindow = this.toggleWindow.bind(this);
   }
   componentDidMount() {
     let socket = this.props.socket;
@@ -25,11 +28,24 @@ export default class ChatRoom extends React.Component {
     });
   }
 
+  toggleWindow(){
+    const oldPos = this.state.position;
+    this.setState({
+      position: oldPos == "open" ? "closed" : "open",
+      notifyClass: ""
+    })
+  }
+
   postChat(msg) {
     const messages = this.state.messages;
     let sentWindow = this.refs.sent;
+    let notify = this.state.notifyClass;
+    if(this.state.position == "closed"){
+      notify = "notify";
+    }
     this.setState({
       messages: messages.concat([msg]),
+      notifyClass: notify,
     });
     sentWindow.scrollTo({ behavior: "smooth", top: sentWindow.scrollHeight });
   }
@@ -52,8 +68,11 @@ export default class ChatRoom extends React.Component {
         <hr />
       </div>
     ));
+    let position = this.state.position;
+    let spectating = this.props.spectating;
+    let notifyClass = this.state.notifyClass;
     return (
-      <div className="chat-window">
+      <div className={`chat-window ${this.state.position}`}>
         <h3>Chat</h3>
         <div ref="sent" className="sent-messages">
           {chats}
@@ -66,6 +85,9 @@ export default class ChatRoom extends React.Component {
             submit={this.sendChat}
           />
         )}
+        <button className={`toggle-button ${notifyClass}`} onClick={this.toggleWindow}>
+          {this.state.position == "open" ? "Close" : "Open"} Chat
+        </button>
       </div>
     );
   }
