@@ -1,5 +1,6 @@
 @import "./borders";
 @import "./scrollbar";
+@import "./fonts";
 .chat-window {
   transition: left 0.1s;
   $width: 220px;
@@ -8,11 +9,10 @@
   left: 0px;
   width: $width;
   border-bottom: 0.1px transparent solid;
-  font-family: sans-serif;
   border: 2px rgb(112, 112, 112) solid;
   @include status-border();
   h3 {
-    font-family: Germania;
+    font-family: $header-stack;
     text-align: center;
     font-size: 2em;
     margin: 0px 15px;
@@ -29,11 +29,12 @@
     overflow-x: hidden;
     word-wrap: break-word;
     height: calc(100vh - 200px);
-    scrollbar-width: none;
+    font-family: $main-stack;
+    padding: 0px 5px;
   }
   .chat-input {
     margin-bottom: 10px;
-    width: 100%;
+    width: auto;
   }
   &.closed {
     left: -$width;

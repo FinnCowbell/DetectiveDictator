@@ -16,14 +16,14 @@ $background-color: #2b2b2b;
   .content {
     border: 5px solid black;
     position: relative;
-    font-family: Squada;
+    font-family: $header-stack;
     display: grid;
     grid-template-areas:
       "header"
       "status"
       "middle"
       "bottom";
-    grid-template-rows: 175px auto 1fr 50px;
+    grid-template-rows: auto auto 1fr 50px;
     width: 500px;
     height: 500px;
     padding: 20px;
@@ -38,6 +38,9 @@ $background-color: #2b2b2b;
       z-index: -1;
       padding: 20px;
     }
+    button{
+      font-family: $header-stack;
+    }
     * {
       z-index: 3;
     }
@@ -46,7 +49,7 @@ $background-color: #2b2b2b;
     grid-area: status;
     display: flex;
     justify-content: center;
-    font-family: Squada;
+    font-family: $title-stack;
     color: $unknown-color;
     .new-player-form {
       margin: 10px;
@@ -58,7 +61,10 @@ $background-color: #2b2b2b;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-bottom: 20px;
     .site-title {
+      text-shadow: 5px 5px 0px gray;
+      margin-top: 50px;
       font-family: Potsdam;
       font-size: 1.5em;
     }
@@ -73,12 +79,13 @@ $background-color: #2b2b2b;
         top: -100px;
         left: -100px;
       }
-      font-family: Squada;
-      font-size: 1.5em;
+      font-family: $header-stack;
+      font-size: 1.25em;
       cursor: pointer;
       &:hover {
         color: rgb(32, 32, 32);
         span {
+          font-family: $subheader-stack;
           opacity: 1;
         }
       }
@@ -98,7 +105,7 @@ $background-color: #2b2b2b;
     grid-area: status;
     font-size: 2em;
     width: 300px;
-    border-bottom: 5px solid black;
+    box-shadow: 5px 5px 1px gray;
     margin: auto;
   }
   .existing-lobby {
@@ -110,7 +117,7 @@ $background-color: #2b2b2b;
     font-size: 2em;
     margin: 0px 30px;
     text-align: center;
-    font-family: Squada;
+    font-family: $subheader-stack;
     h4 {
       padding-bottom: 20px;
     }
@@ -119,7 +126,7 @@ $background-color: #2b2b2b;
     grid-area: bottom;
     margin: auto;
     button {
-      font-family: Germania;
+      font-family: $subheader-stack;
       font-size: 1.5em;
     }
     .num-spectators {
@@ -131,7 +138,7 @@ $background-color: #2b2b2b;
   }
   .player-list {
     grid-area: middle;
-    font-family: Squada;
+    font-family: $subheader-stack;
     font-size: 1.25em;
     transition: 0.25s height;
     ul {

@@ -2,16 +2,19 @@
 .single-input-form {
   display: flex;
   flex-direction: row;
-  width: 100%;
+  align-items: center;
+  width: auto;
   border: 1px solid gray;
   border-bottom-width: 2px;
   background-color: white;
   transition: 0.5s;
+  font-family: $header-stack;
   .input-box {
+    font-family: $main-stack;
+    padding: 1px 3px;
     flex-grow: 1;
     border: none;
     outline: unset;
-    box-shadow: -1px -1 1px 2px black;
   }
   &.focus {
     border-color: teal;
@@ -20,6 +23,8 @@
     border-color: red;
   }
   button {
+    font-weight: bolder;
+    padding: 2px 1px;
     border: unset;
     outline: unset;
     height: 100%;

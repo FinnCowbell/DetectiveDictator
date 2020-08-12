@@ -28,20 +28,20 @@ $part2-duration: 0.5s;
     animation-delay: $part1-duration + 0.25s;
     animation-duration: $part2-duration;
     h1 {
-      font-family: Potsdam;
+      font-family: $header-stack;
       font-size: 2.75em;
       text-align: center;
     }
     .buttons {
       display: flex;
-      font-family: Squada;
+      font-family: $subheader-stack;
       justify-content: space-around;
     }
     .close-window {
       position: absolute;
       top: 0;
       right: 0;
-      font-family: Squada;
+      font-family: $title-stack;
     }
     button {
       font-family: inherit;

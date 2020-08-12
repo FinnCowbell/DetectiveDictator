@@ -10,6 +10,14 @@
   font-family: "Squada";
   src: url(./fonts/SquadaOne.ttf) format("truetype");
 }
+@font-face{
+  font-family: "Roboto Condensed";
+  src: url(./fonts/RobotoCondensed-Regular.ttf) format("truetype");
+}
+$title-stack: Potsdam, Germania, Baskerville, Garamond, monospace;
+$header-stack: Germania, Tahoma, Arial;
+$subheader-stack: Germania, Tahoma, Cambria, Didot;
+$main-stack: "Roboto Condensed", Geneva, Arial;
 // @font-face {
 //   font-family: 'FasterOne';
 //   src: url(./fonts/FasterOne-Regular.ttf) format('truetype');

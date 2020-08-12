@@ -10,7 +10,7 @@ class LibBoard extends React.Component {
   constructor(props) {
     super(props);
     this.markerColor = "#2e8768";
-    this.liberalText = "#5fc7d8";
+    this.liberalText = "#89edff";
     this.markerLocations = [
       [710, 599],
       [912, 599],
@@ -19,7 +19,7 @@ class LibBoard extends React.Component {
     ];
     this.drawCenter = [85, 337];
     this.discardCenter = [1970, 337];
-    this.fontType = "70px Squada";
+    this.fontType = "70px Germania";
     this.cardXs = [310, 608, 904, 1203, 1504];
     this.cardY = 155;
     this.cardWidth = 245;

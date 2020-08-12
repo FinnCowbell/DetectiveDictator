@@ -14,3 +14,9 @@
     background: adjust-color($color: $c, $lightness: -50%);
   }
 }
+
+@mixin hide-scrollbar(){
+  &::-webkit-scrollbar{
+    width: 0px;
+  }
+}

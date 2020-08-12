@@ -1,15 +1,16 @@
 @import "./colors";
+@import "./fonts";
 
 @mixin action-bar-button($rotation) {
   border: none;
-  font-family: Germania;
+  font-family: $subheader-stack;
   color: #65c4a3;
   background-color: $action-bar-dark-color;
   display: flex;
   align-items: center;
   cursor: pointer;
   h1 {
-    font-family: Potsdam;
+    font-family: $title-stack;
   }
   h1,
   h2,

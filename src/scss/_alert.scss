@@ -1,3 +1,4 @@
+@import './fonts';
 .alert-bar {
   position: fixed;
   display: flex;
@@ -13,15 +14,12 @@
   padding: 0px;
   transition: 1s top;
   z-index: 999;
-  .message {
-    font-family: Potsdam;
-  }
+  font-family: $main-stack;
   button {
     position: absolute;
     margin-right: 5px;
     right: 0px;
     align-self: end;
-    font-family: "Courier New", Courier, monospace;
     height: 100%;
     background: unset;
     border: 1px solid black;
