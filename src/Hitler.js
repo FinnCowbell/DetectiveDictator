@@ -182,13 +182,15 @@ export default class Hitler extends React.Component {
           sendUIInfo={this.sendUIInfo}
         />
         <div className="boards">
-          <LibBoard
-            draw={currentState.nInDraw}
-            discard={currentState.nInDiscard}
-            marker={currentState.marker}
-            nCards={currentState.libBoard}
-          />
-          <FasBoard nCards={currentState.fasBoard} nPlayers={order.length} />
+          <div className="board-container">
+            <LibBoard
+              draw={currentState.nInDraw}
+              discard={currentState.nInDiscard}
+              marker={currentState.marker}
+              nCards={currentState.libBoard}
+            />
+            <FasBoard nCards={currentState.fasBoard} nPlayers={order.length} />
+          </div>
         </div>
         {aliveAndPlaying && (
           <ActionBar

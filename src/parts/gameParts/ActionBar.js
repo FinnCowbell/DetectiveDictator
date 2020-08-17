@@ -231,20 +231,20 @@ function JaNein(props) {
   return (
     <div className="action ja-nein">
       <div className="vote-options">
-        <div className="option">
+        <button className="option">
           <img
             className={isJa ? "selected" : ""}
             onClick={() => setIsJa(true)}
             src={jaPic}
           />
-        </div>
-        <div className="option">
+        </button>
+        <button className="option">
           <img
             className={isJa === false ? "selected" : ""}
             onClick={() => setIsJa(false)}
             src={neinPic}
           />
-        </div>
+        </button>
       </div>
       <button
         onClick={() => props.confirm(isJa)}
@@ -277,23 +277,23 @@ function Discard(props) {
       <div className="policy-cards">{cards}</div>
       {props.fasBoard == 5 && props.veto ? (
         <div className="stacked-buttons">
-          <div
+          <button
             className="discard-button"
             onClick={() => props.confirm(selectedCard)}
           >
             <h3>Discard</h3>
-          </div>
+          </button>
           <div className="veto-button" onClick={() => props.veto(selectedCard)}>
             <h3>Veto</h3>
           </div>
         </div>
       ) : (
-        <div
+        <button
           className="discard-button"
           onClick={() => props.confirm(selectedCard)}
         >
           <h2>Discard</h2>
-        </div>
+        </button>
       )}
     </div>
   );
@@ -321,9 +321,9 @@ function PresidentPeek(props) {
   return (
     <div className="action view-three">
       <div className="policy-cards">{cards}</div>
-      <div className="continue-button" onClick={props.confirm}>
+      <button className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>
-      </div>
+      </button>
     </div>
   );
 }

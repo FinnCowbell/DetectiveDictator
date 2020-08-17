@@ -70,6 +70,7 @@ $part2-duration: 0.5s;
   }
   &.liberal {
     .content {
+      border: 15px solid black;
       @include unknown-border();
       background-color: $liberal-blue;
     }
@@ -83,7 +84,7 @@ $part2-duration: 0.5s;
   }
   &.fascist {
     .content {
-      border: 15px solid transparent;
+      border: 15px solid black;
       @include hitler-border();
       background-color: $fascist-orange;
     }

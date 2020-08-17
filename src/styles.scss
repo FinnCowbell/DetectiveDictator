@@ -7,6 +7,8 @@
 @import "scss/chatwindow";
 @import "scss/actionbar";
 @import "scss/singleinputform";
+@import "scss/gameboards";
+@import "scss/scrollbar";
 
 $hand-vertical-offset: -2px;
 $hand-horizontal-offset: -57px;
@@ -67,9 +69,9 @@ button {
   height: 100%;
 
   .game-window {
-    width: 100%;
-    height: 100%;
-
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
     z-index: 1;
     // background-color: rgb(12, 12, 73);
   }
@@ -80,16 +82,12 @@ button {
 
 .game-window {
   display: grid;
-  grid-template: auto 1fr auto/ 1fr;
+  grid-template: 100px 1fr auto/ 1fr;
   grid-template-areas:
     " header "
     " boards "
     " action ";
   overflow-x: hidden;
-  width: 100vw;
-  height: 100vh;
-  // grid-template-rows: 400p 1fr 250px;
-  // grid-template-columns: 1fr;
   background-color: $bg-color;
   background-image: linear-gradient(
     to right,
@@ -97,33 +95,26 @@ button {
     black 50%,
     #{$bg-color} 100%
   );
-  .boards {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    grid-area: boards;
-    canvas {
-      height: auto;
-      max-width: 920px;
-      max-height: 400px;
-      width: 100%;
-    }
+  scrollbar-width: none;
+  &::-webkit-scrollbar{
+    display: none;
   }
   .player-sidebar {
-    position: absolute;
-    overflow: none;
-    top: 0px;
+    position: fixed;
+    top: 0;
     right: 0;
-    height: 100%;
+    min-width: 350px;
     font-family: $subheader-stack;
     background-image: linear-gradient(
       to right,
       rgba(20, 20, 20, 0) 15%,
       rgb(20, 20, 20) 90%
     );
-    * * {
+    *{
       pointer-events: auto;
+      *{
+        pointer-events: auto;
+      }
     }
     pointer-events: none;
     transition: 0.25s right;
@@ -136,7 +127,7 @@ button {
       font-size: 2em;
       position: fixed;
       bottom: 0;
-      right: 0;
+      right: 0px;
       border: unset;
       outline: none;
       &.toggled {
@@ -147,11 +138,13 @@ button {
       right: -350px;
     }
     .players {
-      overflow: scroll;
-      height: 100%;
-      scrollbar-width: none;
+      height: 100vh;
+      @include scroll-bar(rgb(126, 126, 126));
+      overflow-x: visible;
+      overflow-y: scroll;
     }
     .player {
+      overflow-x: visible;
       font-size: 1.1em;
       display: flex;
       flex-direction: row-reverse;
@@ -275,19 +268,20 @@ button {
   justify-content: center;
   text-align: center;
   width: 100%;
-  height: 75px;
+  height: auto;
   margin-bottom: 30px;
   .lobby-info {
     grid-area: id;
   }
   .status-div {
+    width: inherit;
+    height: auto;
     max-width: 800px;
     display: flex;
     justify-content: center;
     align-items: center;
     border-bottom: 0.1px transparent solid;
     @include status-border();
-    width: inherit;
     font-family: $header-stack;
     font-size: 1.4em;
     padding-top: 5px;
@@ -298,30 +292,34 @@ button {
   }
 }
 .player-card {
-  display: none;
+  margin: 0;
   grid-area: playercard;
-  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   img {
     width: 100%;
+    height: auto;
+    max-width: 300px;
     border-radius: 4px;
     box-shadow: 1px 3px 4px black;
   }
+  display: none;
 }
 
 //Desktop-specific changes
-@media only screen and (min-width: 1500px) {
+@media only screen and (min-width: 1400px) {
   .game-window {
-    grid-template: auto 1fr auto / 1fr 3fr 1fr;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 100px 1fr auto;
     grid-template-areas:
       ". header players"
       "playercard boards players"
       ". action players";
     .player-sidebar {
-      height: 100%;
-      width: 100%;
+      position: relative;
       grid-area: players;
       background: unset;
-      position: relative;
       .controller {
         display: none;
       }
@@ -331,7 +329,7 @@ button {
     }
   }
   .player-card {
-    display: block;
+    display: flex;
   }
 }
 

@@ -29,9 +29,9 @@ export default class EndWindow extends React.Component {
       >
         <div className={`slidein-background`}></div>
         <div className="content">
-          <button className="close-window" onClick={this.closeWindow}>
+          {/* <button className="close-window" onClick={this.closeWindow}>
             X
-          </button>
+          </button> */}
           <h1>{endPhrases[this.props.reason]}</h1>
           <div className="buttons">
             <button onClick={this.props.joinNewLobby}>New Game</button>
