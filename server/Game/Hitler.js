@@ -34,7 +34,7 @@ class Hitler extends GameModule {
     this.yesCount = 0;
 
     //Should only be used during executive actions.
-    this.investigatee = null;
+    this.investigatedName = null;
     this.victim = null;
 
     /*Wait time between events in milliseconds.
@@ -281,7 +281,7 @@ class Hitler extends GameModule {
       nInDraw: this.policies.getAmountRemaining(),
       nVoted: this.nVoted,
       votes: this.votes,
-      investigatee: this.investigatee,
+      investigatedName: this.investigatedName,
       victim: this.victim,
     };
     round.states.push(currentState);
@@ -450,8 +450,8 @@ class Hitler extends GameModule {
         return this.error("Non-president sent 'investigate request'");
       }
       let president = this.players[this.presidentPID];
-      this.investigatee = arg.invenstigatee;
-      let membership = this.players[arg.investigatee].membership > 0 ? 1 : 0;
+      this.investigatedName = this.players[arg.investigated].username;
+      let membership = this.players[arg.investigated].membership > 0 ? 1 : 0;
       president.hand.investigatedMembership = membership;
       this.currentEvent = "president investigated";
       this.snapState();

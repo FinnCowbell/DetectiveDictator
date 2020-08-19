@@ -71,7 +71,7 @@ export default class ActionBar extends React.Component {
   viewPlayer(PID) {
     if (PID != null) {
       this.props.socket.emit("president investigate request", {
-        investigatee: PID,
+        investigated: PID,
       });
     }
   }
@@ -222,7 +222,7 @@ function JaNein(props) {
       <div className="action ja-nein">
         <div className="vote-options">
           <div className={"option"}>
-            <img className={"selected"} src={isJa === true ? jaPic : neinPic} />
+            <img  width={138} className={"selected"} src={isJa === true ? jaPic : neinPic} />
           </div>
         </div>
       </div>
@@ -233,6 +233,7 @@ function JaNein(props) {
       <div className="vote-options">
         <button className="option">
           <img
+            width={138}
             className={isJa ? "selected" : ""}
             onClick={() => setIsJa(true)}
             src={jaPic}
@@ -240,6 +241,7 @@ function JaNein(props) {
         </button>
         <button className="option">
           <img
+            width={138}
             className={isJa === false ? "selected" : ""}
             onClick={() => setIsJa(false)}
             src={neinPic}
@@ -283,9 +285,9 @@ function Discard(props) {
           >
             <h3>Discard</h3>
           </button>
-          <div className="veto-button" onClick={() => props.veto(selectedCard)}>
+          <button className="veto-button" onClick={() => props.veto(selectedCard)}>
             <h3>Veto</h3>
-          </div>
+          </button>
         </div>
       ) : (
         <button
@@ -335,9 +337,9 @@ function ViewMembership(props) {
           src={props.membership == 0 ? liberalMembership : fascistMembership}
         />
       </div>
-      <div className="continue-button" onClick={props.confirm}>
+      <button className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>
-      </div>
+      </button>
     </div>
   );
 }

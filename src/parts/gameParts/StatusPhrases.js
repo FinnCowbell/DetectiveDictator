@@ -1,15 +1,15 @@
 //Status Phrases for Secret Hitler.
 export default function getStatusPhrase(currentState, players) {
-  let presidentName, chancellorName, investigateeName, victimName;
+  let presidentName, chancellorName, investigatedName, victimName;
   if (players[currentState.presidentPID]) {
     presidentName = players[currentState.presidentPID].username;
   }
   if (players[currentState.chancellorPID]) {
     chancellorName = players[currentState.chancellorPID].username;
   }
-  if (players[currentState.investigatee]) {
-    investigateeName = players[currentState.investigatee].username || "";
-  }
+
+  investigatedName = currentState.investigatedName;
+  
   if (players[currentState.victim]) {
     victimName = players[currentState.victim].username;
   }
@@ -34,8 +34,8 @@ export default function getStatusPhrase(currentState, players) {
     "your president peek": "Take a peek. (Rightmost = Top Card)",
     "president investigate": `President ${presidentName} is picking someone to investigate.`,
     "your president investigate": "Pick someone to investigate.",
-    "president investigated": `${presidentName} investigated ${investigateeName}.`,
-    "your president investigated": `${presidentName} investigated ${investigateeName}.`,
+    "president investigated": `${presidentName} investigated ${investigatedName}.`,
+    "your president investigated": `${presidentName} investigated ${investigatedName}.`,
     "president pick": `President ${presidentName} is selecting the next president.`,
     "your president pick": "Pick the next president.",
     "president kill": `President ${presidentName} is picking someone to assassinate.`,
