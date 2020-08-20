@@ -13,7 +13,7 @@ export default class Lobby extends React.Component {
     super(props);
     this.state = this.getDefaultState();
     this.disconnector = null;
-    this.RECONNECT_TIME = 7500;
+    this.CONNECT_TIME = 5000;
     this.leaveLobby = this.leaveLobby.bind(this);
     this.kickPlayer = this.kickPlayer.bind(this);
     this.connect = this.connect.bind(this);
@@ -22,9 +22,15 @@ export default class Lobby extends React.Component {
     this.spectateGame = this.spectateGame.bind(this);
   }
   getDefaultState() {
-    let socket = io.connect(
-      this.props.socketURL + `/${this.props.lobbyID.toLowerCase()}`
-    );
+    const socket = io(
+      this.props.socketURL + '/' + this.props.lobbyID.toLowerCase(),
+      {
+      reconnection: true,
+      reconnectionDelay: 200,
+      reconnectionDelayMax: 2000,
+      reconnectionAttempts: 5,
+      forceNew: true,
+      })
     return {
       socket: socket,
       gameInfo: null,
@@ -45,7 +51,6 @@ export default class Lobby extends React.Component {
   componentDidUpdate(prevProps) {
     if (this.props.lobbyID != prevProps.lobbyID) {
       this.state.socket.close();
-      clearTimeout(this.disconnector);
       let defaultState = this.getDefaultState();
       this.setState(defaultState);
       this.initializeSignals(defaultState.socket);
@@ -54,17 +59,11 @@ export default class Lobby extends React.Component {
 
   componentWillUnmount() {
     this.state.socket.close();
-    clearTimeout(this.disconnector);
   }
 
   initializeSignals(socket) {
     // If the lobby isn't connecting, we shouldn't stick around.
-    clearTimeout(this.disconnector);
-    this.disconnector = setTimeout(
-      () => this.leaveLobby("Lobby can't be found!"),
-      this.RECONNECT_TIME
-    );
-
+    this.disconnector = setTimeout(()=>this.leaveLobby("Lobby Doesn't Exist!"), this.CONNECT_TIME);
     socket.on("lobby init info", (arg) => {
       this.setState({
         lobbyExists: true,
@@ -72,19 +71,23 @@ export default class Lobby extends React.Component {
         gameInfo: arg.initInfo.gameInfo,
       });
     });
+
     socket.on("lobby joined", (arg) => {
       this.setState({
         inLobby: true,
         PID: arg.PID,
       });
     });
+
     socket.on("change lobby", (arg) => {
       this.leaveLobby();
       this.props.setLobbyID(arg.ID, true);
     });
+
     socket.on("kick", () =>
       this.leaveLobby("You've been kicked From the lobby!")
     );
+
     socket.on("lobby update info", (arg) => {
       this.setState({
         players: arg.lobbyInfo.players,
@@ -92,24 +95,18 @@ export default class Lobby extends React.Component {
         nSpectators: arg.lobbyInfo.nSpectators,
       });
     });
-    socket.on("disconnect", () => {
-      this.disconnector = setTimeout(
-        () => this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`),
-        this.RECONNECT_TIME * 2
-      );
-    });
 
-    socket.on("reconnect", () => {
-      clearTimeout(this.disconnector);
-    });
+    socket.on("reconnect_failed", ()=>{
+      this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`);
+    })
 
     socket.on("alert", (alert) => {
       this.props.setAlert(alert);
     });
     //establishing lobby connection needs to occur After signals have been triggered.
     socket.on("connect", () => {
-      socket.emit("connection init request");
       clearTimeout(this.disconnector);
+      socket.emit("connection init request");
     });
   }
   leaveLobby(reason = null) {
@@ -123,12 +120,14 @@ export default class Lobby extends React.Component {
       username: username,
     });
   }
+
   reconnect(PID) {
     let arg = {
       PID: PID,
     };
     this.state.socket.emit("rejoin lobby", arg);
   }
+
   kickPlayer(PID) {
     const you = this.state.players[this.state.PID];
     if (you.isLeader) {
