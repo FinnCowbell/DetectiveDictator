@@ -15,8 +15,8 @@
   }
 }
 
-@mixin hide-scrollbar(){
-  &::-webkit-scrollbar{
+@mixin hide-scrollbar() {
+  &::-webkit-scrollbar {
     width: 0px;
   }
 }

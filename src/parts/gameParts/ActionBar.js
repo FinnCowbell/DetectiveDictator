@@ -222,7 +222,11 @@ function JaNein(props) {
       <div className="action ja-nein">
         <div className="vote-options">
           <div className={"option"}>
-            <img  width={138} className={"selected"} src={isJa === true ? jaPic : neinPic} />
+            <img
+              width={138}
+              className={"selected"}
+              src={isJa === true ? jaPic : neinPic}
+            />
           </div>
         </div>
       </div>
@@ -285,7 +289,10 @@ function Discard(props) {
           >
             <h3>Discard</h3>
           </button>
-          <button className="veto-button" onClick={() => props.veto(selectedCard)}>
+          <button
+            className="veto-button"
+            onClick={() => props.veto(selectedCard)}
+          >
             <h3>Veto</h3>
           </button>
         </div>

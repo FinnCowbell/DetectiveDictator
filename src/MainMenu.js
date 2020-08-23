@@ -7,14 +7,13 @@ export default class MainMenu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      socket: io(this.props.socketURL + "/menu",      
-      {
+      socket: io(this.props.socketURL + "/menu", {
         reconnection: true,
         reconnectionDelay: 500,
         reconnectionDelayMax: 2000,
         reconnectionAttempts: Infinity,
         forceNew: true,
-        }),
+      }),
     };
     this.joinLobby = this.joinLobby.bind(this);
     this.createLobby = this.createLobby.bind(this);
@@ -27,7 +26,7 @@ export default class MainMenu extends React.Component {
   }
   componentWillUnmount() {
     this.state.socket.close();
-    this.setState({socket: null});
+    this.setState({ socket: null });
   }
   createLobby() {
     const socket = this.state.socket;

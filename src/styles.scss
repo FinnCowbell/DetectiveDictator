@@ -96,7 +96,7 @@ button {
     #{$bg-color} 100%
   );
   scrollbar-width: none;
-  &::-webkit-scrollbar{
+  &::-webkit-scrollbar {
     display: none;
   }
   .player-sidebar {
@@ -110,9 +110,9 @@ button {
       rgba(20, 20, 20, 0) 15%,
       rgb(20, 20, 20) 90%
     );
-    *{
+    * {
       pointer-events: auto;
-      *{
+      * {
         pointer-events: auto;
       }
     }

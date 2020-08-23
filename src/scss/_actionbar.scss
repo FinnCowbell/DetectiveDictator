@@ -32,44 +32,45 @@ $inner-border-width: 15px;
 }
 
 //Layout
-.action-bar-container{
+.action-bar-container {
   grid-area: action;
   margin: auto;
   height: auto;
 }
 
-.action-bar{
+.action-bar {
   height: auto;
   width: $action-bar-width;
   max-height: $action-bar-height;
 }
-.action{
+.action {
   height: $action-bar-height - ($inner-border-width * 2);
   display: flex;
-  &.ja-nein{
+  &.ja-nein {
     .vote-options {
       display: flex;
       justify-content: space-around;
       flex-grow: 1;
-      .option{
+      .option {
         height: 100%;
         max-width: 20vw;
         background-color: transparent;
         outline: unset;
         border: unset;
-        img{
+        img {
           height: 100%;
         }
       }
     }
-    .vote-button{
+    .vote-button {
       flex-grow: 0;
       @include action-bar-button(90deg);
       margin-right: -$inner-border-width;
     }
   }
-  &.discard, &.view-three{
-    .policy-cards{
+  &.discard,
+  &.view-three {
+    .policy-cards {
       display: flex;
       flex-direction: row;
       //NOTE: Flex grow needs to be defined very early
@@ -78,86 +79,87 @@ $inner-border-width: 15px;
       height: 100%;
       align-items: center;
       justify-content: space-around;
-      .policy{
-        height: 100%; 
+      .policy {
+        height: 100%;
         width: auto;
         max-width: 20vw;
-        img{
+        img {
           height: 100%;
         }
       }
     }
-    button{
+    button {
       @include action-bar-button(90deg);
       margin-right: -$inner-border-width;
     }
   }
-  &.pick-player, &.exit{
+  &.pick-player,
+  &.exit {
     justify-content: center;
     align-items: center;
-    button{
+    button {
       @include action-bar-button(0deg);
       min-width: 300px;
       padding: 50px;
     }
   }
-  &.membership{
+  &.membership {
     display: flex;
-    .membership-card{
+    .membership-card {
       flex-grow: 1;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 10px;
-      img{
+      img {
         height: 100%;
         width: auto;
       }
     }
-    button{
+    button {
       @include action-bar-button(90deg);
     }
   }
 }
 
 //Styling
-.action-bar{
+.action-bar {
   background-color: $action-bar-bg;
   border: 13px solid black;
   border-image: url(./media/border/action-border.png) 30 round;
   border-image-outset: 6px;
   margin: 6px;
 }
-.action{
+.action {
   border: 15px solid $action-bar-ink;
 }
 
-.stacked-buttons{
-  display:flex;
+.stacked-buttons {
+  display: flex;
   flex-direction: column;
-  button{
+  button {
     flex-grow: 1;
   }
-  .discard-button{
+  .discard-button {
     padding-bottom: 10px;
     border-bottom: 2px solid black !important;
   }
 }
 
 //Animations
-.policy{
+.policy {
   cursor: pointer;
-  transition: .25s filter;
-  &:hover{
+  transition: 0.25s filter;
+  &:hover {
     filter: grayscale(50%);
   }
-  &.selected{
+  &.selected {
     filter: grayscale(100%);
   }
 }
 
-.ja-nein{
-  .vote-options .option img{
+.ja-nein {
+  .vote-options .option img {
     cursor: pointer;
     transition: 0.25s transform;
     transform: scale(0.75);
@@ -170,9 +172,9 @@ $inner-border-width: 15px;
   }
 }
 
-@media screen and (max-width: $action-bar-width * 1.11){
+@media screen and (max-width: $action-bar-width * 1.11) {
   // 1.11 = 100%/90%. Seamlessly converts to filled-width.
-  .action-bar{
+  .action-bar {
     width: 90vw;
   }
 }

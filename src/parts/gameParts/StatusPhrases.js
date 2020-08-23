@@ -9,7 +9,7 @@ export default function getStatusPhrase(currentState, players) {
   }
 
   investigatedName = currentState.investigatedName;
-  
+
   if (players[currentState.victim]) {
     victimName = players[currentState.victim].username;
   }
