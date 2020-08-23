@@ -26,7 +26,7 @@ class App extends React.Component {
 
   updateURLVars() {
     let urlVars = {};
-    //Stack Overflow Functions :^)
+    //Stack Overflow Function :^)
     var parts = window.location.href.replace(
       /[#&]+([^=&]+)=([^&]*)/gi,
       function (m, key, value) {
@@ -40,6 +40,7 @@ class App extends React.Component {
   }
 
   setLobbyID(lobbyID = null, changeURL = true) {
+    /*changeURL is specified to avoid infinite looping with updateURLVars. */
     this.setState({
       lobbyID: lobbyID,
     });

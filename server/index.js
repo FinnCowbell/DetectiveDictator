@@ -3,11 +3,14 @@ var path = require("path");
 var express = require("express");
 var app = express();
 var http = require("http").Server(app);
-var io = require("socket.io")(http);
+var io = require("socket.io")(http, {
+  pingTimeout: 60000,
+});
 var { Lobbies, Lobby, Player } = require("./lobby");
 var Game = require("./Game/Hitler");
 var Chat = require("./Game/ChatModule");
 const LobbyModules = [Game, Chat];
+
 //env.PORT = Heroku. DD_PORT = my implementation.
 let port = process.env.DD_PORT || process.env.PORT || 1945;
 
@@ -16,7 +19,7 @@ let argv = process.argv;
 
 //Command Parameters.
 
-//Host frontend by default.
+//Host frontend by default no devmode by default..
 let front = true;
 let devMode = false;
 

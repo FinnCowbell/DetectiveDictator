@@ -23,14 +23,15 @@ export default class Lobby extends React.Component {
   }
   getDefaultState() {
     const socket = io(
-      this.props.socketURL + '/' + this.props.lobbyID.toLowerCase(),
+      this.props.socketURL + "/" + this.props.lobbyID.toLowerCase(),
       {
-      reconnection: true,
-      reconnectionDelay: 200,
-      reconnectionDelayMax: 2000,
-      reconnectionAttempts: 5,
-      forceNew: true,
-      })
+        reconnection: true,
+        reconnectionDelay: 500,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        forceNew: true,
+      }
+    );
     return {
       socket: socket,
       gameInfo: null,
@@ -59,11 +60,16 @@ export default class Lobby extends React.Component {
 
   componentWillUnmount() {
     this.state.socket.close();
+    clearTimeout(this.disconnector);
   }
 
   initializeSignals(socket) {
     // If the lobby isn't connecting, we shouldn't stick around.
-    this.disconnector = setTimeout(()=>this.leaveLobby("Lobby Doesn't Exist!"), this.CONNECT_TIME);
+    clearTimeout(this.disconnector);
+    this.disconnector = setTimeout(
+      () => this.leaveLobby("Lobby Doesn't Exist!"),
+      this.CONNECT_TIME
+    );
     socket.on("lobby init info", (arg) => {
       this.setState({
         lobbyExists: true,
@@ -96,9 +102,9 @@ export default class Lobby extends React.Component {
       });
     });
 
-    socket.on("reconnect_failed", ()=>{
+    socket.on("reconnect_failed", () => {
       this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`);
-    })
+    });
 
     socket.on("alert", (alert) => {
       this.props.setAlert(alert);
