@@ -137,20 +137,29 @@ $background-color: #2b2b2b;
     }
   }
   .player-list {
+    color: darken($fascist-orange, 10%);
     grid-area: middle;
     font-family: $subheader-stack;
     font-size: 1.25em;
     transition: 0.25s height;
+    overflow-y: scroll;
+    display: flex;
+    justify-content: space-between;
+    margin: 0em 1em;
     ul {
       list-style-type: none;
     }
     .leader {
       color: rgb(149, 6, 6);
     }
-    .disconnected {
-      cursor: pointer;
-      &:hover {
+    .disconnected-players {
+      .disconnected {
+        cursor: pointer;
         color: black;
+        transition: 0.1s;
+        &:hover {
+          color: lighten($unknown-color, 20%);
+        }
       }
     }
     .you {

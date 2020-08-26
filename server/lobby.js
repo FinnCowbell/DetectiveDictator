@@ -100,9 +100,7 @@ class Lobby {
           this.disconnectPlayer(socket);
         }
       });
-      socket.on("connection init request", () =>
-        socket.emit("lobby init info", { initInfo: this.getLobbyInfo() })
-      );
+      socket.on("connection init request", () => this.emitUpdateLobby(socket));
       socket.on("join lobby", (arg) => {
         this.connectNewPlayer(arg.username, socket);
       });
@@ -263,13 +261,14 @@ class Lobby {
       this.log("Kick request from non leader! Ignoring.");
     }
   }
-  emitUpdateLobby() {
-    //Emits that a lobby update has occurred.
-    //Should run when players connect, disconnect, reconnect, ETC.
-    let arg = {
-      lobbyInfo: this.getLobbyInfo(),
-    };
-    this.io.emit("lobby update info", arg);
+  emitUpdateLobby(socket = null) {
+    if (socket !== null) {
+      socket.emit("lobby update info", { lobbyInfo: this.getLobbyInfo() });
+    } else {
+      //Emits that a lobby update has occurred.
+      //Should run when players connect, disconnect, reconnect, ETC.
+      this.io.emit("lobby update info", { lobbyInfo: this.getLobbyInfo() });
+    }
   }
   getLobbyInfo() {
     //Lobby info compiles some basic information about the lobby to be sent.

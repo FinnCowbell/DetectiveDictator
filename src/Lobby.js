@@ -70,13 +70,6 @@ export default class Lobby extends React.Component {
       () => this.leaveLobby("Lobby Doesn't Exist!"),
       this.CONNECT_TIME
     );
-    socket.on("lobby init info", (arg) => {
-      this.setState({
-        lobbyExists: true,
-        players: arg.initInfo.players,
-        gameInfo: arg.initInfo.gameInfo,
-      });
-    });
 
     socket.on("lobby joined", (arg) => {
       this.setState({
@@ -96,6 +89,7 @@ export default class Lobby extends React.Component {
 
     socket.on("lobby update info", (arg) => {
       this.setState({
+        lobbyExists: true,
         players: arg.lobbyInfo.players,
         gameInfo: arg.lobbyInfo.gameInfo,
         nSpectators: arg.lobbyInfo.nSpectators,
@@ -209,7 +203,7 @@ export default class Lobby extends React.Component {
               />
               <div className="bottom-button">{navButtons}</div>
               <div className="num-spectators">
-                <h3>Spectators: {this.state.nSpectators}</h3>
+                {lobbyExists && <h3>Spectators: {this.state.nSpectators}</h3>}
               </div>
             </div>
           </div>
@@ -386,7 +380,6 @@ function LobbyPlayerList(props) {
       ) : null}
       {nDisconnectedPlayers > 0 ? (
         <div className="disconnected-players">
-          <hr />
           <h3>Disconnected Players:</h3>
           <ul>{disconnectedPlayers}</ul>
         </div>
