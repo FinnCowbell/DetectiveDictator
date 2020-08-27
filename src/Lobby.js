@@ -88,6 +88,9 @@ export default class Lobby extends React.Component {
     );
 
     socket.on("lobby update info", (arg) => {
+      if(!this.state.lobbyExists){
+        document.querySelector('.lobby-window .wave-background').classList.add("fade");
+      }
       this.setState({
         lobbyExists: true,
         players: arg.lobbyInfo.players,

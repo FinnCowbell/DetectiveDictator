@@ -182,7 +182,7 @@ $background-color: #2b2b2b;
 }
 
 .wave-background {
-  opacity: 0.55;
+  opacity: 1;
   position: fixed;
   top: 0;
   left: 0;
@@ -194,4 +194,8 @@ $background-color: #2b2b2b;
   animation-direction: alternate-reverse;
   animation-timing-function: ease-in-out;
   animation-duration: 5s;
+  transition: opacity 1s linear;
+  &.fade{
+    opacity: .55;
+  }
 }
