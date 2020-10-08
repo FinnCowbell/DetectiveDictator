@@ -621,13 +621,13 @@ class Hitler extends GameModule {
     //Doesn't cause presidential policy events.
     if (value == 1) {
       this.fasBoard++;
-      if (this.fasBoard == 6) {
+      if (this.fasBoard >= 6) {
         this.endGame(1, 0);
         return 1;
       }
     } else if (value == 0) {
       this.libBoard++;
-      if (this.libBoard == 5) {
+      if (this.libBoard >= 5) {
         this.endGame(0, 0);
         return 1;
       }
@@ -645,14 +645,15 @@ class Hitler extends GameModule {
   }
 
   checkMarker() {
-    let delay = 0;
+    let endedGame, drawnPolicy
     if (this.marker == 3) {
       this.marker = 0;
-      let drawnPolicy = this.policies.draw(1)[0];
-      this.placePolicy(drawnPolicy);
-      delay = this.WAIT_TIME;
+      drawnPolicy = this.policies.draw(1)[0];
+      endedGame = this.placePolicy(drawnPolicy);
     }
-    setTimeout(() => this.newRound(false, false), delay);
+    if(!endedGame){
+      setTimeout(() => this.newRound(false, false), this.WAIT_TIME);
+    }
   }
 
   endGame(winner, reason) {
