@@ -9,7 +9,7 @@ class Hitler extends GameModule {
     this.MAX_PLAYERS = 10;
     this.gameInfo = {
       order: [], //Order of players by PID.
-      style: -1, // 0 is 5-6 players, 1 is 7-8, 2 is 9-10
+      style: -1, // 0 is 5-6 players, 1 is 7-8, 2 is 9-10,
     };
     this.rounds = [];
     this.currentEvent = "pre game";
@@ -218,6 +218,11 @@ class Hitler extends GameModule {
       this.previousPresPID = this.presidentPID;
       this.previousChanPID = this.chancellorPID;
     }
+    if(this.nAlive < 4){ 
+      // For the edge case of playing with 5 people after 2 deaths
+      this.previousPresPID = null;
+      this.previousChanPID = null;
+    }
     this.presidentPID = null;
     this.chancellorPID = null;
     //If the next president has been pre-chosen, change it. Doesn't effect the "presidentIndex".
@@ -319,12 +324,20 @@ class Hitler extends GameModule {
     let theirPID = player.PID;
 
     socket.on("chancellor picked", (arg) => {
+      let picked = arg.pickedChancellor
       if (this.currentEvent != "chancellor pick") {
         return this.error("Event is not chancellor pick!");
       } else if (this.presidentPID != theirPID) {
         return this.error("Non-president called 'chancellor picked!'");
+      } else if ((this.previousChanPID == picked || 
+                  this.previousPresPID == picked ||
+                  theirPID == picked || 
+                  )){
+        return this.error("President picked themselves or previous officer!");              
+      } else if (!this.players[picked].alive){
+        return this.error("Dead men tell no tales!");
       }
-      this.chancellorPID = arg.pickedChancellor;
+      this.chancellorPID = picked;
       this.currentEvent = "chancellor vote";
       this.snapState();
       this.sendLatestState();
