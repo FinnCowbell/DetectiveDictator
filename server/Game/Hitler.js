@@ -5,7 +5,7 @@ var GameModule = require("./GameModule");
 class Hitler extends GameModule {
   constructor(lobby) {
     super(lobby);
-    this.MIN_PLAYERS = 5;
+    this.MIN_PLAYERS = 4;
     this.MAX_PLAYERS = 10;
     this.gameInfo = {
       order: [], //Order of players by PID.
