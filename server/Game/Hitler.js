@@ -331,7 +331,7 @@ class Hitler extends GameModule {
         return this.error("Non-president called 'chancellor picked!'");
       } else if ((this.previousChanPID == picked || 
                   this.previousPresPID == picked ||
-                  theirPID == picked || 
+                  theirPID == picked
                   )){
         return this.error("President picked themselves or previous officer!");              
       } else if (!this.players[picked].alive){
