@@ -4,6 +4,7 @@ import io from "socket.io-client";
 import Header from "./parts/Header.js";
 import ChatRoom from "./parts/ChatRoom.js";
 import SingleInputForm from "./parts/SingleInputForm";
+import WaveBackground from "./parts/WaveBackground";
 //Lazy Load the game in the background, as it is not neccessary for loading the lobby.
 const Game = React.lazy(() => import("./Hitler.js"));
 // import {default as Game} from './Hitler.js';
@@ -22,18 +23,8 @@ export default class Lobby extends React.Component {
     this.spectateGame = this.spectateGame.bind(this);
   }
   getDefaultState() {
-    const socket = io(
-      this.props.socketURL + "/" + this.props.lobbyID.toLowerCase(),
-      {
-        reconnection: true,
-        reconnectionDelay: 500,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 10,
-        forceNew: true,
-      }
-    );
     return {
-      socket: socket,
+      socket: null,
       gameInfo: null,
       PID: null,
       lobbyExists: false,
@@ -46,20 +37,40 @@ export default class Lobby extends React.Component {
   }
 
   componentDidMount() {
-    this.initializeSignals(this.state.socket);
+    if(this.state.socket){
+      this.initializeSignals(this.state.socket);
+    }
   }
 
   componentDidUpdate(prevProps) {
+    let socket, newState;
     if (this.props.lobbyID != prevProps.lobbyID) {
-      this.state.socket.close();
-      let defaultState = this.getDefaultState();
-      this.setState(defaultState);
-      this.initializeSignals(defaultState.socket);
+      if(this.state.socket){
+        this.state.socket.close();
+      }
+      newState = this.getDefaultState();
+      if(typeof this.props.lobbyID === 'string'){
+        socket = io(
+          this.props.socketURL + "/" + this.props.lobbyID.toLowerCase(),
+          {
+            reconnection: true,
+            reconnectionDelay: 500,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 10,
+            forceNew: true,
+          }
+        );
+        newState.socket = socket;
+        this.initializeSignals(socket);
+      }
+      this.setState(newState);
     }
   }
 
   componentWillUnmount() {
-    this.state.socket.close();
+    if(this.state.socket){
+      this.state.socket.close();
+    }
     clearTimeout(this.disconnector);
   }
 
@@ -188,7 +199,7 @@ export default class Lobby extends React.Component {
       <div className="window">
         {(!inLobby || !gameInfo.isRunning) && (
           <div className={`lobby-window`}>
-            <div className="wave-background" />
+          <WaveBackground toggle={lobbyID}/>
             <div className="content">
               <div className="background" />
               <Header lobbyID={lobbyID} />
@@ -213,6 +224,7 @@ export default class Lobby extends React.Component {
         )}
         <Suspense fallback={<div className="game-window"></div>}>
           {/* Lazy Loading Game Files */}
+          {this.state.socket &&
           <Game
             lobbyID={lobbyID}
             spectating={spectating}
@@ -220,6 +232,7 @@ export default class Lobby extends React.Component {
             leaveLobby={this.leaveLobby}
             socket={this.state.socket}
           />
+          }
         </Suspense>
         {inLobby && (
           <ChatRoom

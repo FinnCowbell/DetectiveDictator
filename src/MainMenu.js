@@ -46,7 +46,6 @@ export default class MainMenu extends React.Component {
           <LobbyInput joinLobby={this.joinLobby} />
           <div className="background" />
         </div>
-        <div className="wave-background" />
       </div>
     );
   }
