@@ -9,6 +9,9 @@ import fasPolicy from "../../media/fascist-policy.png";
 class LibBoard extends React.Component {
   constructor(props) {
     super(props);
+    this.canvas = React.createRef();
+    this.libBoard = React.createRef();
+    this.policy = React.createRef();
     this.markerColor = "#2e8768";
     this.liberalText = "#89edff";
     this.markerLocations = [
@@ -35,11 +38,11 @@ class LibBoard extends React.Component {
     this.updateCards();
   }
   drawImage() {
-    let ctx = this.refs.canvas.getContext("2d");
-    ctx.drawImage(this.refs.libBoard, 0, 0);
+    let ctx = this.canvas.current.getContext("2d");
+    ctx.drawImage(this.libBoard.current, 0, 0);
   }
   updateMarker() {
-    let ctx = this.refs.canvas.getContext("2d");
+    let ctx = this.canvas.current.getContext("2d");
     let x, y;
     x = this.markerLocations[this.props.marker || 0][0];
     y = this.markerLocations[this.props.marker || 0][1];
@@ -51,7 +54,7 @@ class LibBoard extends React.Component {
     ctx.fill();
   }
   updatePiles() {
-    let ctx = this.refs.canvas.getContext("2d");
+    let ctx = this.canvas.current.getContext("2d");
     ctx.save();
     ctx.fillStyle = this.liberalText;
     ctx.strokeStyle = this.liberalText;
@@ -72,8 +75,8 @@ class LibBoard extends React.Component {
     ctx.restore();
   }
   updateCards() {
-    let ctx = this.refs.canvas.getContext("2d");
-    let policyImg = this.refs.policy;
+    let ctx = this.canvas.current.getContext("2d");
+    let boardImg = this.policy.current;
     let card = 0;
     while (card < this.props.nCards) {
       ctx.drawImage(
@@ -93,13 +96,13 @@ class LibBoard extends React.Component {
     return (
       <div className="liberal board">
         <canvas
-          ref="canvas"
+          ref={this.canvas}
           className="lib-canvas"
           width={2056}
           height={678}
         ></canvas>
         <img
-          ref="libBoard"
+          ref={this.libBoard}
           onLoad={() => {
             this.update();
           }}
@@ -107,7 +110,7 @@ class LibBoard extends React.Component {
           style={{ display: "none" }}
         />
         <img
-          ref="policy"
+          ref={this.policy}
           onLoad={() => {
             this.update();
           }}
@@ -122,6 +125,9 @@ class LibBoard extends React.Component {
 class FasBoard extends React.Component {
   constructor(props) {
     super(props);
+    this.canvas = React.createRef();
+    this.policy = React.createRef();
+    this.board = React.createRef();
     this.cardY = 165;
     this.cardXs = [169, 466, 765, 1064, 1364, 1664];
     this.cardWidth = 245;
@@ -135,12 +141,12 @@ class FasBoard extends React.Component {
     this.updateCards();
   }
   drawImage() {
-    let ctx = this.refs.canvas.getContext("2d");
-    ctx.drawImage(this.refs.board, 0, 0);
+    let ctx = this.canvas.current.getContext("2d");
+    ctx.drawImage(this.board.current, 0, 0);
   }
   updateCards() {
-    let ctx = this.refs.canvas.getContext("2d");
-    let policyImg = this.refs.policy;
+    let ctx = this.canvas.current.getContext("2d");
+    let policyImg = this.policy.current;
     let card = 0;
     while (card < this.props.nCards) {
       ctx.drawImage(
@@ -168,9 +174,9 @@ class FasBoard extends React.Component {
     }
     return (
       <div className="fascist board">
-        <canvas ref="canvas" width={2074} height={687}></canvas>
+        <canvas ref={this.canvas} width={2074} height={687}></canvas>
         <img
-          ref="board"
+          ref={this.board}
           onLoad={() => {
             this.update();
           }}
@@ -178,7 +184,7 @@ class FasBoard extends React.Component {
           style={{ display: "none" }}
         />
         <img
-          ref="policy"
+          ref={this.policy}
           onLoad={() => {
             this.update();
           }}

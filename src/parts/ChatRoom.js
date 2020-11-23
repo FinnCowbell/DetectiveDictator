@@ -3,6 +3,7 @@ import SingleInputForm from "./SingleInputForm";
 export default class ChatRoom extends React.Component {
   constructor(props) {
     super(props);
+    this.sent = React.createRef();
     this.state = {
       position: "closed",
       messages: [],
@@ -38,7 +39,7 @@ export default class ChatRoom extends React.Component {
 
   postChat(msg) {
     const messages = this.state.messages;
-    let sentWindow = this.refs.sent;
+    let sentWindow = this.sent.current;
     let notify = this.state.notifyClass;
     if (this.state.position == "closed") {
       notify = "notify";
@@ -74,7 +75,7 @@ export default class ChatRoom extends React.Component {
     return (
       <div className={`chat-window ${this.state.position}`}>
         <h3>Chat</h3>
-        <div ref="sent" className="sent-messages">
+        <div ref={this.sent} className="sent-messages">
           {chats}
         </div>
         {!this.props.spectating && (

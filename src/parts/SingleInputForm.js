@@ -3,6 +3,7 @@ import React from "react";
 export default class SingleInputForm extends React.Component {
   constructor(props) {
     super(props);
+    this.input = React.createRef();
     this.state = {
       text: "",
     };
@@ -23,16 +24,16 @@ export default class SingleInputForm extends React.Component {
       //Truncate anything that's pasted to the first MAX_LENGTH characters.
       text = text.split("").splice(0, MAX_LENGTH).join("");
       //Also add the "error" animation to the textbox for a second.
-      this.refs.input.classList.add("error");
+      this.input.current.classList.add("error");
     } else {
-      this.refs.input.classList.remove("error");
+      this.input.current.classList.remove("error");
     }
     this.setState({ text: text });
   }
   render() {
     return (
       <div
-        ref="input"
+        ref={this.input}
         className={`single-input-form ${this.props.className || ""}`}
       >
         {this.props.children}
