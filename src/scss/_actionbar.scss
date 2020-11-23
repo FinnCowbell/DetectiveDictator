@@ -32,12 +32,12 @@ $inner-border-width: 15px;
   }
   margin: 5px;
   padding: 0px;
-  transition: filter .2s;
-  &:active{
+  transition: filter 0.2s;
+  &:active {
     border-style: inset;
   }
-  &:hover{
-    filter: brightness(.85);
+  &:hover {
+    filter: brightness(0.85);
   }
 }
 
@@ -94,16 +94,17 @@ $inner-border-width: 15px;
         }
       }
     }
-    .discard-button {
+    .discard-button,
+    .continue-button {
       @include action-bar-button(90deg);
     }
-    .stacked-buttons{
+    .stacked-buttons {
       display: flex;
       flex-direction: column;
-      .discard-button{
+      .discard-button {
         padding-left: 10px;
         padding-right: 10px;
-        h3{
+        h3 {
           transform: rotate(0deg);
         }
       }
@@ -159,7 +160,7 @@ $inner-border-width: 15px;
 }
 
 //Animations
-.policy {
+.discard .policy {
   cursor: pointer;
   transition: 0.25s filter;
   &:hover {
