@@ -245,7 +245,10 @@ class Lobby {
     if (player.isLeader) {
       this.leader = null;
     }
-    if (!player.isSpectating) {
+    if (player.isSpectating) {
+      delete this.spectators[PID];
+    } 
+    else {
       this.nPlayers--;
     }
     this.log(`Player ${player.username} kicked from the lobby.`);
