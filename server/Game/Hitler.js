@@ -7,6 +7,7 @@ class Hitler extends GameModule {
     super(lobby);
     this.MIN_PLAYERS = 4;
     this.MAX_PLAYERS = 10;
+    this.gameStatus = "pregame"
     this.gameInfo = {
       order: [], //Order of players by PID.
       style: -1, // 0 is 5-6 players, 1 is 7-8, 2 is 9-10,
@@ -84,10 +85,11 @@ class Hitler extends GameModule {
     // Omnipotent = all knowing.
     spectator.omnipotent = false;
     //No incoming game signals from spectators.
-    if (this.lobby.gameRunning) {
-      spectator.socket.emit("full game info", this.getRoundInfo(spectator.PID));
-    } else {
+    if(this.gameStatus != "ingame"){
       spectator.omnipotent = true;
+    }
+    if (this.gameStatus != "pregame") {
+      spectator.socket.emit("full game info", this.getRoundInfo(spectator.PID));
     }
   }
 
@@ -179,6 +181,7 @@ class Hitler extends GameModule {
   }
 
   newGame() {
+    this.gameStatus = "ingame"
     this.initPlayers();
     this.policies.shuffleCards();
     this.initPlayerSignals();
@@ -218,7 +221,7 @@ class Hitler extends GameModule {
       this.previousPresPID = this.presidentPID;
       this.previousChanPID = this.chancellorPID;
     }
-    if(this.nAlive < 4){ 
+    if (this.nAlive < 4) {
       // For the edge case of playing with 5 people after 2 deaths
       this.previousPresPID = null;
       this.previousChanPID = null;
@@ -324,17 +327,18 @@ class Hitler extends GameModule {
     let theirPID = player.PID;
 
     socket.on("chancellor picked", (arg) => {
-      let picked = arg.pickedChancellor
+      let picked = arg.pickedChancellor;
       if (this.currentEvent != "chancellor pick") {
         return this.error("Event is not chancellor pick!");
       } else if (this.presidentPID != theirPID) {
         return this.error("Non-president called 'chancellor picked!'");
-      } else if ((this.previousChanPID == picked || 
-                  this.previousPresPID == picked ||
-                  theirPID == picked
-                  )){
-        return this.error("President picked themselves or previous officer!");              
-      } else if (!this.players[picked].alive){
+      } else if (
+        this.previousChanPID == picked ||
+        this.previousPresPID == picked ||
+        theirPID == picked
+      ) {
+        return this.error("President picked themselves or previous officer!");
+      } else if (!this.players[picked].alive) {
         return this.error("Dead men tell no tales!");
       }
       this.chancellorPID = picked;
@@ -658,13 +662,13 @@ class Hitler extends GameModule {
   }
 
   checkMarker() {
-    let endedGame, drawnPolicy
+    let endedGame, drawnPolicy;
     if (this.marker == 3) {
       this.marker = 0;
       drawnPolicy = this.policies.draw(1)[0];
       endedGame = this.placePolicy(drawnPolicy);
     }
-    if(!endedGame){
+    if (!endedGame) {
       setTimeout(() => this.newRound(false, false), this.WAIT_TIME);
     }
   }
@@ -684,6 +688,7 @@ class Hitler extends GameModule {
       reason: endGame[winner][reason],
     });
     this.snapState();
+    this.gameStatus = "postgame";
     this.io.emit("end game", { endState: this.latestRound() });
   }
 }

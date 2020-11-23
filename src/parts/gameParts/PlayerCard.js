@@ -15,7 +15,6 @@ import hitler from "../../media/player-cards/hitler.png";
 let fascistCards = [fascist1, fascist2, fascist3];
 const N_FASCIST_CARDS = fascistCards.length;
 
-
 export default function PlayerCard(props) {
   let you = props.you;
   let cardIMG = "";

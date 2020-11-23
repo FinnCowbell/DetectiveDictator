@@ -63,30 +63,23 @@ class App extends React.Component {
   }
 
   render() {
-    // let content = this.state.lobbyID ? (
-    //   <Lobby
-    //     socketURL={this.props.socketURL}
-    //     lobbyID={this.state.lobbyID}
-    //     setAlert={this.setAlert}
-    //     setLobbyID={this.setLobbyID}
-    //   />
-    // ) : (
-    //   <MainMenu socketURL={this.props.socketURL} setLobbyID={this.setLobbyID} />
-    // );
     return (
-      <div class="window">
+      <div className="window">
         <Alert toggledState={this.state.alertMessageState}>
           {this.state.alertMessage}
         </Alert>
-        {!this.state.lobbyID &&
-        <MainMenu socketURL={this.props.socketURL} setLobbyID={this.setLobbyID} />
-        }
+        {!this.state.lobbyID && (
+          <MainMenu
+            socketURL={this.props.socketURL}
+            setLobbyID={this.setLobbyID}
+          />
+        )}
         <Lobby
-        socketURL={this.props.socketURL}
-        lobbyID={this.state.lobbyID}
-        setAlert={this.setAlert}
-        setLobbyID={this.setLobbyID}
-      />
+          socketURL={this.props.socketURL}
+          lobbyID={this.state.lobbyID}
+          setAlert={this.setAlert}
+          setLobbyID={this.setLobbyID}
+        />
       </div>
     );
   }

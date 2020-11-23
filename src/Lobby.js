@@ -37,7 +37,7 @@ export default class Lobby extends React.Component {
   }
 
   componentDidMount() {
-    if(this.state.socket){
+    if (this.state.socket) {
       this.initializeSignals(this.state.socket);
     }
   }
@@ -45,11 +45,11 @@ export default class Lobby extends React.Component {
   componentDidUpdate(prevProps) {
     let socket, newState;
     if (this.props.lobbyID != prevProps.lobbyID) {
-      if(this.state.socket){
+      if (this.state.socket) {
         this.state.socket.close();
       }
       newState = this.getDefaultState();
-      if(typeof this.props.lobbyID === 'string'){
+      if (typeof this.props.lobbyID === "string") {
         socket = io(
           this.props.socketURL + "/" + this.props.lobbyID.toLowerCase(),
           {
@@ -68,7 +68,7 @@ export default class Lobby extends React.Component {
   }
 
   componentWillUnmount() {
-    if(this.state.socket){
+    if (this.state.socket) {
       this.state.socket.close();
     }
     clearTimeout(this.disconnector);
@@ -99,8 +99,10 @@ export default class Lobby extends React.Component {
     );
 
     socket.on("lobby update info", (arg) => {
-      if(!this.state.lobbyExists){
-        document.querySelector('.lobby-window .wave-background').classList.add("fade");
+      if (!this.state.lobbyExists) {
+        document
+          .querySelector(".lobby-window .wave-background")
+          .classList.add("fade");
       }
       this.setState({
         lobbyExists: true,
@@ -177,7 +179,8 @@ export default class Lobby extends React.Component {
               Return to Menu
             </button>
             <button className="spectate" onClick={this.spectateGame}>
-              Spectate With{gameInfo && gameInfo.isRunning && "out"} Roles
+              Spectate With
+              {gameInfo && gameInfo.gameStatus == "ingame" && "out"} Roles
             </button>
           </div>
         );
@@ -197,9 +200,9 @@ export default class Lobby extends React.Component {
     }
     return (
       <div className="window">
-        {(!inLobby || !gameInfo.isRunning) && (
+        {(!inLobby || gameInfo.gameStatus == "pregame") && (
           <div className={`lobby-window`}>
-          <WaveBackground toggle={lobbyID}/>
+            <WaveBackground toggle={lobbyID} />
             <div className="content">
               <div className="background" />
               <Header lobbyID={lobbyID} />
@@ -224,15 +227,15 @@ export default class Lobby extends React.Component {
         )}
         <Suspense fallback={<div className="game-window"></div>}>
           {/* Lazy Loading Game Files */}
-          {this.state.socket &&
-          <Game
-            lobbyID={lobbyID}
-            spectating={spectating}
-            yourPID={this.state.PID}
-            leaveLobby={this.leaveLobby}
-            socket={this.state.socket}
-          />
-          }
+          {this.state.socket && (
+            <Game
+              lobbyID={lobbyID}
+              spectating={spectating}
+              yourPID={this.state.PID}
+              leaveLobby={this.leaveLobby}
+              socket={this.state.socket}
+            />
+          )}
         </Suspense>
         {inLobby && (
           <ChatRoom
@@ -280,8 +283,10 @@ function LobbyStatus(props) {
   let status;
   if (!props.lobbyExists) {
     status = <h2>Loading Lobby...</h2>;
-  } else if (props.gameInfo && props.gameInfo.isRunning) {
+  } else if (props.gameInfo && props.gameInfo.gameStatus == "ingame") {
     status = <h2>Game in Progress!</h2>;
+  } else if (props.gameInfo.gameStatus == "postgame") {
+    status = <h2>The game has ended.</h2>;
   } else if (props.inLobby) {
     status = null;
   } else {

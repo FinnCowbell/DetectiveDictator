@@ -176,6 +176,7 @@ export default class Hitler extends React.Component {
         <PlayerSidebar
           order={order}
           currentState={currentState}
+          reason={round.reason || null}
           you={you}
           players={players}
           uiInfo={this.state.uiInfo}

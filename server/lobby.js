@@ -62,7 +62,6 @@ class Lobby {
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
     this.devMode = this.lobbies.devMode;
-    this.gameRunning = false;
     this.activateSignals();
 
     //Generate the Game Modules.
@@ -177,7 +176,7 @@ class Lobby {
     let player = this.getPlayerBySocketID(socket.id);
     let PID = player.PID;
     //Should this logic be elsewhere?
-    if (!this.gameRunning) {
+    if (this.game.gameStatus == "pregame" || player.isSpectating) {
       return this.kickPlayer(PID);
     }
     // Unlink socketID to playerID.
@@ -247,8 +246,7 @@ class Lobby {
     }
     if (player.isSpectating) {
       delete this.spectators[PID];
-    } 
-    else {
+    } else {
       this.nPlayers--;
     }
     this.log(`Player ${player.username} kicked from the lobby.`);
@@ -287,7 +285,7 @@ class Lobby {
       players: publicPlayers,
       gameInfo: {
         //FIX This
-        isRunning: this.gameRunning,
+        gameStatus: this.game.gameStatus,
       },
       nSpectators: Object.keys(this.spectators).length,
     };
@@ -301,7 +299,6 @@ class Lobby {
       socket.emit("alert", "You cannot start the game!");
       return false;
     }
-    this.gameRunning = true;
     this.gameModules.forEach((m) => m.init());
   }
   joinNextLobby(socket) {

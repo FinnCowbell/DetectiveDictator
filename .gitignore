@@ -17,9 +17,4 @@ dist/*
 .Trashes
 ehthumbs.db
 Thumbs.db
-
 DD_ASSETS/
-
-# For now...
-src/parts/gameParts/context/HitlerContext.js
-playgroundCSS/index.html

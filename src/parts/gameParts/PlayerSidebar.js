@@ -60,7 +60,9 @@ export default class PlayerSidebar extends React.Component {
       "liberal policy placed",
       "fascist policy placed",
       "chancellor not voted",
+      "end game",
     ]);
+    let reason = this.props.reason;
     let currentState = this.props.currentState;
     let votes = currentState.votes || {};
     let vote = votes[player.PID];
@@ -69,11 +71,14 @@ export default class PlayerSidebar extends React.Component {
       return "sent";
     }
     if (showVoteEvents.has(currentState.currentEvent)) {
-      if (vote == true) {
-        return "ja";
-      } else if (vote == false) {
-        return "nein";
+      // Special case: If hitler is elected in then we'll want to know what the votes were.
+      if (
+        currentState.currentEvent == "end game" &&
+        reason != "fascist win hitler"
+      ) {
+        return "hidden";
       }
+      return vote == true ? "ja" : nein;
     }
     return "hidden";
   }
