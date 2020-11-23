@@ -6,7 +6,8 @@ $action-bar-height: 200px;
 $inner-border-width: 15px;
 
 @mixin action-bar-button($rotation) {
-  border: none;
+  border: 5px outset #545454;
+  border-radius: 5px;
   outline: unset;
   font-family: $subheader-stack;
   color: $action-bar-bg;
@@ -28,6 +29,15 @@ $inner-border-width: 15px;
     font-size: 2em;
     text-align: center;
     width: 100%;
+  }
+  margin: 5px;
+  padding: 0px;
+  transition: filter .2s;
+  &:active{
+    border-style: inset;
+  }
+  &:hover{
+    filter: brightness(.85);
   }
 }
 
@@ -62,7 +72,6 @@ $inner-border-width: 15px;
     .vote-button {
       flex-grow: 0;
       @include action-bar-button(90deg);
-      margin-right: -$inner-border-width;
     }
   }
   &.discard,
@@ -85,9 +94,27 @@ $inner-border-width: 15px;
         }
       }
     }
-    button {
+    .discard-button {
       @include action-bar-button(90deg);
-      margin-right: -$inner-border-width;
+    }
+    .stacked-buttons{
+      display: flex;
+      flex-direction: column;
+      .discard-button{
+        padding-left: 10px;
+        padding-right: 10px;
+        h3{
+          transform: rotate(0deg);
+        }
+      }
+      .veto-button {
+        @include action-bar-button(0deg);
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      button {
+        flex-grow: 1;
+      }
     }
   }
   &.pick-player,
@@ -129,18 +156,6 @@ $inner-border-width: 15px;
 }
 .action {
   border: 15px solid $action-bar-ink;
-}
-
-.stacked-buttons {
-  display: flex;
-  flex-direction: column;
-  button {
-    flex-grow: 1;
-  }
-  .discard-button {
-    padding-bottom: 10px;
-    border-bottom: 2px solid black !important;
-  }
 }
 
 //Animations
