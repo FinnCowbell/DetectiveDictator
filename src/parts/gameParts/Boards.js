@@ -76,7 +76,7 @@ class LibBoard extends React.Component {
   }
   updateCards() {
     let ctx = this.canvas.current.getContext("2d");
-    let boardImg = this.policy.current;
+    let policyImg = this.policy.current;
     let card = 0;
     while (card < this.props.nCards) {
       ctx.drawImage(
