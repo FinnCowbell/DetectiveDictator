@@ -78,7 +78,7 @@ export default class PlayerSidebar extends React.Component {
       ) {
         return "hidden";
       }
-      return vote == true ? "ja" : nein;
+      return vote == true ? "ja" : "nein";
     }
     return "hidden";
   }
