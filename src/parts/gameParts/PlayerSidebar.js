@@ -77,8 +77,9 @@ export default class PlayerSidebar extends React.Component {
         reason != "fascist win hitler"
       ) {
         return "hidden";
+      } else{
+        return vote == true ? "ja" : vote == false ? "nein": null;
       }
-      return vote == true ? "ja" : "nein";
     }
     return "hidden";
   }
