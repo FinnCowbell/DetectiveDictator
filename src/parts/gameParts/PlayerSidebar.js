@@ -77,8 +77,8 @@ export default class PlayerSidebar extends React.Component {
         reason != "fascist win hitler"
       ) {
         return "hidden";
-      } else{
-        return vote == true ? "ja" : vote == false ? "nein": null;
+      } else {
+        return vote == true ? "ja" : vote == false ? "nein" : null;
       }
     }
     return "hidden";
@@ -165,8 +165,7 @@ export default class PlayerSidebar extends React.Component {
               if (selectable) {
                 this.changeSelectedPlayer(PID);
               }
-            }}
-          >
+            }}>
             {
               status == "president" && (
                 <img className="pres hat" src={presHat} />
@@ -195,9 +194,8 @@ export default class PlayerSidebar extends React.Component {
         <div className="players">{playerList}</div>
         <button
           onClick={this.toggleState}
-          className={`controller ${this.state.closed ? "toggled" : ""}`}
-        >
-          <h1>{">"}</h1>
+          className={`controller ${this.state.closed ? "toggled" : ""}`}>
+          <h1>{this.state.closed ? "<" : ">"}</h1>
         </button>
       </div>
     );

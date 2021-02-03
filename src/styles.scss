@@ -102,15 +102,14 @@ button {
   }
   .player-sidebar {
     position: fixed;
+    display: grid;
+    grid-template-columns: minmax(auto, 1fr) minmax(150px, 350px);
+    grid-template-areas: 'controller players';
+    margin-left: 75px; //Assures the open button doesnt cover the chat button on small screens
     top: 0;
     right: 0;
-    min-width: 350px;
+    z-index: 10;
     font-family: $subheader-stack;
-    background-image: linear-gradient(
-      to right,
-      rgba(20, 20, 20, 0) 15%,
-      rgb(20, 20, 20) 90%
-    );
     * {
       pointer-events: auto;
       * {
@@ -119,29 +118,32 @@ button {
     }
     pointer-events: none;
     transition: 0.25s right;
-    z-index: 10;
     .controller {
+      // Put the controller in the bottom right corner of the grid box, to create the appearence that it is connected.
+      grid-area: controller;
+      margin: auto 0 5px auto;
       transition: 0.125s transform;
       background-color: transparent;
+      background-image: linear-gradient(to right, rgb(106, 106, 106) 0%, rgba(25,25,25,.75) 100%);
+      border-bottom-left-radius: 15px;
+      border-top-left-radius: 15px;
       color: white;
       font-family: $main-stack;
-      font-size: 2em;
-      position: fixed;
-      bottom: 0;
-      right: 0px;
+      font-size: 1.5em;
       border: unset;
       outline: none;
-      &.toggled {
-        transform: rotate(180deg);
-      }
+      z-index:101;
+      padding: 0px 10px;
     }
     &.closed {
       right: -350px;
     }
     .players {
+      grid-area: players;
+      background-color: rgba(25,25,25,.75);
       height: 100vh;
       @include scroll-bar(rgb(126, 126, 126));
-      overflow-x: visible;
+      overflow-x: hidden;
       overflow-y: scroll;
     }
     .player {
@@ -212,6 +214,18 @@ button {
     }
     .player-bar {
       position: relative;
+      order: 0;
+      // Arbitrary Units, up for debate
+      // Wait, who am I debating? I'm the only one who works on this!
+      height: 40px;
+      right: -35px;
+      padding-right: 20px;
+      word-wrap: break-word;
+      width: 200px;
+      background-color: $unknown-color;
+      color: white;
+      border: 2px solid rgb(0, 0, 0);
+      transition: 0.25s;
       .bullet-holes {
         position: absolute;
         top: 0;
@@ -238,24 +252,17 @@ button {
       .username {
         overflow-y: hidden;
       }
-      order: 0;
-      height: 40px;
-      width: 200px;
-      background-color: $unknown-color;
-      color: white;
-      border: 2px solid rgb(0, 0, 0);
-      transition: 0.25s;
+
       &.selectable {
         animation-name: show-selectable;
         animation-duration: 2s;
-        width: 200px;
         cursor: pointer;
       }
-      &.selectable:hover {
-        width: 220px;
+      &.selectable:not(.selected):hover {
+        right: -15px;
       }
       &.selected {
-        width: 220px;
+        right: -10px;
       }
     }
   }
@@ -318,9 +325,10 @@ button {
       "playercard boards players"
       ". action players";
     .player-sidebar {
-      position: relative;
       grid-area: players;
-      background: unset;
+      .players{
+        background-color: transparent;
+      }
       .controller {
         display: none;
       }
@@ -339,5 +347,14 @@ button {
   .player-sidebar .players .player:nth-child(#{$n}) .username {
     $rotation: ((($n % 2) * 2) - 1) * (random(5)) + deg;
     transform: rotate($rotation);
+  }
+}
+// Random Rotations/displacement on the bullet holes
+@for $n from 1 to 10 {
+  .player-sidebar .players .player:nth-child(#{$n}) .bullet-holes {
+    $rotation: ((($n % 2) * 2) - 1) * (random(180)) + deg;
+    $movement: ((($n % 2) * 2) - 1) * (random(20)) + px;
+    transform: rotate($rotation);
+    left: $movement;
   }
 }
