@@ -1,7 +1,9 @@
 @import "_fonts.scss";
 @import "_colors.scss";
 
-$background-color: #2b2b2b;
+$backdrop-color: rgb(198, 198, 198);
+$shadow: rgb(159, 156, 156);
+
 .lobby-window,
 .menu-window {
   position: fixed;
@@ -34,7 +36,7 @@ $background-color: #2b2b2b;
       height: 500px;
       margin-top: 10px;
       margin-left: 10px;
-      background-color: rgb(189, 189, 189);
+      background-color:$backdrop-color;
       z-index: -1;
       padding: 20px;
     }
@@ -63,7 +65,7 @@ $background-color: #2b2b2b;
     justify-content: center;
     margin-bottom: 20px;
     .site-title {
-      text-shadow: 5px 5px 0px gray;
+      text-shadow: 5px 5px 0px $shadow;
       margin-top: 50px;
       font-family: Potsdam;
       font-size: 1.5em;
@@ -97,7 +99,7 @@ $background-color: #2b2b2b;
         opacity: 0;
         font-size: 1rem;
         color: white;
-        text-shadow: 1px 1px 1px black;
+        text-shadow: 1px 1px 1px $shadow;
       }
     }
   }
@@ -105,8 +107,10 @@ $background-color: #2b2b2b;
     grid-area: status;
     font-size: 2em;
     width: 300px;
-    box-shadow: 5px 5px 1px gray;
     margin: auto;
+  }
+  .new-lobby, .single-input-form, .bottom-button{
+    box-shadow: 5px 5px 0px $shadow;
   }
   .existing-lobby {
     display: flex;
@@ -117,6 +121,7 @@ $background-color: #2b2b2b;
     font-size: 2em;
     margin: 0px 30px;
     text-align: center;
+    text-shadow: 3px 3px 0px $shadow;
     font-family: $subheader-stack;
     h4 {
       padding-bottom: 20px;
