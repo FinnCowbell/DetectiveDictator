@@ -1,4 +1,5 @@
 import React from "react";
+import getTitle from "./getTitle";
 export default class Header extends React.Component {
   constructor(props) {
     super(props);
@@ -23,7 +24,7 @@ export default class Header extends React.Component {
     return (
       <div className="site-header">
         <div className="site-title">
-          <h1>Detective Dictator!</h1>
+          <h1>{getTitle()}</h1>
         </div>
         {this.props.lobbyID && (
           <div
@@ -33,8 +34,7 @@ export default class Header extends React.Component {
             }}
             onMouseOut={() => {
               this.resetTooltip();
-            }}
-          >
+            }}>
             <input
               ref={this.url}
               className="hidden-url"

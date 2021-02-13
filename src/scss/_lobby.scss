@@ -67,7 +67,7 @@ $shadow: rgb(159, 156, 156);
     .site-title {
       text-shadow: 5px 5px 0px $shadow;
       margin-top: 50px;
-      font-family: Potsdam;
+      font-family: $title-stack;
       font-size: 1.5em;
     }
     .lobby-title {
