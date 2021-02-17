@@ -1,7 +1,7 @@
 @import "./colors";
 @import "./borders";
 
-$part1-duration: 0.5s;
+$part1-duration: 1s;
 $part2-duration: 0.5s;
 .animation-overlay {
   position: fixed;
@@ -41,9 +41,13 @@ $part2-duration: 0.5s;
       position: absolute;
       top: 0;
       right: 0;
-      font-family: $title-stack;
+      font-family: $subheader-stack;
+      font-size: 2rem;
+      padding: 0em .5rem;
+      line-height: .5;
+      cursor: pointer;
     }
-    button {
+    .buttons button {
       font-family: inherit;
       font-size: 2em;
       @include fascist-border();
@@ -77,7 +81,7 @@ $part2-duration: 0.5s;
     .slidein-background {
       background-color: $liberal-blue;
     }
-    button {
+    .buttons button {
       @include unknown-border();
       color: white;
     }
@@ -92,7 +96,7 @@ $part2-duration: 0.5s;
       background-color: $hitler-red;
       right: 0;
     }
-    button {
+    .buttons button {
       @include hitler-border();
       color: white;
     }
