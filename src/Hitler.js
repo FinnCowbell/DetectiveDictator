@@ -103,9 +103,10 @@ export default class Hitler extends React.Component {
     socket.on("ui event", (arg) => this.recieveUIInfo(arg));
   }
 
-  getPlayerAction(currentState) {
+  getPlayerAction(round) {
     //Based on event info, constructs the 'action' for the specific player.
     //The action guides what shows up in the action bar, as well as the game status message.
+    let currentState = round.states[round.states.length - 1];
     let action = "";
     let youArePresident = this.props.yourPID == currentState.presidentPID;
     let youAreChancellor = this.props.yourPID == currentState.chancellorPID;
@@ -146,7 +147,7 @@ export default class Hitler extends React.Component {
           : "president investigated";
         break;
       case "end game":
-        action = event.reason;
+        action = round.reason;
         break;
       default:
         action = currentState.currentEvent;
@@ -159,7 +160,7 @@ export default class Hitler extends React.Component {
     let rounds = this.state.rounds;
     let round = rounds[rounds.length - 1];
     let currentState = round.states[round.states.length - 1];
-    currentState.action = this.getPlayerAction(currentState);
+    currentState.action = this.getPlayerAction(round);
     let you = currentState.you || round.players[this.props.yourPID];
     let players = round.players;
     let order = round.gameInfo.order;

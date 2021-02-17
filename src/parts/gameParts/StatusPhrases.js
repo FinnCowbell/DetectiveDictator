@@ -14,7 +14,7 @@ export default function getStatusPhrase(currentState, players) {
     victimName = players[currentState.victim].username;
   }
   const phrases = {
-    "pre game": "Please wait, the game will begin shortly",
+    "pre game": `Welcome to the lobby!`,
     "new round": "A new round has begun",
     "chancellor pick": `${presidentName} is picking a chancellor`,
     "your chancellor pick": "Pick Your Chancellor.",
@@ -41,7 +41,10 @@ export default function getStatusPhrase(currentState, players) {
     "president kill": `President ${presidentName} is picking someone to assassinate.`,
     "your president kill": "Shoot Someone.",
     "player killed": `${victimName} has been murdered.`,
-    "end game": "The Game Has Ended.",
+    "liberal win hitler": "The Game Has Ended.",
+    "liberal win cards": "The Game Has Ended.",
+    "fascist win hitler": "The Game Has Ended.",
+    "fascist win cards": "The Game Has Ended.",
   };
   return (
     phrases[currentState.action] ||
