@@ -1,4 +1,3 @@
-var Hitler = require("./Game/Hitler");
 class Lobbies {
   constructor(io, devMode = false, ...GameModules) {
     this.io = io;
