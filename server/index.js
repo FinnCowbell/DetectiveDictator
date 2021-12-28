@@ -26,7 +26,6 @@ let devMode = false;
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] == "-dev") {
     devMode = true;
-    port = 1945;
   } else if (argv[i] == "-nofront") {
     front = false;
   }
