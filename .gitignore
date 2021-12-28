@@ -18,3 +18,12 @@ dist/*
 ehthumbs.db
 Thumbs.db
 DD_ASSETS/
+
+#Zero-installs yarn 2.0
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
