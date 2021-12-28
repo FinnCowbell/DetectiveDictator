@@ -1,0 +1,9 @@
+{
+  "search.exclude": {
+    "**/.yarn/*": true,
+    "yarn.lock": true
+  },
+  "files.exclude": {
+    "**/.cjs": true
+  }
+}

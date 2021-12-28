@@ -2,10 +2,13 @@ const webpack = require("webpack");
 const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
 var express = require("express");
-
+process.traceDeprecation = true;
 module.exports = (env) => {
   let config = {
-    entry: ["react-hot-loader/patch", "./src/index.js"],
+    mode: "development",
+    entry: {
+      main: ["react-hot-loader/patch", "./src/index.js"], 
+    },
     output: {
       path: path.resolve(__dirname, "dist/"),
       filename: "main.js",
@@ -58,15 +61,18 @@ module.exports = (env) => {
     },
     plugins: [new CompressionPlugin()],
     devServer: {
-      contentBase: "./dist",
-      port: 8080,
+      static:{
+        directory: path.join(__dirname, "./dist")
+      },
+      port: 8000,
+
     },
   };
   //If we're building custom (split front and backend), pass the DD_SERVER and DD_PORT environment variables.
   if (env && env.custom) {
     config.plugins.push(
       new webpack.EnvironmentPlugin(
-        // Listed values specify the defaults.
+        // The below values are the defaults, if it isn't is declared in the env.
         { DD_SERVER: "localhost", DD_PORT: 1945 }
       )
     );
