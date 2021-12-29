@@ -21,11 +21,10 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "build": "webpack --config webpack.config.js --mode production ",
+    "build": "webpack --config webpack.config.js --mode production",
     "start-back": "node server/index.js -nofront",
-    "build-custom": "webpack --config webpack.config.js --mode production --env custom",
-    "build-dev": "webpack --config webpack.config.js--mode development",
-    "test-front": "webpack-dev-server --mode development --env custom --hot",
+    "build-dev": "webpack --config webpack.config.js --mode development",
+    "test-front": "webpack-dev-server --mode development --hot",
     "test-back": "nodemon --watch server server/index.js -dev -nofront"
   },
   "devDependencies": {

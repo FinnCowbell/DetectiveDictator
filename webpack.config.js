@@ -59,7 +59,11 @@ module.exports = (env) => {
         "react-dom": "@hot-loader/react-dom",
       },
     },
-    plugins: [new CompressionPlugin()],
+    plugins: [new CompressionPlugin(),
+      new webpack.EnvironmentPlugin(
+        // The below values are the defaults, if it isn't is declared in the env.
+        { DD_SERVER: "localhost", DD_PORT: 1945 }
+      )],
     devServer: {
       static:{
         directory: path.join(__dirname, "./dist")
@@ -69,13 +73,5 @@ module.exports = (env) => {
     },
   };
   //If we're building custom (split front and backend), pass the DD_SERVER and DD_PORT environment variables.
-  if (env && env.custom) {
-    config.plugins.push(
-      new webpack.EnvironmentPlugin(
-        // The below values are the defaults, if it isn't is declared in the env.
-        { DD_SERVER: "localhost", DD_PORT: 1945 }
-      )
-    );
-  }
   return config;
 };

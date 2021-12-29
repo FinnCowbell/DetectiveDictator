@@ -47,11 +47,10 @@ IF you want to host the server and static frontend files on different servers:
    - EX: `export DD_SERVER="192.168.2.0"`
    - Default Port: 1945
 
-2. Run the `build-custom` script
-   - EX: `yarn run build-custom`
+2. Run `build`
 
 3) Run `start-back` on the server computer.
 
    - If a custom port was given, DD_PORT must be set on the server computer as well.
 
-4) The compiled files in './dist' are compiled to connect to DD_SERVER:DD_PORT from any computer.
+4) Serve the compiled files in './dist' from a seperate computer.
