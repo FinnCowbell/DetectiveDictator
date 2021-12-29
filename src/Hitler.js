@@ -9,7 +9,6 @@ import PlayerCard from "./parts/gameParts/PlayerCard";
 import EndWindow from "./parts/gameParts/EndWindow";
 
 import defaultGameState from "./parts/gameParts/context/defaultState";
-import defaultState from "./parts/gameParts/context/defaultState";
 
 export default class Hitler extends React.Component {
   constructor(props) {
@@ -26,6 +25,7 @@ export default class Hitler extends React.Component {
       selectedPlayer: null,
       voteReceived: false,
       voted: {},
+      disconnected: {},
     };
     this.setState({
       uiInfo: uiInfo,
@@ -46,6 +46,12 @@ export default class Hitler extends React.Component {
         break;
       case "select player":
         uiInfo.selectedPlayer = arg.PID;
+        break;
+      case "disconnect":
+        uiInfo.disconnected[arg.PID] = true;
+        break;
+      case "reconnect":
+        uiInfo.disconnected[arg.PID] = false;
         break;
       default:
         break;

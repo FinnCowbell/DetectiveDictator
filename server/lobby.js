@@ -169,7 +169,7 @@ class Lobby {
 
   disconnectPlayer(socket) {
     //Disconnects a player by socket.
-    //Disconnects occur when the player closes the lobby window.
+    //Disconnects occur when the player closes the window, loses connection, etc.
     //The only information we have on disconnect is the socket.
     //If the game isn't running, disconnects should just kick the player.
     let player = this.getPlayerBySocketID(socket.id);
@@ -185,6 +185,9 @@ class Lobby {
     this.disconnectedPlayers[PID] = this.players[PID];
     player.connected = false;
     this.nConnected--;
+    //Disconnect in all game modules
+    this.gameModules.forEach((m) => m.disconnectPlayer(player));
+    
     this.log(`Player ${player.username} disconnected.`);
     this.emitUpdateLobby();
   }

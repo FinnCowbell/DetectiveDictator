@@ -79,8 +79,11 @@ class Hitler extends GameModule {
   reconnectPlayer(player) {
     this.activateGameSignals(player);
     player.socket.emit("full game info", this.getRoundInfo(player.PID));
+    this.io.emit("ui event", {"name": "reconnect", "PID": player.PID});
   }
-
+  disconnectPlayer(player){
+    this.io.emit("ui event", {"name": "disconnect", "PID": player.PID});
+  }
   connectSpectator(spectator) {
     // Omnipotent = all knowing.
     spectator.omnipotent = false;
@@ -221,8 +224,8 @@ class Hitler extends GameModule {
       this.previousPresPID = this.presidentPID;
       this.previousChanPID = this.chancellorPID;
     }
+    // For the edge case of playing with 5 people after 2 deaths
     if (this.nAlive < 4) {
-      // For the edge case of playing with 5 people after 2 deaths
       this.previousPresPID = null;
       this.previousChanPID = null;
     }

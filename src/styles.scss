@@ -154,6 +154,7 @@ button {
       justify-content: flex-start;
       width: inherit;
       margin-top: 40px;
+      transition: .25s filter;
       .player-bar {
         display: flex;
         align-items: center;
@@ -168,6 +169,9 @@ button {
       }
       &.hitler .player-bar {
         @include hitler-border();
+      }
+      &.disconnected {
+        filter: grayscale(.6) blur(1.5px);
       }
       &.you .player-bar .username {
         color: rgb(255, 255, 255);

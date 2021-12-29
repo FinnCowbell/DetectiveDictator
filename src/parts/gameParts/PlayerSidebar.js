@@ -50,6 +50,13 @@ export default class PlayerSidebar extends React.Component {
       return "";
     }
   }
+  isConnected(player){
+    const playerStatus = player.connected
+    const disconnected = this.props.uiInfo.disconnected?.[player.PID]
+    if(disconnected !== undefined)
+      return disconnected ? "disconnected" : ""
+    else return !playerStatus ? "disconnected" : ""
+  }
   getVoteClass(player) {
     //Gets the vote class
     //Ja, Nein, or Sent.
@@ -141,8 +148,9 @@ export default class PlayerSidebar extends React.Component {
     let playerList = order.map((PID, index) => {
       let player = players[PID];
       const isYou = PID == you.PID ? "you " : "";
-      const status = this.getStatus(player);
+      const status = this.getStatus(player); 
       const voteStatus = this.getVoteClass(player); //Null/undefined if doesnt exist.
+      const disconnectedClass = this.isConnected(player);
       const membershipClass = this.getMembership(player);
       const selectable = this.isPlayerSelectable(player);
       const isSelected = PID == uiInfo.selectedPlayer;
@@ -150,7 +158,7 @@ export default class PlayerSidebar extends React.Component {
         this.props.currentState.currentEvent == "president kill";
       const hasBullet = isSelected && isKillingPlayer;
       return (
-        <div key={index} className={`player ${membershipClass} ${isYou}`}>
+        <div key={index} className={`player ${membershipClass} ${isYou} ${disconnectedClass}`}>
           {isKillingPlayer && (
             <div className="bullet-holder">
               {hasBullet && <img className="bullet" src={bullet} />}

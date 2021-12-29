@@ -40,6 +40,7 @@ let defaultState = {
     selectedPlayer: null,
     voteReceived: false,
     voted: {},
+    disconnected: {},
   },
 };
 export default defaultState;

@@ -182,9 +182,6 @@ $shadow: rgb(159, 156, 156);
   }
 }
 
-.lobby-window {
-  background-color: rgba(0, 0, 0, 0.8);
-}
 
 .wave-background {
   opacity: 1;
@@ -196,7 +193,7 @@ $shadow: rgb(159, 156, 156);
   z-index: -2;
   transition: opacity 0.5s linear;
   &.fade {
-    opacity: 0.5;
+    opacity: 0.8;
   }
   .gradient {
     height: 100vh;
@@ -207,4 +204,8 @@ $shadow: rgb(159, 156, 156);
     animation-direction: alternate-reverse;
     animation-timing-function: ease-in-out;
   }
+}
+.fire-bg {
+  width: 100%;
+  height: 100%;
 }
