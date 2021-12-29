@@ -62,7 +62,7 @@ module.exports = (env) => {
     plugins: [new CompressionPlugin(),
       new webpack.EnvironmentPlugin(
         // The below values are the defaults, if it isn't is declared in the env.
-        { DD_SERVER: "localhost", DD_PORT: 1945, PORT: "" }
+        { DD_SERVER: "", DD_PORT: "", PORT: "" }
       )],
     devServer: {
       static:{
