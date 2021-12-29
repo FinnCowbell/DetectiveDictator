@@ -6,47 +6,43 @@
   "author": "Finn Navin <Thomasfnavin@gmail.com>",
   "license": "MIT",
   "main": "./server/index.js",
-  "private": false,
   "dependencies": {
     "@babel/preset-env": "^7.9.6",
     "babel-cli": "6",
     "babel-core": "^6.26.3",
     "babel-loader": "^8.1.0",
     "babel-preset-react": "^6.24.1",
-    "babel-preset-react-app": "3",
     "compression-webpack-plugin": "^4.0.0",
     "express": "^4.17.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-hot-loader": "^4.12.21",
-    "socket.io": "^2.4.0",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "socket.io": "^2.4.0"
   },
   "scripts": {
     "start": "node server/index.js",
-    "build": "webpack -p",
+    "build": "webpack --config webpack.config.js --mode production",
     "start-back": "node server/index.js -nofront",
-    "build-custom": "webpack -p --env.custom",
-    "build-dev": "webpack -d --mode development",
-    "test-front": "webpack-dev-server --env.custom --hot",
+    "build-dev": "webpack --config webpack.config.js --mode development",
+    "test-front": "webpack-dev-server --mode development --hot",
     "test-back": "nodemon --watch server server/index.js -dev -nofront"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-react": "^7.9.4",
     "@hot-loader/react-dom": "^16.13.0",
+    "ccapture.js": "^1.1.0",
     "css-loader": "^3.5.3",
     "file-loader": "^6.0.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "nodemon": "^2.0.3",
     "prettier": "^2.0.5",
-    "sass-loader": "^8.0.2",
+    "sass-loader": "^12.4.0",
     "style-loader": "^1.2.1",
     "url-loader": "^4.1.0",
-    "webpack-dev-server": "^3.11.0"
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.6.0"
   },
-  "engines": {
-    "node": "12.16.2"
-  }
+  "packageManager": "yarn@3.1.1"
 }
