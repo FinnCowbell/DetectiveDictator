@@ -1,28 +1,32 @@
+#GH-pages only should follow the DIST folder
+*
+!.gitigmore
+!README.MD
+!dist/
+
 node_modules/
 yarn-error.log
 package-lock.json
 .cache/
 coverage/
-dist/*
-!dist/index.html
-!dist/favicon
 *.log
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-DD_ASSETS/
+# # OS generated files
+# .DS_Store
+# .DS_Store?
+# ._*
+# .Spotlight-V100
+# .Trashes
+# ehthumbs.db
+# Thumbs.db
+# DD_ASSETS/
 
-#Zero-installs yarn 2.0
-.yarn/*
-!.yarn/cache
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+# #Zero-installs yarn 2.0
+# .yarn/*
+# !.yarn/cache
+# !.yarn/patches
+# !.yarn/plugins
+# !.yarn/releases
+# !.yarn/sdks
+# !.yarn/versions
+
