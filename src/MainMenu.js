@@ -1,12 +1,16 @@
 import React from "react";
 import Header from "./parts/Header.js";
 import SingleInputForm from "./parts/SingleInputForm";
+import Loading from "./parts/Loading";
 import io from "socket.io-client";
+import FireBackground from "./rendering/FireBackground.js";
 
 export default class MainMenu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      connected: false,
+      delayed_connected: null,
       socket: io(this.props.socketURL + "/menu", {
         reconnection: true,
         reconnectionDelay: 500,
@@ -15,11 +19,16 @@ export default class MainMenu extends React.Component {
         forceNew: true,
       }),
     };
+    setTimeout(()=>{this.setState({delayed_connected:false})},250);
     this.joinLobby = this.joinLobby.bind(this);
     this.createLobby = this.createLobby.bind(this);
   }
   componentDidMount() {
     const socket = this.state.socket;
+    socket.on("connect", () =>{
+      this.setState({connected:true});
+      setTimeout(()=>{this.setState({delayed_connected:true})},1000);
+    });
     socket.on("lobby created", (arg) => {
       this.joinLobby(arg.ID);
     });
@@ -37,13 +46,19 @@ export default class MainMenu extends React.Component {
   }
   render() {
     return (
-      <div className="menu-window">
+      <div className="menu-window ">
+      {!this.state.delayed_connected && <FireBackground toggle={this.state.connected}/>}
         <div className="content">
           <Header lobbyID={null} />
-          <button className="new-lobby" onClick={this.createLobby}>
+          {this.state.connected &&
+          <>
+          <button className="new-lobby fade-in" onClick={this.createLobby}>
             <h4>Create Game</h4>
           </button>
-          <LobbyInput joinLobby={this.joinLobby} />
+          <LobbyInput className="fade-in" joinLobby={this.joinLobby} />
+          </>}
+          {this.state.delayed_connected === false && !this.state.connected && 
+          <Loading/>}
           <div className="background" />
         </div>
       </div>
@@ -58,7 +73,7 @@ function LobbyInput(props) {
     }
   }
   return (
-    <div className="existing-lobby">
+    <div className={props.className + " existing-lobby"}>
       <h4>Join an Existing Lobby</h4>
       <div>
         <SingleInputForm

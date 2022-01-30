@@ -4,7 +4,8 @@ import io from "socket.io-client";
 import Header from "./parts/Header.js";
 import ChatRoom from "./parts/ChatRoom.js";
 import SingleInputForm from "./parts/SingleInputForm";
-import WaveBackground from "./parts/WaveBackground";
+import WaveBackground from "./rendering/WaveBackground";
+import FireBackground from "./rendering/FireBackground"
 //Lazy Load the game in the background, as it is not neccessary for loading the lobby.
 const Game = React.lazy(() => import("./Hitler.js"));
 // import {default as Game} from './Hitler.js';

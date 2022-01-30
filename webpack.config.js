@@ -14,7 +14,6 @@ const faviconConfig={
 
 module.exports = (env) => {
   let config = {
-    // mode: "development",
     entry: {
       main: ["react-hot-loader/patch", "./src/index.js"], 
     },
@@ -75,6 +74,7 @@ module.exports = (env) => {
       }), 
       new FaviconsWebpackPlugin({
         logo: './src/media/fascist-membership-old.png',
+        mode: 'auto',
         cache: true,
         favicons: faviconConfig,
       }),
