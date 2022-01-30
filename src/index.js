@@ -6,6 +6,6 @@ import "./styles.scss";
   They are used if the front-end is being served as static files, 
   and the backend is hosted on some other server. */
 let serverURL = process.env.DD_SERVER || "localhost";
-let port = process.env.DD_PORT || "1945";
+let port = process.env.PORT || process.env.DD_PORT || "1945";
 let socketURL = `${serverURL}:${port}`;
 ReactDOM.render(<App socketURL={socketURL} />, document.getElementById("root"));
