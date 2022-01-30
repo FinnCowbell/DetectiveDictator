@@ -1,17 +1,18 @@
 const webpack = require("webpack");
 const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 var express = require("express");
 process.traceDeprecation = true;
 module.exports = (env) => {
   let config = {
-    mode: "development",
+    // mode: "development",
     entry: {
       main: ["react-hot-loader/patch", "./src/index.js"], 
     },
     output: {
       path: path.resolve(__dirname, "dist/"),
-      filename: "main.js",
+      filename: "index_bundle.js",
     },
     module: {
       rules: [
@@ -59,7 +60,11 @@ module.exports = (env) => {
         "react-dom": "@hot-loader/react-dom",
       },
     },
-    plugins: [new CompressionPlugin(), new webpack.EnvironmentPlugin({
+    plugins: [new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: './src/index.html',
+    }), 
+      new CompressionPlugin(), new webpack.EnvironmentPlugin({
       'DD_SERVER': 'localhost',
       'DD_PORT': process.env.PORT || 1945})],
     devServer: {
