@@ -81,7 +81,8 @@ module.exports = (env) => {
       new CompressionPlugin(), 
       new webpack.EnvironmentPlugin({
       'DD_SERVER': 'localhost',
-      'DD_PORT': process.env.PORT || 1945})],
+      'PORT': 80,
+      'DD_PORT': 1945})],
     devServer: {
       static:{
         directory: path.join(__dirname, "./dist")
