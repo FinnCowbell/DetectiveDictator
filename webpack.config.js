@@ -2,8 +2,16 @@ const webpack = require("webpack");
 const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-var express = require("express");
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 process.traceDeprecation = true;
+
+const faviconConfig={
+  icons:{
+    windows: false,
+    appleStartup: false,
+  }
+}
+
 module.exports = (env) => {
   let config = {
     // mode: "development",
@@ -60,11 +68,18 @@ module.exports = (env) => {
         "react-dom": "@hot-loader/react-dom",
       },
     },
-    plugins: [new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: './src/index.html',
-    }), 
-      new CompressionPlugin(), new webpack.EnvironmentPlugin({
+    plugins: [
+      new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: './src/index.html',
+      }), 
+      new FaviconsWebpackPlugin({
+        logo: './src/media/fascist-membership-old.png',
+        cache: true,
+        favicons: faviconConfig,
+      }),
+      new CompressionPlugin(), 
+      new webpack.EnvironmentPlugin({
       'DD_SERVER': 'localhost',
       'DD_PORT': process.env.PORT || 1945})],
     devServer: {
