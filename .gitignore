@@ -2,7 +2,8 @@
 *
 !.gitigmore
 !README.MD
-!dist/
+!dist
+!dist/**
 
 node_modules/
 yarn-error.log
