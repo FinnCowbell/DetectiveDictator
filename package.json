@@ -21,7 +21,7 @@
   "scripts": {
     "start": "node server/index.js",
     "build": "webpack --config webpack.config.js --mode production",
-    "build-gh-pages": "DD_SERVER=https://detectivedictator.herokuapp.com DD_PORT=80 webpack --config webpack.config.js --mode production",
+    "build-gh-pages": "DD_SERVER=detectivedictator.herokuapp.com DD_PORT=443 webpack --config webpack.config.js --mode production",
     "start-back": "node server/index.js -nofront",
     "build-dev": "webpack --config webpack.config.js --mode development",
     "test-front": "DD_SERVER=localhost DD_PORT=1945 webpack-dev-server --mode development --hot",
