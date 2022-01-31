@@ -202,7 +202,7 @@ export default class PlayerSidebar extends React.Component {
         <div className="players">{playerList}</div>
         <button
           onClick={this.toggleState}
-          className={`controller ${this.state.closed ? "toggled" : ""}`}>
+          className={`toggle-button ${this.state.closed ? "toggled" : ""}`}>
           <h1>{this.state.closed ? "<" : ">"}</h1>
         </button>
       </div>
