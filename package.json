@@ -12,7 +12,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^8.1.0",
     "babel-preset-react": "^6.24.1",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-hot-loader": "^4.12.21",
