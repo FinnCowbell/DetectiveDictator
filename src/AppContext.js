@@ -53,7 +53,6 @@ function getQueryStrings() {
 }
 
 function createSocket(lobbyID) {
-    console.log("Created socket " + lobbyID);
     const isGame = !!lobbyID;
     const path = isGame ? `/${lobbyID.toLowerCase()}` : '/menu';
     return io(SOCKET_URL + path, {
@@ -111,12 +110,6 @@ export const GameContext = ({ children }) => {
         socket.on("lobby created", (arg) => {
             setLobbyID(arg.ID);
         });
-
-        socket.on("reconnect_failed", () => {
-            if (lobbyID)
-                setLobbyID('')
-        });
-
     }, [socket]);
 
     React.useEffect(() => {

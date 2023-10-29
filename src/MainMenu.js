@@ -4,10 +4,19 @@ import SingleInputForm from "./parts/SingleInputForm";
 import Loading from "./parts/Loading";
 
 import FireBackground from "./rendering/FireBackground.js";
-import { useGameContext } from "./AppContext.js";
+import { useGameContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./AppContext.js";
 
 const MainMenu = () => {
-  const { socket, connected } = useGameContext();
+  const { socket, connected, setLobbyID } = useGameContext();
+
+  const lobbyID = React.useMemo(() => {
+    return Object.keys(getLocalStorage(LOBBY_MAPPING_KEY))?.[0]
+  }, []);
+
+  const rejoinButton = React.useCallback(() => {
+    setLobbyID(lobbyID)
+  }, [setLobbyID])
+
   const createLobby = () => socket.emit("create lobby");
   return (
     <div className="menu-window ">
@@ -16,9 +25,16 @@ const MainMenu = () => {
         <Header lobbyID={null} />
         {connected &&
           <>
-            <button className="new-lobby fade-in" onClick={createLobby}>
-              <h4>Create Game</h4>
-            </button>
+            <div className="new-lobby-div">
+              <button className="new-lobby fade-in" onClick={createLobby}>
+                <h4>Create Game</h4>
+              </button>
+              {lobbyID &&
+                <button className="rejoin-lobby fade-in" onClick={rejoinButton}>
+                  <h4>Rejoin {lobbyID} </h4>
+                </button>
+              }
+            </div>
             <LobbyInput className="fade-in" />
           </>}
         {!connected &&

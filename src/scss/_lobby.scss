@@ -142,14 +142,28 @@ $shadow: rgb(159, 156, 156);
     }
   }
 
-  .new-lobby {
+  .new-lobby-div {
     grid-area: status;
     font-size: 2em;
     width: 300px;
     margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .new-lobby {
+    font-size: 1em;
+  }
+
+  .rejoin-lobby {
+    font-size: .7em;
+    font-weight: 200;
+    margin: 0px 16px;
   }
 
   .new-lobby,
+  .rejoin-lobby,
   .single-input-form,
   .bottom-button {
     box-shadow: 5px 5px 0px $shadow;

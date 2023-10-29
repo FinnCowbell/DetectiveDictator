@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useGameContext } from "../AppContext";
 
 export const Alert = () => {
   const { alertMessage, setAlertMessage } = useGameContext();
   const [isOpen, setIsOpen] = useState(false);
+  const interval = useRef(null);
 
   useEffect(() => {
     if (alertMessage != '') {
@@ -12,8 +13,9 @@ export const Alert = () => {
   }, [alertMessage]);
 
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
+    if (isOpen && alertMessage != '') {
+      clearInterval(interval.current);
+      interval.current = setTimeout(() => {
         setIsOpen(false)
         setTimeout(() => {
           setAlertMessage('');

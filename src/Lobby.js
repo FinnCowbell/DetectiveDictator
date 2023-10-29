@@ -8,12 +8,10 @@ import { useGameContext, setLocalStorage, getLocalStorage, CURRENT_LOBBY_KEY, LO
 import FireBackground from "./rendering/FireBackground.js";
 
 const storeReconnectPID = (lobbyID, PID) => {
-  const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
-  lobbyMapping[lobbyID] = PID;
-  setLocalStorage(LOBBY_MAPPING_KEY, lobbyMapping);
+  setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
 }
 
-const getReconnectPID = (lobbyID) => {
+export const getReconnectPID = (lobbyID) => {
   const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
   return lobbyMapping[lobbyID]
 }
@@ -100,17 +98,15 @@ export const Lobby = () => {
 
   React.useEffect(() => {
     if (gameInfo?.gameStatus === 'ingame') {
-      console.log("Fired Event");
       const reconnectPID = getReconnectPID(lobbyID)
       if (!PID && reconnectPID) {
         reconnect(reconnectPID);
       } else if (PID && (!isSpectating || joinedBeforeGame)) {
         storeReconnectPID(lobbyID, PID);
       }
-    }
-
-    if (gameInfo?.gameStatus === 'pregame')
+    } else if (gameInfo?.gameStatus === 'pregame' && PID) {
       setjoinedBeforeGame(true);
+    }
   }, [gameInfo?.gameStatus, PID])
 
   // Sloppy reset 
