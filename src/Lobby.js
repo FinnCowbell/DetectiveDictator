@@ -1,253 +1,203 @@
-import React, { Suspense } from "react";
-import io from "socket.io-client";
-
+import React from "react";
 import Header from "./parts/Header.js";
 import ChatRoom from "./parts/ChatRoom.js";
 import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
-import FireBackground from "./rendering/FireBackground"
-//Lazy Load the game in the background, as it is not neccessary for loading the lobby.
-const Game = React.lazy(() => import("./Hitler.js"));
-// import {default as Game} from './Hitler.js';
+import Hitler from './Hitler.js';
+import { useGameContext, setLocalStorage, getLocalStorage, CURRENT_LOBBY_KEY, LOBBY_MAPPING_KEY, getSessionStorage } from "./AppContext.js";
 
-export default class Lobby extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = this.getDefaultState();
-    this.disconnector = null;
-    this.CONNECT_TIME = 5000;
-    this.leaveLobby = this.leaveLobby.bind(this);
-    this.kickPlayer = this.kickPlayer.bind(this);
-    this.connect = this.connect.bind(this);
-    this.reconnect = this.reconnect.bind(this);
-    this.startGame = this.startGame.bind(this);
-    this.spectateGame = this.spectateGame.bind(this);
-  }
-  getDefaultState() {
-    return {
-      socket: null,
-      gameInfo: null,
-      PID: null,
-      lobbyExists: false,
-      inLobby: false,
-      players: {},
-      gameInfo: null,
-      nSpectators: 0,
-      isSpectating: false,
-    };
-  }
+const storeReconnectPID = (lobbyID, PID) => {
+  const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
+  lobbyMapping[lobbyID] = PID;
+  setLocalStorage(LOBBY_MAPPING_KEY, lobbyMapping);
+}
 
-  componentDidMount() {
-    if (this.state.socket) {
-      this.initializeSignals(this.state.socket);
-    }
-  }
+const getReconnectPID = (lobbyID) => {
+  const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
+  return lobbyMapping[lobbyID]
+}
 
-  componentDidUpdate(prevProps) {
-    let socket, newState;
-    if (this.props.lobbyID != prevProps.lobbyID) {
-      if (this.state.socket) {
-        this.state.socket.close();
-      }
-      newState = this.getDefaultState();
-      if (typeof this.props.lobbyID === "string") {
-        socket = io(
-          this.props.socketURL + "/" + this.props.lobbyID.toLowerCase(),
-          {
-            reconnection: true,
-            reconnectionDelay: 500,
-            reconnectionDelayMax: 5000,
-            reconnectionAttempts: 10,
-            forceNew: true,
-          }
-        );
-        newState.socket = socket;
-        this.initializeSignals(socket);
-      }
-      this.setState(newState);
-    }
-  }
+export const Lobby = () => {
+  const { lobbyID, socket, setAlert, setLobbyID } = useGameContext();
+  const [gameInfo, setGameInfo] = React.useState(null)
+  const [PID, setPID] = React.useState(null)
+  const [lobbyExists, setLobbyExists] = React.useState(false)
+  const [inLobby, setInLobby] = React.useState(false)
+  const [players, setPlayers] = React.useState({})
+  const [nSpectators, setNSpectators] = React.useState(0)
+  const [isSpectating, setIsSpectating] = React.useState(false)
+  const [joinedDuringPreGame, setjoinedDuringPreGame] = React.useState(false)
 
-  componentWillUnmount() {
-    if (this.state.socket) {
-      this.state.socket.close();
-    }
-    clearTimeout(this.disconnector);
-  }
-
-  initializeSignals(socket) {
-    // If the lobby isn't connecting, we shouldn't stick around.
-    clearTimeout(this.disconnector);
-    this.disconnector = setTimeout(
-      () => this.leaveLobby("Lobby Doesn't Exist!"),
-      this.CONNECT_TIME
-    );
-
-    socket.on("lobby joined", (arg) => {
-      this.setState({
-        inLobby: true,
-        PID: arg.PID,
-      });
-    });
-
-    socket.on("change lobby", (arg) => {
-      this.leaveLobby();
-      this.props.setLobbyID(arg.ID, true);
-    });
-
-    socket.on("kick", () =>
-      this.leaveLobby("You've been kicked From the lobby!")
-    );
-
-    socket.on("lobby update info", (arg) => {
-      if (!this.state.lobbyExists) {
-        document
-          .querySelector(".lobby-window .wave-background")
-          .classList.add("fade");
-      }
-      this.setState({
-        lobbyExists: true,
-        players: arg.lobbyInfo.players,
-        gameInfo: arg.lobbyInfo.gameInfo,
-        nSpectators: arg.lobbyInfo.nSpectators,
-      });
-    });
-
-    socket.on("reconnect_failed", () => {
-      this.leaveLobby(`Lost Connection to ${this.props.lobbyID}`);
-    });
-
-    socket.on("alert", (alert) => {
-      this.props.setAlert(alert);
-    });
-    //establishing lobby connection needs to occur After signals have been triggered.
-    socket.on("connect", () => {
-      clearTimeout(this.disconnector);
-      socket.emit("connection init request");
-    });
-  }
-  leaveLobby(reason = null) {
+  const leaveLobby = (reason = null) => {
     if (reason) {
-      this.props.setAlert(reason);
+      setAlert(reason);
     }
-    this.props.setLobbyID();
+    setLobbyID('');
   }
-  connect(username) {
-    this.state.socket.emit("join lobby", {
+
+  const connect = (username) =>
+    socket.emit("join lobby", {
       username: username,
     });
-  }
 
-  reconnect(PID) {
-    let arg = {
+  const reconnect = (PID) => {
+    socket.emit("rejoin lobby", {
       PID: PID,
-    };
-    this.state.socket.emit("rejoin lobby", arg);
+    });
   }
 
-  kickPlayer(PID) {
-    const you = this.state.players[this.state.PID];
+  const kickPlayer = (PID) => {
+    const you = state.players[PID];
     if (you.isLeader) {
-      this.state.socket.emit("request kick", {
+      socket.emit("request kick", {
         kickee: PID,
       });
     }
   }
-  startGame() {
-    this.state.socket.emit("game init");
+  const startGame = () => socket.emit("game init");
+
+  const spectateGame = () => {
+    socket.emit("spectator init");
+    setIsSpectating(true);
   }
-  spectateGame() {
-    this.state.socket.emit("spectator init");
-    this.setState({
-      isSpectating: true,
-    });
-  }
-  render() {
-    let navButtons;
-    const lobbyID = this.props.lobbyID;
-    const lobbyExists = this.state.lobbyExists;
-    const inLobby = this.state.inLobby;
-    const gameInfo = this.state.gameInfo;
-    const players = this.state.players;
-    const you = players && players[this.state.PID];
-    const isLeader = you && you.isLeader;
-    const spectating = this.state.isSpectating;
-    if (!inLobby) {
-      if (lobbyExists) {
-        navButtons = (
-          <div>
-            <button className="menu-exit" onClick={this.leaveLobby}>
-              Return to Menu
-            </button>
-            <button className="spectate" onClick={this.spectateGame}>
-              Spectate With
-              {gameInfo && gameInfo.gameStatus == "ingame" && "out"} Roles
-            </button>
-          </div>
-        );
-      } else {
-        navButtons = (
-          <button className="menu-exit" onClick={this.leaveLobby}>
+
+  React.useEffect(() => {
+    if (lobbyID && socket) {
+      socket.on("lobby joined", ({ PID, isSpectating }) => {
+        setInLobby(true);
+        setPID(PID);
+        setIsSpectating(isSpectating);
+      });
+
+      socket.on("change lobby", (arg) => {
+        leaveLobby();
+        setLobbyID(arg.ID, true);
+      });
+
+      socket.on("kick", () =>
+        leaveLobby("You've been kicked From the lobby!")
+      );
+
+      socket.on("lobby update info", (arg) => {
+        if (!lobbyExists) {
+          document
+            .querySelector(".lobby-window .wave-background")
+            ?.classList.add("fade");
+        }
+        setLobbyExists(true)
+        setPlayers(arg.lobbyInfo.players)
+        setGameInfo(arg.lobbyInfo.gameInfo)
+        setNSpectators(arg.lobbyInfo.nSpectators)
+      });
+
+      //establishing lobby connection needs to occur After signals have been triggered.
+      socket.on("connect", () => {
+        socket.emit("connection init request");
+      });
+    }
+  }, [lobbyID, socket]);
+
+  React.useEffect(() => {
+    if (gameInfo?.gameStatus === 'ingame') {
+      console.log("Fired Event");
+      const reconnectPID = getReconnectPID(lobbyID)
+      if (!PID && reconnectPID) {
+        reconnect(reconnectPID);
+      } else if (PID && (!isSpectating || joinedDuringPreGame)) {
+        storeReconnectPID(lobbyID, PID);
+      }
+    }
+
+    if (gameInfo?.gameStatus === 'pregame')
+      setjoinedDuringPreGame(true);
+  }, [gameInfo?.gameStatus, PID])
+
+  // Sloppy reset 
+  React.useEffect(() => {
+    setGameInfo(null);
+    setPID(null);
+    setLobbyExists(false);
+    setInLobby(false);
+    setPlayers({});
+    setNSpectators(0);
+    setIsSpectating(false);
+  }, [lobbyID])
+
+  let navButtons;
+  const you = players && players[PID];
+  const isLeader = you && you.isLeader;
+  if (!inLobby) {
+    if (lobbyExists) {
+      navButtons = (
+        <div>
+          <button className="menu-exit" onClick={() => leaveLobby()}>
             Return to Menu
           </button>
-        );
-      }
-    } else if (isLeader) {
+          <button className="spectate" onClick={spectateGame}>
+            Spectate With
+            {gameInfo && gameInfo.gameStatus == "ingame" && "out"} Roles
+          </button>
+        </div>
+      );
+    } else {
       navButtons = (
-        <button className="game-start" onClick={this.startGame}>
-          Start Game
+        <button className="menu-exit" onClick={() => leaveLobby()}>
+          Return to Menu
         </button>
       );
     }
-    return (
-      <div className="window">
-        {(!inLobby || gameInfo.gameStatus == "pregame") && (
-          <div className={`lobby-window`}>
-            <WaveBackground toggle={lobbyID} />
-            <div className="content">
-              <div className="background" />
-              <Header lobbyID={lobbyID} />
-              <LobbyStatus
-                connect={this.connect}
-                gameInfo={gameInfo}
-                lobbyExists={lobbyExists}
-                inLobby={inLobby}
-              />
-              <LobbyPlayerList
-                PID={this.state.PID}
-                players={players}
-                reconnect={this.reconnect}
-                kickPlayer={this.kickPlayer}
-              />
-              <div className="bottom-button">{navButtons}</div>
-              <div className="num-spectators">
-                {lobbyExists && <h3>Spectators: {this.state.nSpectators}</h3>}
-              </div>
-            </div>
-          </div>
-        )}
-        <Suspense fallback={<div className="game-window"></div>}>
-          {/* Lazy Loading Game Files */}
-          {this.state.socket && (
-            <Game
-              lobbyID={lobbyID}
-              spectating={spectating}
-              yourPID={this.state.PID}
-              leaveLobby={this.leaveLobby}
-              socket={this.state.socket}
-            />
-          )}
-        </Suspense>
-        {inLobby && (
-          <ChatRoom
-            socket={this.state.socket}
-            you={you}
-            spectating={spectating}
-          />
-        )}
-      </div>
+  } else if (isLeader) {
+    navButtons = (
+      <button className="game-start" onClick={startGame}>
+        Start Game
+      </button>
     );
   }
+  return (
+    <div className="window">
+      {(!inLobby || gameInfo.gameStatus == "pregame") && (
+        <div className={`lobby-window`}>
+          <WaveBackground toggle={lobbyID} />
+          <div className="content">
+            <div className="background" />
+            <Header lobbyID={lobbyID} />
+            <LobbyStatus
+              connect={connect}
+              gameInfo={gameInfo}
+              lobbyExists={lobbyExists}
+              inLobby={inLobby}
+            />
+            <LobbyPlayerList
+              PID={PID}
+              players={players}
+              reconnect={reconnect}
+              kickPlayer={kickPlayer}
+            />
+            <div className="bottom-button">{navButtons}</div>
+            <div className="num-spectators">
+              {lobbyExists && <h3>Spectators: {nSpectators}</h3>}
+            </div>
+          </div>
+        </div>
+      )}
+      {socket && (
+        <Hitler
+          lobbyID={lobbyID}
+          spectating={isSpectating}
+          yourPID={PID}
+          leaveLobby={leaveLobby}
+          socket={socket}
+        />
+      )}
+      {inLobby && (
+        <ChatRoom
+          socket={socket}
+          you={you}
+          spectating={isSpectating}
+        />
+      )}
+    </div>
+  );
 }
 
 class NewPlayerForm extends React.Component {
@@ -286,7 +236,7 @@ function LobbyStatus(props) {
     status = <h2>Loading Lobby...</h2>;
   } else if (props.gameInfo && props.gameInfo.gameStatus == "ingame") {
     status = <h2>Game in Progress!</h2>;
-  } else if (props.gameInfo.gameStatus == "postgame") {
+  } else if (props.gameInfo && props.gameInfo.gameStatus == "postgame") {
     status = <h2>The game has ended.</h2>;
   } else if (props.inLobby) {
     status = null;
@@ -294,40 +244,6 @@ function LobbyStatus(props) {
     status = <NewPlayerForm connect={props.connect}></NewPlayerForm>;
   }
   return <div className="lobby-status">{status}</div>;
-}
-
-function ReconnectPlayerForm(props) {
-  if (!props.players) {
-    return null;
-  }
-  let iterablePlayers = Object.values(props.players);
-  let disconnectedPlayers = iterablePlayers.map((player) =>
-    !player.connected ? (
-      <div
-        key={player.username}
-        onClick={() => {
-          props.reconnect(player.PID);
-        }}
-      >
-        {player.username}
-      </div>
-    ) : null
-  );
-  return (
-    <div className="rejoin-form">
-      <h2>Game in Progress!</h2>
-      {disconnectedPlayers.length && disconnectedPlayers}
-    </div>
-  );
-}
-
-function LoadingMessage(props) {
-  return (
-    <div className="loading-message">
-      <h3 className="loading-status">Connecting... (Lobby might not exist!)</h3>
-      <button onClick={props.leaveLobby}>Return to Menu</button>
-    </div>
-  );
 }
 
 function LobbyPlayerList(props) {
@@ -409,3 +325,5 @@ function LobbyPlayerList(props) {
     </div>
   );
 }
+
+export default Lobby;

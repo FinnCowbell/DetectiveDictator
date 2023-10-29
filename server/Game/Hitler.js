@@ -79,16 +79,19 @@ class Hitler extends GameModule {
   reconnectPlayer(player) {
     this.activateGameSignals(player);
     player.socket.emit("full game info", this.getRoundInfo(player.PID));
-    this.io.emit("ui event", {"name": "reconnect", "PID": player.PID});
+    this.io.emit("ui event", { "name": "reconnect", "PID": player.PID });
   }
-  disconnectPlayer(player){
-    this.io.emit("ui event", {"name": "disconnect", "PID": player.PID});
+
+  disconnectPlayer(player) {
+    if (!player.isSpectating)
+      this.io.emit("ui event", { "name": "disconnect", "PID": player.PID });
   }
+
   connectSpectator(spectator) {
     // Omnipotent = all knowing.
     spectator.omnipotent = false;
     //No incoming game signals from spectators.
-    if(this.gameStatus != "ingame"){
+    if (this.gameStatus != "ingame") {
       spectator.omnipotent = true;
     }
     if (this.gameStatus != "pregame") {

@@ -129,18 +129,18 @@ class Lobby {
       return false;
     }
     let PID = this.getNewPID();
-    let spectator = new Player("Spectator", PID, socket);
+    let spectator = new Player(`Spectator${PID}`, PID, socket);
     this._sidpid[socket.id] = PID;
     spectator.isSpectating = true;
     this.players[PID] = spectator;
     this.spectators[PID] = spectator;
+    this.log(`${spectator.username} joined lobby and assigned PID=${PID}`);
     this.gameModules.forEach((m) => m.connectSpectator(spectator));
     this.emitUpdateLobby();
     socket.emit("lobby joined", { PID: PID });
   }
 
   connectNewPlayer(username, socket) {
-    let SID = socket.id;
     if (this.nPlayers >= this.MAX_PLAYERS) {
       this.log(this.nPlayers);
       socket.emit("alert", "Lobby is Full!");
@@ -175,21 +175,25 @@ class Lobby {
     let player = this.getPlayerBySocketID(socket.id);
     let PID = player.PID;
     //Should this logic be elsewhere?
-    if (this.game.gameStatus == "pregame" || player.isSpectating) {
+    if (this.game.gameStatus == "pregame") {
       return this.kickPlayer(PID);
     }
     // Unlink socketID to playerID.
     //We're not using this socket ID again, so we want to get rid of it.
     delete this._sidpid[socket.id];
     player.socket = null;
-    this.disconnectedPlayers[PID] = this.players[PID];
     player.connected = false;
-    this.nConnected--;
-    //Disconnect in all game modules
-    this.gameModules.forEach((m) => m.disconnectPlayer(player));
-    
     this.log(`Player ${player.username} disconnected.`);
+    if (!player.isSpectating) {
+      this.disconnectedPlayers[PID] = this.players[PID];
+      this.nConnected--;
+    } else {
+      this.disconnectedPlayers[PID] = this.spectators[PID];
+      delete this.spectators[PID]
+    }
     this.emitUpdateLobby();
+    this.gameModules.forEach((m) => m.disconnectPlayer(player));
+
   }
 
   reconnectPlayer(PID, socket) {
@@ -201,6 +205,9 @@ class Lobby {
     }
     let player = this.disconnectedPlayers[PID];
     delete this.disconnectedPlayers[PID];
+    if (player.isSpectating) {
+      this.spectators[PID] = player;
+    }
     this._sidpid[socket.id] = PID;
     player.socket = socket;
     player.connected = true;
@@ -210,7 +217,7 @@ class Lobby {
     //Reconnect all the gameModules
     this.gameModules.forEach((m) => m.reconnectPlayer(player));
 
-    socket.emit("lobby joined", { PID: PID });
+    socket.emit("lobby joined", { PID: PID, isSpectating: player.isSpectating });
     this.emitUpdateLobby();
   }
 

@@ -1,43 +1,30 @@
-import React from "react";
-export default class Alert extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      previousState: false,
-      open: false,
-    };
-    this.timeout = null;
-    this.closeStatus = this.closeStatus.bind(this);
-  }
-  closeStatus() {
-    this.setState({
-      open: false,
-    });
-  }
-  openStatus() {
-    this.setState({
-      open: true,
-    });
-  }
-  componentDidUpdate() {
-    if (this.state.previousState != this.props.toggledState) {
-      this.openStatus();
-      this.setState((state, props) => ({
-        previousState: props.toggledState,
-      }));
-      clearTimeout(this.timeout);
-      this.timeout = setTimeout(this.closeStatus, 5000);
+import React, { useEffect, useState } from "react";
+import { useGameContext } from "../AppContext";
+
+export const Alert = () => {
+  const { alertMessage, setAlertMessage } = useGameContext();
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (alertMessage != '') {
+      setIsOpen(true);
     }
-  }
-  render() {
-    let open = this.state.open;
-    return (
-      <div className={`alert-bar ${!open ? "closed" : ""}`}>
-        <h2 className="alert-message">{this.props.children}</h2>
-        <button className="x" onClick={this.closeStatus}>
-          X
-        </button>
-      </div>
-    );
-  }
+  }, [alertMessage]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        setIsOpen(false)
+        setTimeout(() => {
+          setAlertMessage('');
+        }, 200)
+      }, 5000)
+    }
+  }, [isOpen, setIsOpen, setAlertMessage])
+
+  return (
+    <div className={`alert-bar ${!isOpen ? "closed" : ""}`}>
+      <h2 className="alert-message">{alertMessage}</h2>
+    </div>
+  );
 }
