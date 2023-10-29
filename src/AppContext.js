@@ -88,6 +88,7 @@ export const GameContext = ({ children }) => {
         if (!socket) return;
 
         if (lobbyID) {
+            setConnected(false);
             clearTimeout(disconnector.current);
             disconnector.current = setTimeout(
                 () => {

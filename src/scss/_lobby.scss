@@ -15,6 +15,7 @@ $shadow: rgb(159, 156, 156);
   width: 100%;
   height: 100%;
   z-index: 99;
+
   .content {
     border: 5px solid black;
     position: relative;
@@ -29,6 +30,7 @@ $shadow: rgb(159, 156, 156);
     width: 500px;
     height: 500px;
     padding: 20px;
+
     .background {
       position: absolute;
       top: 0;
@@ -36,27 +38,56 @@ $shadow: rgb(159, 156, 156);
       height: 500px;
       margin-top: 10px;
       margin-left: 10px;
-      background-color:$backdrop-color;
+      background-color: $backdrop-color;
       z-index: -1;
       padding: 20px;
     }
+
     button {
       font-family: $header-stack;
     }
+
     * {
       z-index: 3;
     }
   }
+
   .lobby-status {
     grid-area: status;
     display: flex;
     justify-content: center;
     font-family: $title-stack;
     color: $unknown-color;
+
     .new-player-form {
       margin: 10px;
     }
   }
+
+  .dots {
+    display: inline-block;
+    height: 5px;
+    /*to control the overall height*/
+    width: 50px;
+    /*to control the overall width*/
+    // margin:50px;
+    background-image:
+      repeating-linear-gradient(to right,
+        transparent, transparent 5px,
+        /*5px of transparent*/
+        $unknown-color 5px, $unknown-color 10px);
+    /*then 5px of blue */
+    background-size: 200% 100%;
+    animation: change 3s linear infinite;
+    transform: rotate(180deg);
+  }
+
+  @keyframes change {
+    to {
+      background-position: right;
+    }
+  }
+
   .site-header {
     grid-area: header;
     text-align: center;
@@ -64,33 +95,40 @@ $shadow: rgb(159, 156, 156);
     flex-direction: column;
     justify-content: center;
     margin-bottom: 20px;
+
     .site-title {
       text-shadow: 5px 5px 0px $shadow;
       margin-top: 50px;
       font-family: $title-stack;
       font-size: 1.5em;
     }
+
     .lobby-title {
       position: relative;
       margin-left: auto;
       margin-right: auto;
       color: $hitler-red;
+
       input {
         position: fixed;
         z-index: -1;
         top: -100px;
         left: -100px;
       }
+
       font-family: $header-stack;
       font-size: 1.25em;
       cursor: pointer;
+
       &:hover {
         color: rgb(32, 32, 32);
+
         span {
           font-family: $subheader-stack;
           opacity: 1;
         }
       }
+
       span {
         transition: 0s;
         position: absolute;
@@ -103,15 +141,20 @@ $shadow: rgb(159, 156, 156);
       }
     }
   }
+
   .new-lobby {
     grid-area: status;
     font-size: 2em;
     width: 300px;
     margin: auto;
   }
-  .new-lobby, .single-input-form, .bottom-button{
+
+  .new-lobby,
+  .single-input-form,
+  .bottom-button {
     box-shadow: 5px 5px 0px $shadow;
   }
+
   .existing-lobby {
     display: flex;
     flex-direction: column;
@@ -123,17 +166,21 @@ $shadow: rgb(159, 156, 156);
     text-align: center;
     text-shadow: 3px 3px 0px $shadow;
     font-family: $subheader-stack;
+
     h4 {
       padding-bottom: 20px;
     }
   }
+
   .bottom-button {
     grid-area: bottom;
     margin: auto;
+
     button {
       font-family: $subheader-stack;
       font-size: 1.5em;
     }
+
     .num-spectators {
       color: blue;
       position: absolute;
@@ -141,6 +188,7 @@ $shadow: rgb(159, 156, 156);
       left: 0;
     }
   }
+
   .player-list {
     color: darken($fascist-orange, 10%);
     grid-area: middle;
@@ -151,22 +199,27 @@ $shadow: rgb(159, 156, 156);
     display: flex;
     justify-content: space-between;
     margin: 0em 1em;
+
     ul {
       list-style-type: none;
     }
+
     .leader {
       color: rgb(149, 6, 6);
     }
+
     .disconnected-players {
       .disconnected {
         cursor: pointer;
         color: black;
         transition: 0.1s;
+
         &:hover {
           color: lighten($unknown-color, 20%);
         }
       }
     }
+
     .you {
       font-weight: bold;
     }
@@ -177,6 +230,7 @@ $shadow: rgb(159, 156, 156);
   0% {
     background-color: $liberal-blue;
   }
+
   100% {
     background-color: $fascist-orange;
   }
@@ -192,9 +246,11 @@ $shadow: rgb(159, 156, 156);
   width: 100vw;
   z-index: -2;
   transition: opacity 0.5s linear;
+
   &.fade {
     opacity: 0.8;
   }
+
   .gradient {
     height: 100vh;
     width: 100vw;
@@ -205,9 +261,11 @@ $shadow: rgb(159, 156, 156);
     animation-timing-function: ease-in-out;
   }
 }
+
 .fire-bg {
   height: 100vh;
   width: 100vw;
+
   &.fade {
     opacity: 0;
   }

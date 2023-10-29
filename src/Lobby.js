@@ -5,6 +5,7 @@ import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
 import Hitler from './Hitler.js';
 import { useGameContext, setLocalStorage, getLocalStorage, CURRENT_LOBBY_KEY, LOBBY_MAPPING_KEY, getSessionStorage } from "./AppContext.js";
+import FireBackground from "./rendering/FireBackground.js";
 
 const storeReconnectPID = (lobbyID, PID) => {
   const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
@@ -18,7 +19,7 @@ const getReconnectPID = (lobbyID) => {
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlert, setLobbyID } = useGameContext();
+  const { lobbyID, socket, setAlert, setLobbyID, connected } = useGameContext();
   const [gameInfo, setGameInfo] = React.useState(null)
   const [PID, setPID] = React.useState(null)
   const [lobbyExists, setLobbyExists] = React.useState(false)
@@ -26,7 +27,7 @@ export const Lobby = () => {
   const [players, setPlayers] = React.useState({})
   const [nSpectators, setNSpectators] = React.useState(0)
   const [isSpectating, setIsSpectating] = React.useState(false)
-  const [joinedDuringPreGame, setjoinedDuringPreGame] = React.useState(false)
+  const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
 
   const leaveLobby = (reason = null) => {
     if (reason) {
@@ -103,13 +104,13 @@ export const Lobby = () => {
       const reconnectPID = getReconnectPID(lobbyID)
       if (!PID && reconnectPID) {
         reconnect(reconnectPID);
-      } else if (PID && (!isSpectating || joinedDuringPreGame)) {
+      } else if (PID && (!isSpectating || joinedBeforeGame)) {
         storeReconnectPID(lobbyID, PID);
       }
     }
 
     if (gameInfo?.gameStatus === 'pregame')
-      setjoinedDuringPreGame(true);
+      setjoinedBeforeGame(true);
   }, [gameInfo?.gameStatus, PID])
 
   // Sloppy reset 
@@ -157,6 +158,7 @@ export const Lobby = () => {
     <div className="window">
       {(!inLobby || gameInfo.gameStatus == "pregame") && (
         <div className={`lobby-window`}>
+          {!connected && <FireBackground />}
           <WaveBackground toggle={lobbyID} />
           <div className="content">
             <div className="background" />
@@ -167,12 +169,12 @@ export const Lobby = () => {
               lobbyExists={lobbyExists}
               inLobby={inLobby}
             />
-            <LobbyPlayerList
+            {connected && <LobbyPlayerList
               PID={PID}
               players={players}
               reconnect={reconnect}
               kickPlayer={kickPlayer}
-            />
+            />}
             <div className="bottom-button">{navButtons}</div>
             <div className="num-spectators">
               {lobbyExists && <h3>Spectators: {nSpectators}</h3>}
@@ -233,7 +235,7 @@ class NewPlayerForm extends React.Component {
 function LobbyStatus(props) {
   let status;
   if (!props.lobbyExists) {
-    status = <h2>Loading Lobby...</h2>;
+    status = <h2>Loading Lobby <div className="dots" /></h2>;
   } else if (props.gameInfo && props.gameInfo.gameStatus == "ingame") {
     status = <h2>Game in Progress!</h2>;
   } else if (props.gameInfo && props.gameInfo.gameStatus == "postgame") {
