@@ -3,13 +3,19 @@
 
 $part1-duration: 1s;
 $part2-duration: 0.5s;
+
 .animation-overlay {
   position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
+
   .content {
     display: flex;
     flex-direction: column;
@@ -17,8 +23,6 @@ $part2-duration: 0.5s;
     z-index: 10001;
     position: fixed;
     padding: 20px;
-    top: calc(50% - 260px);
-    left: calc(50% - 260px);
     margin: auto;
     width: 500px;
     height: 500px;
@@ -27,16 +31,19 @@ $part2-duration: 0.5s;
     animation-fill-mode: both;
     animation-delay: $part1-duration + 0.25s;
     animation-duration: $part2-duration;
+
     h1 {
       font-family: $header-stack;
       font-size: 2.75em;
       text-align: center;
     }
+
     .buttons {
       display: flex;
       font-family: $subheader-stack;
       justify-content: space-around;
     }
+
     .close-window {
       position: absolute;
       top: 0;
@@ -47,6 +54,7 @@ $part2-duration: 0.5s;
       line-height: .5;
       cursor: pointer;
     }
+
     .buttons button {
       font-family: inherit;
       font-size: 2em;
@@ -55,11 +63,13 @@ $part2-duration: 0.5s;
       outline: none;
       cursor: pointer;
       transition: 0.1s;
+
       &:hover {
         filter: brightness(0.9);
       }
     }
   }
+
   .slidein-background {
     height: 100%;
     width: 100%;
@@ -73,35 +83,45 @@ $part2-duration: 0.5s;
     animation-duration: $part1-duration;
     z-index: 10000;
   }
+
   &.liberal {
     .content {
       border: 15px solid black;
       @include unknown-border();
       background-color: $liberal-blue;
     }
+
     .slidein-background {
       background-color: $liberal-blue;
     }
+
     .buttons button {
       @include unknown-border();
       color: white;
     }
   }
+
+  opacity: .95;
+
   &.fascist {
     .content {
       border: 15px solid black;
       @include hitler-border();
       background-color: $fascist-orange;
     }
+
     .slidein-background {
       background-color: $hitler-red;
       right: 0;
     }
+
     .buttons button {
       @include hitler-border();
       color: white;
     }
   }
+
+
   &.hidden {
     display: none;
   }
@@ -111,6 +131,7 @@ $part2-duration: 0.5s;
   0% {
     right: 100%;
   }
+
   100% {
     right: 0%;
   }
@@ -120,6 +141,7 @@ $part2-duration: 0.5s;
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }

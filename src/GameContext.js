@@ -9,8 +9,6 @@ let serverURL = process.env.DD_SERVER !== undefined ? process.env.DD_SERVER : "l
 let port = process.env.DD_PORT !== undefined ? process.env.DD_PORT : "1945";
 let SOCKET_URL = `${serverURL}:${port}`;
 
-export const Error_string = "back to the lab again";
-
 const DEFAULT_CONTEXT = {
     socket: undefined,
     queryStrings: {},
@@ -28,15 +26,14 @@ export const setLocalStorage = (key, value) => {
 export const getLocalStorage = (key) => {
     return JSON.parse(window.localStorage.getItem(key) || '{}').value;
 }
-export const setSessionStorage = (key, value) => {
-    return window.sessionStorage.setItem(key, JSON.stringify({ value }));
-}
 
-export const getSessionStorage = (key) => {
-    return JSON.parse(window.sessionStorage.getItem(key) || {}).value;
-}
 export const LOBBY_MAPPING_KEY = 'lobbyMapping'
-export const CURRENT_LOBBY_KEY = 'currentLobby'
+
+const clearLobbyMapping = (lobbyID) => {
+    const localStorageValue = getLocalStorage(LOBBY_MAPPING_KEY);
+    delete localStorageValue[lobbyID];
+    setLocalStorage(LOBBY_MAPPING_KEY, localStorageValue)
+}
 
 const ContextObject = React.createContext(DEFAULT_CONTEXT);
 
@@ -92,6 +89,7 @@ export const GameContext = ({ children }) => {
             disconnector.current = setTimeout(
                 () => {
                     setAlertMessage("Lobby Doesn't Exist!");
+                    clearLobbyMapping(lobbyID)
                     setLobbyID('')
                 },
                 5000

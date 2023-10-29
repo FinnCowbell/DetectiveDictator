@@ -1,53 +1,68 @@
 import React from "react";
 import getTitle from "./getTitle";
-export default class Header extends React.Component {
-  constructor(props) {
-    super(props);
-    this.url = React.createRef();
-    this.tooltip = React.createRef();
+import { useGameContext } from "../GameContext";
+const Header = () => {
+  const { lobbyID } = useGameContext();
+  const shareSupported = React.useMemo(() => !!navigator.share, []);
+  const url = React.useRef();
+  const tooltip = React.useRef();
+
+  const getLobbyURL = () => {
+    return `${window.location.origin}${window.location.pathname}#lobby=${lobbyID}`;
+  };
+
+  const shareURL = () => {
+    navigator.share({
+      title: `Secret Hitler Lobby ${lobbyID}`,
+      url: getLobbyURL()
+    }).then(() => {
+      tooltip.current.innerHTML = "Shared!";
+    }).catch(() => {
+      tooltip.current.innerHTML = "Copied!";
+    });
   }
-  getLobbyURL() {
-    return `${window.location.origin}${window.location.pathname}#lobby=${this.props.lobbyID}`;
-  }
-  copyLobbyURL() {
-    let text = this.url.current;
-    let tooltip = this.tooltip.current;
+
+  const copyLobbyURL = () => {
+    let text = url.current;
+    let tooltip = tooltip.current;
     text.select();
     text.setSelectionRange(0, 9999);
     document.execCommand("copy");
     tooltip.innerHTML = "Copied!";
   }
-  resetTooltip() {
-    this.tooltip.current.innerHTML = "Copy URL";
+  const resetTooltip = () => {
+    tooltip.current.innerHTML = shareSupported ? "Share URL" : "Copy URL";
   }
-  render() {
-    return (
-      <div className="site-header">
-        <div className="site-title">
-          <h1>{getTitle()}</h1>
-        </div>
-        {this.props.lobbyID && (
-          <div
-            className="lobby-title"
-            onClick={(e) => {
-              this.copyLobbyURL(e);
-            }}
-            onMouseOut={() => {
-              this.resetTooltip();
-            }}>
-            <input
-              ref={this.url}
-              className="hidden-url"
-              readOnly={true}
-              value={this.getLobbyURL()}
-            />
-            <h3>
-              Lobby: {this.props.lobbyID}
-              <span ref={this.tooltip}>Copy URL</span>
-            </h3>
-          </div>
-        )}
+  return (
+    <div className="site-header">
+      <div className="site-title">
+        <h1>{getTitle()}</h1>
       </div>
-    );
-  }
+      {lobbyID && (
+        <div
+          className="lobby-title"
+          onClick={(e) => {
+            shareSupported ?
+              shareURL(e) :
+              copyLobbyURL(e);
+          }}
+          onMouseOut={() => {
+            resetTooltip();
+          }}>
+          <input
+            ref={url}
+            className="hidden-url"
+            readOnly={true}
+            value={getLobbyURL()}
+          />
+          <h3>
+            Lobby: {lobbyID}
+            <span ref={tooltip}>Copy URL</span>
+          </h3>
+        </div>
+      )}
+    </div>
+  );
 }
+
+export default Header;

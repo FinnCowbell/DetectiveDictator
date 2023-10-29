@@ -4,8 +4,9 @@ import ChatRoom from "./parts/ChatRoom.js";
 import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
 import Hitler from './Hitler.js';
-import { useGameContext, setLocalStorage, getLocalStorage, CURRENT_LOBBY_KEY, LOBBY_MAPPING_KEY, getSessionStorage } from "./AppContext.js";
+import { useGameContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY } from "./GameContext.js";
 import FireBackground from "./rendering/FireBackground.js";
+import presHat from "./media/sidebar/president-hat.png";
 
 const storeReconnectPID = (lobbyID, PID) => {
   setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
@@ -17,7 +18,7 @@ export const getReconnectPID = (lobbyID) => {
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlert, setLobbyID, connected } = useGameContext();
+  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useGameContext();
   const [gameInfo, setGameInfo] = React.useState(null)
   const [PID, setPID] = React.useState(null)
   const [lobbyExists, setLobbyExists] = React.useState(false)
@@ -27,9 +28,19 @@ export const Lobby = () => {
   const [isSpectating, setIsSpectating] = React.useState(false)
   const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
 
+  const defaultState = () => {
+    setGameInfo(null);
+    setPID(null);
+    setLobbyExists(false);
+    setInLobby(false);
+    setPlayers({});
+    setNSpectators(0);
+    setIsSpectating(false);
+  }
+
   const leaveLobby = (reason = null) => {
     if (reason) {
-      setAlert(reason);
+      setAlertMessage(reason);
     }
     setLobbyID('');
   }
@@ -46,13 +57,11 @@ export const Lobby = () => {
   }
 
   const kickPlayer = (PID) => {
-    const you = state.players[PID];
-    if (you.isLeader) {
-      socket.emit("request kick", {
-        kickee: PID,
-      });
-    }
+    socket.emit("request kick", {
+      kickee: PID,
+    });
   }
+
   const startGame = () => socket.emit("game init");
 
   const spectateGame = () => {
@@ -111,13 +120,7 @@ export const Lobby = () => {
 
   // Sloppy reset 
   React.useEffect(() => {
-    setGameInfo(null);
-    setPID(null);
-    setLobbyExists(false);
-    setInLobby(false);
-    setPlayers({});
-    setNSpectators(0);
-    setIsSpectating(false);
+    defaultState();
   }, [lobbyID])
 
   let navButtons;
@@ -130,11 +133,15 @@ export const Lobby = () => {
           <button className="menu-exit" onClick={() => leaveLobby()}>
             Return to Menu
           </button>
-          <button className="spectate" onClick={spectateGame}>
-            Spectate With
-            {gameInfo && gameInfo.gameStatus == "ingame" && "out"} Roles
-          </button>
-        </div>
+          {gameInfo?.gameStatus !== "postgame" ?
+            <button className="spectate" onClick={spectateGame}>
+              {`Spectate ${gameInfo?.gameStatus == "ingame" ? "without" : "with"} Roles`}
+            </button> :
+            <button className="menu-exit" onClick={() => socket.emit("join new lobby")}>
+              Join Next Game
+            </button>
+          }
+        </div >
       );
     } else {
       navButtons = (
@@ -151,7 +158,7 @@ export const Lobby = () => {
     );
   }
   return (
-    <div className="window">
+    <div className="window" style={{ ['--president-hat']: `url(${presHat})` }}>
       {(!inLobby || gameInfo.gameStatus == "pregame") && (
         <div className={`lobby-window`}>
           {!connected && <FireBackground />}
@@ -183,7 +190,6 @@ export const Lobby = () => {
           lobbyID={lobbyID}
           spectating={isSpectating}
           yourPID={PID}
-          leaveLobby={leaveLobby}
           socket={socket}
         />
       )}
@@ -275,7 +281,7 @@ function LobbyPlayerList(props) {
                 className="kick-button"
                 onClick={() => props.kickPlayer(player.PID)}
               >
-                Kick
+                🥾
               </button>
             )}
           </li>
@@ -294,14 +300,6 @@ function LobbyPlayerList(props) {
             }}
           >
             {player.username}
-            {you && you.isLeader && player.PID != yourPID && (
-              <button
-                className="kick-button"
-                onClick={() => props.kickPlayer(player.PID)}
-              >
-                Kick
-              </button>
-            )}
           </li>
         )
     );

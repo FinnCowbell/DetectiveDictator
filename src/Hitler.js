@@ -170,8 +170,7 @@ export default class Hitler extends React.Component {
     let you = currentState.you || round.players[this.props.yourPID];
     let players = round.players;
     let order = round.gameInfo.order;
-    let aliveAndPlaying = you && you.alive;
-
+    let aliveAndPlaying = you?.alive;
     return (
       <div className="game-window">
         <StatusBar
@@ -206,16 +205,11 @@ export default class Hitler extends React.Component {
             currentState={currentState}
             players={players}
             you={you}
-            leaveLobby={this.props.leaveLobby}
             uiInfo={this.state.uiInfo}
           />
         )}
         {currentState.currentEvent == "end game" && (
-          <EndWindow
-            reason={round.reason}
-            leaveLobby={this.props.leaveLobby}
-            joinNewLobby={() => this.joinNewLobby()}
-          />
+          <EndWindow reason={round.reason} />
         )}
       </div>
     );

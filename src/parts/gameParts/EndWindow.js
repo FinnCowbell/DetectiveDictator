@@ -1,43 +1,29 @@
 import React from "react";
+import { useGameContext } from "../../GameContext";
 
-export default class EndWindow extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: true,
-    };
-    this.closeWindow = this.closeWindow.bind(this);
-  }
-  closeWindow() {
-    this.setState({
-      open: false,
-    });
-  }
-  render() {
-    const endPhrases = {
-      "liberal win cards": "The Liberals Have Secured Germany.",
-      "fascist win cards": "The Fascists Have Secured Germany.",
-      "liberal win hitler": "Hitler Has Been Killed.",
-      "fascist win hitler": "Hitler has been Elected.",
-    };
-    let fascistsWon = this.props.reason.includes("fascist") ? 1 : 0;
-    return (
-      <div
-        className={`animation-overlay ${fascistsWon ? "fascist" : "liberal"} ${
-          this.state.open ? "" : "hidden"
-        }`}>
-        <div className={`slidein-background`}></div>
-        <div className="content">
-          <button className="close-window" onClick={this.closeWindow}>
-            -
-          </button>
-          <h1>{endPhrases[this.props.reason]}</h1>
-          <div className="buttons">
-            <button onClick={this.props.joinNewLobby}>New Game</button>
-            <button onClick={this.props.leaveLobby}>Quit</button>
-          </div>
+const EndWindow = ({ reason }) => {
+  const { socket } = useGameContext();
+  const joinNewLobby = () => { socket.emit("join new lobby") };
+
+  const endPhrases = {
+    "liberal win cards": "The Liberals Have Secured Germany.",
+    "fascist win cards": "The Fascists Have Secured Germany.",
+    "liberal win hitler": "Hitler Has Been Killed.",
+    "fascist win hitler": "Hitler has been Elected.",
+  };
+  let fascistsWon = reason.includes("fascist") ? 1 : 0;
+  return (
+    <div
+      className={`animation-overlay ${fascistsWon ? "fascist" : "liberal"}`}>
+      <div className={`slidein-background`}></div>
+      <div className="content">
+        <h1>{endPhrases[reason]}</h1>
+        <div className="buttons">
+          <button onClick={joinNewLobby}>Join Next Game</button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
+
+export default EndWindow;

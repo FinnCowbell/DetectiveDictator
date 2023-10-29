@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useGameContext } from "../AppContext";
+import { useGameContext } from "../GameContext";
 
 export const Alert = () => {
   const { alertMessage, setAlertMessage } = useGameContext();

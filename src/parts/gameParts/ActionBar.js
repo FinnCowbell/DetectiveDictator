@@ -186,8 +186,6 @@ export default class ActionBar extends React.Component {
       case "liberal win cards":
       case "fascist win hitler":
       case "fascist win cards":
-        content = <LeaveGame leaveLobby={this.props.leaveLobby} />;
-        break;
       default:
         content = <div className="action empty"></div>;
         break;
@@ -313,9 +311,8 @@ function PolicyCard(props) {
   return (
     <div
       onClick={props.onClick}
-      className={`policy ${props.isFascist ? "fascist" : "liberal"} ${
-        props.isSelected ? "selected" : ""
-      }`}
+      className={`policy ${props.isFascist ? "fascist" : "liberal"} ${props.isSelected ? "selected" : ""
+        }`}
     >
       <img src={props.isFascist ? fascistPolicy : liberalPolicy}></img>
     </div>
@@ -346,16 +343,6 @@ function ViewMembership(props) {
       </div>
       <button className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>
-      </button>
-    </div>
-  );
-}
-
-function LeaveGame(props) {
-  return (
-    <div className="action exit">
-      <button className="leaveGame" onClick={props.leaveLobby}>
-        <h2>Leave Lobby</h2>
       </button>
     </div>
   );

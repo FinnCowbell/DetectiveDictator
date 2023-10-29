@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App.js";
 import "./styles.scss";
-import { GameContext } from "./AppContext.js";
+import { GameContext } from "./GameContext.js";
 
 ReactDOM.render((
   <GameContext>

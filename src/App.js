@@ -3,7 +3,7 @@ import React from "react";
 
 import Lobby from "./Lobby.js";
 import MainMenu from "./MainMenu.js";
-import { useGameContext } from "./AppContext.js";
+import { useGameContext } from "./GameContext.js";
 import FireBackground from "./rendering/FireBackground";
 import WaveBackground from "./rendering/WaveBackground";
 
