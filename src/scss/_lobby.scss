@@ -181,11 +181,12 @@ $shadow: rgb(159, 156, 156);
       box-shadow: 0px 0px 0px $shadow;
     }
   }
-  .kick-button{
+
+  .kick-button {
     display: inline-flex;
     background-color: transparent;
-    border:none;
-    font-size:1rem
+    border: none;
+    font-size: 1rem
   }
 
   .existing-lobby,
@@ -237,6 +238,10 @@ $shadow: rgb(159, 156, 156);
   }
 
   .player-list {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
     color: darken($fascist-orange, 10%);
     grid-area: middle;
     font-family: $subheader-stack;
@@ -262,6 +267,7 @@ $shadow: rgb(159, 156, 156);
     }
 
     .leader {
+      position: relative;
 
       &:before {
         position: absolute;
@@ -290,7 +296,6 @@ $shadow: rgb(159, 156, 156);
         }
       }
     }
-
 
   }
 }
