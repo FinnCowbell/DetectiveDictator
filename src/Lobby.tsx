@@ -181,8 +181,8 @@ export const Lobby = () => {
               lobbyExists={lobbyExists}
               inLobby={inLobby}
             />
-            {connected && PID && <LobbyPlayerList
-              PID={PID}
+            {connected && <LobbyPlayerList
+              yourPID={PID}
               players={players}
               reconnect={reconnect}
               kickPlayer={kickPlayer}
@@ -194,7 +194,7 @@ export const Lobby = () => {
           </div>
         </div>
       )}
-      {socket && lobbyID && PID && (
+      {socket && lobbyID && (
         <Hitler
           lobbyID={lobbyID}
           yourPID={PID}
@@ -256,13 +256,12 @@ const LobbyStatus: React.FC<{
 }
 
 const LobbyPlayerList: React.FC<{
-  PID: PID,
+  yourPID?: PID,
   players: PlayerMap,
   reconnect: (PID: PID) => void,
   kickPlayer: (PID: PID) => void
-}> = (props) => {
-  let yourPID = props.PID;
-  let you = props.players ? props.players[yourPID] : null;
+}> = ({yourPID, ...props}) => {
+  let you = yourPID && props.players ? props.players[yourPID] : null;
   let iterablePlayers = Object.values(props.players);
   let nDisconnectedPlayers = iterablePlayers.filter(({ connected }) => !connected).length;
   //Creating the list of connected Players

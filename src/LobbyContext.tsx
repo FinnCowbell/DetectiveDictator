@@ -63,12 +63,11 @@ function createSocket(lobbyID?: string): Socket {
   const isGame = !!lobbyID;
   const path = isGame ? `/${lobbyID.toLowerCase()}` : '/menu';
   return io(SOCKET_URL + path, {
-    // rejectUnauthorized: false, // WARN: please do not do this in production
-    // reconnection: true,
-    // reconnectionDelay: 500,
-    // reconnectionDelayMax: lobbyID ? 2000 : 5000,
-    // reconnectionAttempts: lobbyID ? Infinity : 10,
-    // forceNew: true,
+    reconnection: true,
+    reconnectionDelay: 500,
+    reconnectionDelayMax: lobbyID ? 2000 : 5000,
+    reconnectionAttempts: lobbyID ? Infinity : 10,
+    forceNew: true,
   });
 }
 

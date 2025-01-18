@@ -23,18 +23,16 @@ export default class SingleInputForm extends React.Component<SingleInputFormProp
       text: "",
     };
     this.DEFAULT_MAX_LENGTH = 240;
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChange = this.handleChange.bind(this);
   }
 
-  handleSubmit(e: React.KeyboardEvent | React.MouseEvent) {
+  public handleSubmit = (e?: React.KeyboardEvent) => {
     if (!e || (e && (e as React.KeyboardEvent).keyCode == 13)) {
       this.props.submit(this.state.text);
       this.setState({ text: "" });
     }
   }
 
-  handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  public handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let text = e.target.value;
     const MAX_LENGTH = this.props.MAX_LENGTH || this.DEFAULT_MAX_LENGTH;
     if (text.length > MAX_LENGTH) {
@@ -60,9 +58,13 @@ export default class SingleInputForm extends React.Component<SingleInputFormProp
           value={this.state.text}
           onKeyDown={this.handleSubmit}
           onChange={this.handleChange}
+          type="text"
+          // Prevents edge autocomplete.
+          autoComplete="new-password"
+          list="autocompleteOff" 
         />
         {this.props.button && (
-          <button onClick={(e) => this.handleSubmit(e)}>
+          <button onClick={() => this.handleSubmit()}>
             {this.props.button}
           </button>
         )}

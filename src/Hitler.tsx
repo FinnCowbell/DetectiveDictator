@@ -21,7 +21,7 @@ interface UIInfoEvent {
 interface Props {
   socket: Socket;
   lobbyID: string;
-  yourPID: PID;
+  yourPID?: PID;
 }
 
 export default class Hitler extends React.Component<Props, GameState> {
@@ -185,7 +185,7 @@ export default class Hitler extends React.Component<Props, GameState> {
     let round = rounds[rounds.length - 1];
     let currentState = round.states[round.states.length - 1];
     currentState.action = this.getPlayerAction(round);
-    let you = currentState.you || round.players[this.props.yourPID];
+    let you = currentState.you || this.props.yourPID && round.players[this.props.yourPID];
     let players = round.players;
     let order = round.gameInfo.order;
     let aliveAndPlaying = you?.alive;
