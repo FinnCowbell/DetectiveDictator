@@ -4,7 +4,7 @@ import ChatRoom from "./parts/ChatRoom.js";
 import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
 import Hitler from './Hitler.js';
-import { useGameContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY } from "./GameContext.js";
+import { useLobbyContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext.js";
 import FireBackground from "./rendering/FireBackground.js";
 import presHat from "./media/sidebar/president-hat.png";
 
@@ -18,7 +18,7 @@ export const getReconnectPID = (lobbyID) => {
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useGameContext();
+  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useLobbyContext();
   const [gameInfo, setGameInfo] = React.useState(null)
   const [PID, setPID] = React.useState(null)
   const [lobbyExists, setLobbyExists] = React.useState(false)

@@ -1,16 +1,19 @@
 import React from "react";
-import { useGameContext } from "../../GameContext";
+import { useLobbyContext } from "../../LobbyContext";
+import { GameEndEvent, PlayerAction } from "../../model/GameEvent";
 
-const EndWindow = ({ reason }) => {
-  const { socket } = useGameContext();
-  const joinNewLobby = () => { socket.emit("join new lobby") };
+const EndWindow: React.FC<{
+  reason: GameEndEvent
+}> = ({ reason }) => {
+  const { socket } = useLobbyContext();
+  const joinNewLobby = () => { socket?.emit("join new lobby") };
 
   const endPhrases = {
     "liberal win cards": "The Liberals Have Secured Germany.",
     "fascist win cards": "The Fascists Have Secured Germany.",
     "liberal win hitler": "Hitler Has Been Killed.",
     "fascist win hitler": "Hitler has been Elected.",
-  };
+  } as Record<GameEndEvent, string>;
   let fascistsWon = reason.includes("fascist") ? 1 : 0;
   return (
     <div

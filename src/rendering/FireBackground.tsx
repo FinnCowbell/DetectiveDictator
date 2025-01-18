@@ -1,22 +1,40 @@
+import React, { RefObject } from "react";
 
-import React from "react";
-/* A responsively-rigorous and performance-conscious implementation of the Fire Background.
-   Performance improvements include using requestAnimationFrame limiting framerate within 
-   requestAnimationFrame, rendering all pixels on an offscreen canvas first then repainting to the display, 
-   and allowing frame calculations to occur before the frame is being drawn.
-   Sadly, canvases still get the fan whirring on my '15in 2018 Macbook Pro™️'
-   So it all was kind of useless. I'm still proud of the work!
-   Planning to prerender the pixels at a high resolution.
-*/
+interface FireBackgroundProps {
+  className: string;
+  toggle: boolean;
+}
 
-export default class FireBackground extends React.Component {
-  constructor(props) {
+interface FireBackgroundState {
+  width: number;
+  height: number;
+  pixelDimX: number;
+  pixelDimY: number;
+  dissolveSpeed: number;
+  pixelHistory: number[][];
+  pixels: number[];
+  pixelHeight: number;
+  pixelWidth: number;
+  maxPixels: number;
+  maxFPS: number;
+  prevRender: number;
+  preRenderedFrame: boolean;
+}
+
+export default class FireBackground extends React.Component<FireBackgroundProps, FireBackgroundState> {
+  request: number | null;
+  container: RefObject<HTMLDivElement>;
+  mainCanvas: RefObject<HTMLCanvasElement>;
+  canvasConfig: CanvasRenderingContext2DSettings;
+  offScreenCanvas: React.MutableRefObject<HTMLCanvasElement | null>;
+
+  constructor(props: FireBackgroundProps) {
     let MAX_FPS = 30;
     super(props);
     this.request = null;
     this.container = React.createRef();
     this.mainCanvas = React.createRef();
-    // this.offScreenCanvas = React.createRef();
+    this.offScreenCanvas = React.createRef();
     this.initializePixels = this.initializePixels.bind(this);
     this.calculatePixels = this.calculatePixels.bind(this);
     this.paintPixels = this.paintPixels.bind(this);
@@ -33,7 +51,7 @@ export default class FireBackground extends React.Component {
       pixels: [],
       pixelHeight: 0,
       pixelWidth: 0,
-      maxPixels: Math.infinity, //Arbitrary, but to keep from slowing down excessively upon zooming out.
+      maxPixels: Infinity, //Arbitrary, but to keep from slowing down excessively upon zooming out.
       maxFPS: MAX_FPS, //Limits amount of anmationRequests per second
       prevRender: 0,
       preRenderedFrame: false,
@@ -43,16 +61,20 @@ export default class FireBackground extends React.Component {
       alpha: true,
     };
   }
+
   componentDidMount() {
-    this.mainCanvas.current.offScreenCanvas = document.createElement("canvas");
+
+    this.offScreenCanvas.current = document.createElement("canvas");
     this.resizeCanvas();
     window.addEventListener("resize", this.resizeCanvas);
     this.request = window.requestAnimationFrame(this.animationTick);
   }
+
   componentWillUnmount() {
     window.removeEventListener("resize", this.resizeCanvas);
-    window.cancelAnimationFrame(this.request);
+    window.cancelAnimationFrame(this.request!);
   }
+
   resizeCanvas() {
     //Redefines the canvas dimensions and required columns and rows for the pixels.
     const container = this.container.current;
@@ -60,8 +82,8 @@ export default class FireBackground extends React.Component {
     modifier = 10;
     s = this.state;
     do {
-      newWidth = Math.ceil(container.offsetWidth / modifier);
-      newHeight = Math.ceil(container.offsetHeight / modifier);
+      newWidth = Math.ceil(container!.offsetWidth / modifier);
+      newHeight = Math.ceil(container!.offsetHeight / modifier);
       pixelWidth = Math.ceil(newWidth / s.pixelDimX);
       pixelHeight = Math.ceil(newHeight / s.pixelDimY) + 5;
       modifier *= 1.5;
@@ -77,6 +99,7 @@ export default class FireBackground extends React.Component {
       this.initializePixels // Callback: should always occur.
     );
   }
+
   initializePixels() {
     // Based on Pixel Width, Pixel Height, and Window size, calculate the needed pixels.
     const s = this.state;
@@ -90,6 +113,7 @@ export default class FireBackground extends React.Component {
       this.calculatePixels();
     });
   }
+
   calculatePixels() {
     // Calculations borrowed (stolen) from here: http://slicker.me/javascript/fire/fire.htm
     let s = this.state;
@@ -116,12 +140,13 @@ export default class FireBackground extends React.Component {
     }
     this.setState({ pixels: pixels });
   }
+
   paintPixels() {
     // Paint the new pixels to the hidden canvas.
-    const c = this.mainCanvas.current.offScreenCanvas;
-    let ctx, s, pixelValue, color;
+    const c: HTMLCanvasElement = this.offScreenCanvas.current!;
+    let s, pixelValue, color;
     s = this.state;
-    ctx = c.getContext("2d", this.canvasConfig);
+    let ctx: CanvasRenderingContext2D = c.getContext("2d", this.canvasConfig)!;
     ctx.imageSmoothingEnabled = false;
     if (c.width != s.width || c.height != s.height) {
       c.height = s.height;
@@ -149,10 +174,11 @@ export default class FireBackground extends React.Component {
       }
     }
   }
+
   renderMainCanvas() {
-    const mainCanvas = this.mainCanvas.current;
-    const offScreenCanvas = mainCanvas.offScreenCanvas;
-    let ctx = mainCanvas.getContext("2d", this.canvasConfig);
+    const mainCanvas = this.mainCanvas.current!;
+    const offScreenCanvas = this.offScreenCanvas.current!;
+    let ctx: CanvasRenderingContext2D= mainCanvas.getContext("2d", this.canvasConfig)!;
     ctx.imageSmoothingEnabled = false;
     let s = this.state;
     //Reset heights+widths
@@ -169,7 +195,8 @@ export default class FireBackground extends React.Component {
     // Draw Pixels to visible canvas.
     ctx.drawImage(offScreenCanvas, 0, 0);
   }
-  animationTick(timeStamp) {
+
+  animationTick(timeStamp: number) {
     // Draw to the offscreen canvas, write to the main one at the end.
     // Should reduce CPU intensity of each canvas drawing.
     let s = this.state;
@@ -197,6 +224,7 @@ export default class FireBackground extends React.Component {
       );
     }
   }
+
   render() {
     return (
       <div

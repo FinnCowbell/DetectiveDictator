@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useGameContext } from "../GameContext";
+import { useLobbyContext } from "../LobbyContext";
 
 export const Alert = () => {
-  const { alertMessage, setAlertMessage } = useGameContext();
+  const { alertMessage, setAlertMessage } = useLobbyContext();
   const [isOpen, setIsOpen] = useState(false);
-  const interval = useRef(null);
+  const interval = useRef<NodeJS.Timeout |undefined>();
 
   useEffect(() => {
     if (alertMessage != '') {

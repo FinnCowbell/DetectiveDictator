@@ -5,9 +5,32 @@ import Fascist78 from "../../media/boards/fascist78.png";
 import Fascist910 from "../../media/boards/fascist910.png";
 import libPolicy from "../../media/liberal-policy.png";
 import fasPolicy from "../../media/fascist-policy.png";
+
+interface BoardProps {
+  marker?: number;
+  draw?: number;
+  discard?: number;
+  nCards: number;
+  nPlayers: number;
+}
+
 //Boards don't need a state.
-class LibBoard extends React.Component {
-  constructor(props) {
+class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
+  private canvas: React.RefObject<HTMLCanvasElement>;
+  private libBoard: React.RefObject<HTMLImageElement>;
+  private policy: React.RefObject<HTMLImageElement>;
+  private markerColor: string;
+  private liberalText: string;
+  private markerLocations: number[][];
+  private drawCenter: number[];
+  private discardCenter: number[];
+  private fontType: string;
+  private cardXs: number[];
+  private cardY: number;
+  private cardWidth: number;
+  private cardHeight: number;
+
+  constructor(props: BoardProps) {
     super(props);
     this.canvas = React.createRef();
     this.libBoard = React.createRef();
@@ -38,11 +61,13 @@ class LibBoard extends React.Component {
     this.updateCards();
   }
   drawImage() {
-    let ctx = this.canvas.current.getContext("2d");
-    ctx.drawImage(this.libBoard.current, 0, 0);
+    let ctx = this.canvas.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(this.libBoard.current!, 0, 0);
   }
   updateMarker() {
-    let ctx = this.canvas.current.getContext("2d");
+    let ctx = this.canvas.current?.getContext("2d");
+    if (!ctx) return;
     let x, y;
     x = this.markerLocations[this.props.marker || 0][0];
     y = this.markerLocations[this.props.marker || 0][1];
@@ -54,7 +79,8 @@ class LibBoard extends React.Component {
     ctx.fill();
   }
   updatePiles() {
-    let ctx = this.canvas.current.getContext("2d");
+    let ctx = this.canvas.current?.getContext("2d");
+    if (!ctx) return;
     ctx.save();
     ctx.fillStyle = this.liberalText;
     ctx.strokeStyle = this.liberalText;
@@ -75,8 +101,9 @@ class LibBoard extends React.Component {
     ctx.restore();
   }
   updateCards() {
-    let ctx = this.canvas.current.getContext("2d");
-    let policyImg = this.policy.current;
+    let ctx = this.canvas.current?.getContext("2d");
+    if (!ctx) return;
+    let policyImg = this.policy.current!;
     let card = 0;
     while (card < this.props.nCards) {
       ctx.drawImage(
@@ -122,8 +149,16 @@ class LibBoard extends React.Component {
   }
 }
 
-class FasBoard extends React.Component {
-  constructor(props) {
+class FasBoard extends React.Component<BoardProps> {
+  private canvas: React.RefObject<HTMLCanvasElement>;
+  private policy: React.RefObject<HTMLImageElement>;
+  private board: React.RefObject<HTMLImageElement>;
+  private cardY: number;
+  private cardXs: number[];
+  private cardWidth: number;
+  private cardHeight: number;
+
+  constructor(props: BoardProps) {
     super(props);
     this.canvas = React.createRef();
     this.policy = React.createRef();
@@ -141,15 +176,15 @@ class FasBoard extends React.Component {
     this.updateCards();
   }
   drawImage() {
-    let ctx = this.canvas.current.getContext("2d");
-    ctx.drawImage(this.board.current, 0, 0);
+    let ctx = this.canvas.current?.getContext("2d");
+    ctx?.drawImage(this.board.current!, 0, 0);
   }
   updateCards() {
-    let ctx = this.canvas.current.getContext("2d");
-    let policyImg = this.policy.current;
+    let ctx = this.canvas.current?.getContext("2d");
+    let policyImg = this.policy.current!;
     let card = 0;
     while (card < this.props.nCards) {
-      ctx.drawImage(
+      ctx?.drawImage(
         policyImg,
         this.cardXs[card],
         this.cardY,

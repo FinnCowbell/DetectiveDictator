@@ -15,7 +15,7 @@ const faviconConfig={
 module.exports = (env) => {
   let config = {
     entry: {
-      main: ["react-hot-loader/patch", "./src/index.js"], 
+      main: ["react-hot-loader/patch", "./src/index.tsx"], 
     },
     output: {
       path: path.resolve(__dirname, "dist/"),
@@ -26,6 +26,11 @@ module.exports = (env) => {
         {
           test: /\.(js|jsx)$/,
           use: "babel-loader",
+          exclude: /node_modules/,
+        },
+        {
+          test: /\.tsx?$/,
+          use: "ts-loader",
           exclude: /node_modules/,
         },
         {
@@ -62,7 +67,7 @@ module.exports = (env) => {
       ],
     },
     resolve: {
-      extensions: [".js", ".jsx"],
+      extensions: [".js", ".jsx", ".ts", ".tsx"],
       alias: {
         "react-dom": "@hot-loader/react-dom",
       },

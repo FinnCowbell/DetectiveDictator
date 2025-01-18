@@ -1,7 +1,28 @@
-import React from "react";
+import React, { RefObject } from "react";
 import SingleInputForm from "./SingleInputForm";
-export default class ChatRoom extends React.Component {
-  constructor(props) {
+
+interface ChatMessage {
+  username: string;
+  message: string;
+}
+
+interface ChatRoomProps {
+  socket: any;
+  spectating: boolean;
+}
+
+interface ChatRoomState {
+  position: string;
+  messages: ChatMessage[];
+  newChat: boolean;
+  notifyClass: string;
+}
+
+export default class ChatRoom extends React.Component<ChatRoomProps, ChatRoomState> {
+  MAX_LENGTH: number;
+  sent: RefObject<HTMLDivElement>;
+
+  constructor(props: ChatRoomProps) {
     super(props);
     this.sent = React.createRef();
     this.state = {
@@ -16,14 +37,15 @@ export default class ChatRoom extends React.Component {
     this.setMessages = this.setMessages.bind(this);
     this.toggleWindow = this.toggleWindow.bind(this);
   }
+
   componentDidMount() {
     let socket = this.props.socket;
-    socket.on("chat incoming", (arg) => this.postChat(arg));
-    socket.on("full chat history", (chats) => this.setMessages(chats));
+    socket.on("chat incoming", (arg: ChatMessage) => this.postChat(arg));
+    socket.on("full chat history", (chats: ChatMessage[]) => this.setMessages(chats));
     socket.emit("full chat request");
   }
 
-  setMessages(newMessages) {
+  setMessages(newMessages: ChatMessage[]) {
     this.setState({
       messages: newMessages,
     });
@@ -37,7 +59,7 @@ export default class ChatRoom extends React.Component {
     });
   }
 
-  postChat(msg) {
+  postChat(msg: ChatMessage) {
     const messages = this.state.messages;
     let sentWindow = this.sent.current;
     let notify = this.state.notifyClass;
@@ -48,10 +70,10 @@ export default class ChatRoom extends React.Component {
       messages: messages.concat([msg]),
       notifyClass: notify,
     });
-    sentWindow.scrollTo({ behavior: "smooth", top: sentWindow.scrollHeight });
+    sentWindow?.scrollTo({ behavior: "smooth", top: sentWindow?.scrollHeight });
   }
 
-  sendChat(message) {
+  sendChat(message: string) {
     if (message == "") {
       return false;
     }

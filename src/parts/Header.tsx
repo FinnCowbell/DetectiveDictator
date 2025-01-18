@@ -1,11 +1,12 @@
 import React from "react";
 import getTitle from "./getTitle";
-import { useGameContext } from "../GameContext";
-const Header = () => {
-  const { lobbyID } = useGameContext();
-  const shareSupported = React.useMemo(() => !!navigator.share, []);
-  const url = React.useRef();
-  const tooltip = React.useRef();
+import { useLobbyContext } from "../LobbyContext";
+
+const Header: React.FC = () => {
+  const { lobbyID } = useLobbyContext();
+  const shareSupported = navigator.share !== undefined;
+  const url = React.useRef<HTMLInputElement>(null);
+  const tooltip = React.useRef<HTMLDivElement>(null);
 
   const getLobbyURL = () => {
     return `${window.location.origin}${window.location.pathname}#lobby=${lobbyID}`;
@@ -16,22 +17,20 @@ const Header = () => {
       title: `Secret Hitler Lobby ${lobbyID}`,
       url: getLobbyURL()
     }).then(() => {
-      tooltip.current.innerHTML = "Shared!";
+      tooltip.current!.innerHTML = "Shared!";
     }).catch(() => {
-      tooltip.current.innerHTML = "Copied!";
+      tooltip.current!.innerHTML = "Copied!";
     });
   }
 
   const copyLobbyURL = () => {
-    let text = url.current;
-    let tooltip = tooltip.current;
-    text.select();
-    text.setSelectionRange(0, 9999);
+    url.current!.select();
+    url.current!.setSelectionRange(0, 9999);
     document.execCommand("copy");
-    tooltip.innerHTML = "Copied!";
+    tooltip.current!.innerHTML = "Copied!";
   }
   const resetTooltip = () => {
-    tooltip.current.innerHTML = shareSupported ? "Share URL" : "Copy URL";
+    tooltip.current!.innerHTML = shareSupported ? "Share URL" : "Copy URL";
   }
   return (
     <div className="site-header">
@@ -43,8 +42,8 @@ const Header = () => {
           className="lobby-title"
           onClick={(e) => {
             shareSupported ?
-              shareURL(e) :
-              copyLobbyURL(e);
+              shareURL() :
+              copyLobbyURL();
           }}
           onMouseOut={() => {
             resetTooltip();

@@ -7,9 +7,28 @@ import sent from "../../media/hands/fist.png";
 import presHat from "../../media/sidebar/president-hat.png";
 import chanHat from "../../media/sidebar/chancellor-hat.png";
 import bulletHole from "../../media/sidebar/bullet-holes.png";
+import { Membership } from "../../model/Membership";
+import { GameEndEvent, GameEvent, PlayerAction } from "../../model/GameEvent";
+import { PID, Player } from "../../model/Player";
+import { GameEventInfo, PlayerMap, UIInfo } from "../../model/GameState";
 
-export default class PlayerSidebar extends React.Component {
-  constructor(props) {
+
+interface Props {
+  order: number[];
+  players: PlayerMap
+  currentState: GameEventInfo;
+  you: Player;
+  uiInfo: UIInfo;
+  reason?: GameEndEvent;
+  sendUIInfo: (info: { name: string; PID: PID }) => void;
+}
+
+interface State {
+  closed: boolean;
+}
+
+export default class PlayerSidebar extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       closed: false,
@@ -23,7 +42,7 @@ export default class PlayerSidebar extends React.Component {
       closed: status,
     });
   }
-  getMembership(player) {
+  getMembership(player: Player) {
     const membershipClasses = {
       "-1": "",
       0: "liberal",
@@ -32,13 +51,13 @@ export default class PlayerSidebar extends React.Component {
     };
     return membershipClasses[player.membership] || "";
   }
-  changeSelectedPlayer(PID) {
+  changeSelectedPlayer(PID: number) {
     this.props.sendUIInfo({
       name: "select player",
       PID: PID,
     });
   }
-  getStatus(player) {
+  getStatus(player: Player) {
     let currentState = this.props.currentState;
     if (player.alive && player.PID == currentState.presidentPID) {
       return "president";
@@ -50,18 +69,14 @@ export default class PlayerSidebar extends React.Component {
       return "";
     }
   }
-  isConnected(player){
-    const playerStatus = player.connected
-    const disconnected = this.props.uiInfo.disconnected?.[player.PID]
-    if(disconnected !== undefined)
-      return disconnected ? "disconnected" : ""
-    else return !playerStatus ? "disconnected" : ""
+  isConnected(player: Player): boolean {
+    return player.connected !== undefined ? player.connected : this.props.uiInfo.disconnected?.[player.PID];
   }
-  getVoteClass(player) {
+  getVoteClass(player: Player) {
     //Gets the vote class
     //Ja, Nein, or Sent.
     //Sent = event is 'chancellor vote' and vote is true.
-    const showVoteEvents = new Set([
+    const showVoteEvents = new Set<PlayerAction>([
       "president discard",
       "chancellor discard",
       "liberal policy placed",
@@ -90,7 +105,7 @@ export default class PlayerSidebar extends React.Component {
     }
     return "hidden";
   }
-  isPlayerSelectable(player) {
+  isPlayerSelectable(player: Player) {
     /*To be selectable:
       -IF picking is president pick or chancellor pick, cannot be current President, Chancellor, 
        previous president or chancellor.
@@ -105,8 +120,8 @@ export default class PlayerSidebar extends React.Component {
     let currentEvent = currentState.currentEvent;
     let presID = currentState.presidentPID;
     let chanID = currentState.chancellorPID;
-    let prevPres = currentState.previousPresPID;
-    let prevChan = currentState.previousChanPID;
+    let prevPres = currentState.previousPresidentPID;
+    let prevChan = currentState.previousChancellorPID;
     let you = this.props.you;
     if (!you || you.PID != presID) {
       return false;
@@ -139,18 +154,17 @@ export default class PlayerSidebar extends React.Component {
     let order = this.props.order;
     let players = this.props.players;
     let currentState = this.props.currentState;
-    let you = this.props.you || {};
+    let you = this.props.you;
     let pres = currentState.presidentPID;
     let chan = currentState.chancellorPID;
     let uiInfo = this.props.uiInfo;
-    let bulletIndex = this.props.uiInfo.bulletIndex;
 
     let playerList = order.map((PID, index) => {
       let player = players[PID];
       const isYou = PID == you.PID ? "you " : "";
-      const status = this.getStatus(player); 
+      const status = this.getStatus(player);
       const voteStatus = this.getVoteClass(player); //Null/undefined if doesnt exist.
-      const disconnectedClass = this.isConnected(player);
+      const disconnected: boolean = this.isConnected(player);
       const membershipClass = this.getMembership(player);
       const selectable = this.isPlayerSelectable(player);
       const isSelected = PID == uiInfo.selectedPlayer;
@@ -158,7 +172,7 @@ export default class PlayerSidebar extends React.Component {
         this.props.currentState.currentEvent == "president kill";
       const hasBullet = isSelected && isKillingPlayer;
       return (
-        <div key={index} className={`player ${membershipClass} ${isYou} ${disconnectedClass}`}>
+        <div key={index} className={`player ${membershipClass} ${isYou} ${disconnected ? "disconnected" : ""}`}>
           {isKillingPlayer && (
             <div className="bullet-holder">
               {hasBullet && <img className="bullet" src={bullet} />}
@@ -166,9 +180,8 @@ export default class PlayerSidebar extends React.Component {
           )}
 
           <div
-            className={`player-bar ${
-              isSelected && !hasBullet ? "selected" : ""
-            } ${selectable ? "selectable" : ""}`}
+            className={`player-bar ${isSelected && !hasBullet ? "selected" : ""
+              } ${selectable ? "selectable" : ""}`}
             onClick={() => {
               if (selectable) {
                 this.changeSelectedPlayer(PID);

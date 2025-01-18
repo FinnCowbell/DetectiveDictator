@@ -5,9 +5,23 @@ import liberalMembership from "../../media/liberal-membership.png";
 import fascistMembership from "../../media/fascist-membership.png";
 import jaPic from "../../media/hands/ja.png";
 import neinPic from "../../media/hands/nein.png";
+import { Socket } from "socket.io-client";
+import { GameEventInfo, PlayerMap, UIInfo } from "../../model/GameState";
+import { PID, Player } from "../../model/Player";
+import { PlayerAction } from "../../model/GameEvent";
+import { CardValue } from "../../model/Card";
+import { Membership } from "../../model/Membership";
 
-export default class ActionBar extends React.Component {
-  constructor(props) {
+interface ActionBarProps {
+  socket: Socket;
+  currentState: GameEventInfo;
+  players: PlayerMap;
+  you: Player;
+  uiInfo: UIInfo;
+};
+
+export default class ActionBar extends React.Component<ActionBarProps> {
+  constructor(props: ActionBarProps) {
     super(props);
     this.pickPresident = this.pickPresident.bind(this);
     this.pickChancellor = this.pickChancellor.bind(this);
@@ -27,14 +41,14 @@ export default class ActionBar extends React.Component {
       });
     }
   }
-  castVote(isJa = null) {
-    if (isJa == null) {
+  castVote(isJa?: boolean) {
+    if (isJa == undefined) {
       return;
     }
     this.props.socket.emit("cast vote", { vote: isJa });
   }
-  discardPolicy(policyIndex) {
-    if (policyIndex === null) {
+  discardPolicy(policyIndex: number) {
+    if (policyIndex < 0) {
       return;
     }
     let actions = {
@@ -46,29 +60,29 @@ export default class ActionBar extends React.Component {
         this.props.socket.emit("chancellor discarding", {
           policyIndex: policyIndex,
         }),
-    };
-    actions[this.props.currentState.action]();
+    } as Partial<Record<PlayerAction, () => void>>;
+    this.props.currentState.action && actions[this.props.currentState.action]?.();
   }
 
-  sendVetoRequest(policyIndex) {
-    if (policyIndex === null) {
+  sendVetoRequest(policyIndex?: number) {
+    if (policyIndex == null) {
       return;
     }
-    this.props.socket.emit("veto request", { policyIndex: policyIndex });
+    this.props.socket.emit("veto request", { policyIndex });
   }
 
-  sendVetoConfirmation(isJa = null) {
-    if (isJa == null) {
+  sendVetoConfirmation(isJa?: boolean) {
+    if (isJa == undefined) {
       return;
     }
-    this.props.socket.emit("confirm veto request", { isJa: isJa });
+    this.props.socket.emit("confirm veto request", { isJa });
   }
 
   //Executive Actions
   doneViewing() {
     this.props.socket.emit("president done");
   }
-  viewPlayer(PID) {
+  viewPlayer(PID?: number) {
     if (PID != null) {
       this.props.socket.emit("president investigate request", {
         investigated: PID,
@@ -83,17 +97,18 @@ export default class ActionBar extends React.Component {
       });
     }
   }
-  killPlayer(PID) {
+  killPlayer(PID?: PID) {
     let selectedPlayer = this.props.uiInfo.selectedPlayer;
     if (selectedPlayer != null) {
       this.props.socket.emit("president kill request", { victim: PID });
     }
   }
+
   render() {
     let content;
     let currentState = this.props.currentState;
-    let selectedPlayer =
-      this.props.players[this.props.uiInfo.selectedPlayer] || null;
+    let selectedPlayer = this.props.uiInfo.selectedPlayer ?
+      this.props.players[this.props.uiInfo.selectedPlayer] : undefined;
     let selectedUsername = selectedPlayer && selectedPlayer.username;
     let you = this.props.you;
     let uiInfo = this.props.uiInfo;
@@ -103,9 +118,8 @@ export default class ActionBar extends React.Component {
         content = (
           <PickPlayer
             verb="Pick"
-            selected={this.props.uiInfo.selectedPlayer}
             confirm={this.pickChancellor}
-            username={selectedUsername}
+            pickedName={selectedUsername}
           />
         );
         break;
@@ -116,16 +130,15 @@ export default class ActionBar extends React.Component {
         break;
       case "your president discard":
         content = (
-          <Discard confirm={this.discardPolicy} policies={you.hand.policies} />
+          <Discard confirm={this.discardPolicy} policies={you.hand?.policies} />
         );
         break;
       case "your chancellor discard":
         content = (
           <Discard
             confirm={this.discardPolicy}
-            veto={this.sendVetoRequest}
-            fasBoard={currentState.fasBoard}
-            policies={you.hand.policies}
+            veto={currentState.fasBoard >= 5 ? this.sendVetoRequest : undefined}
+            policies={you.hand?.policies}
           />
         );
         break;
@@ -135,7 +148,7 @@ export default class ActionBar extends React.Component {
       case "your president peek":
         content = (
           <PresidentPeek
-            policies={you.hand.policies}
+            policies={you.hand?.policies}
             confirm={this.doneViewing}
           />
         );
@@ -144,23 +157,18 @@ export default class ActionBar extends React.Component {
         content = (
           <PickPlayer
             verb="Nominate"
-            confirm={this.doneViewing}
-            selected={this.props.uiInfo.selectedPlayer}
             confirm={this.pickPresident}
-            username={selectedUsername}
+            pickedName={selectedUsername}
           />
         );
         break;
       case "your president kill":
         content = (
-          // <div className="bullet"/>
           <PickPlayer
             verb="Murder"
-            confirm={this.doneViewing}
-            selected={this.props.uiInfo.selectedPlayer}
+            pickedName={selectedUsername}
             confirm={() => this.killPlayer(this.props.uiInfo.selectedPlayer)}
-            username={selectedUsername}
-          />
+            />
         );
         break;
       case "your president investigate":
@@ -168,8 +176,7 @@ export default class ActionBar extends React.Component {
         content = (
           <PickPlayer
             verb="Investigate"
-            username={selectedUsername}
-            selected={this.props.uiInfo.selectedPlayer}
+            pickedName={selectedUsername}
             confirm={() => this.viewPlayer(this.props.uiInfo.selectedPlayer)}
           />
         );
@@ -177,7 +184,7 @@ export default class ActionBar extends React.Component {
       case "your president investigated":
         content = (
           <ViewMembership
-            membership={you.hand.investigatedMembership}
+            membership={you.hand?.investigatedMembership}
             confirm={this.doneViewing}
           />
         );
@@ -198,23 +205,30 @@ export default class ActionBar extends React.Component {
   }
 }
 
-function PickPlayer(props) {
+function PickPlayer(props: {
+  verb: string;
+  selected?: number;
+  confirm: () => void;
+  pickedName?: string;
+}) {
   let verb = props.verb;
-  let username = props.username;
   return (
     <div className="action pick-player">
       <button
-        className={"pick-button " + !props.selected ? "disabled" : ""}
+        className={"pick-button " + !props.pickedName ? "disabled" : ""}
         onClick={props.confirm}
       >
-        <h1>{props.username ? `${verb} ${username}` : "Select a player"}</h1>
+        <h1>{props.pickedName ? `${verb} ${props.pickedName}` : "Select a player"}</h1>
       </button>
     </div>
   );
 }
 
-function JaNein(props) {
-  const [isJa, setIsJa] = useState(null);
+function JaNein(props: {
+  confirm: (isJa: boolean) => void;
+  voteReceived?: boolean;
+}) {
+  const [isJa, setIsJa] = useState(false);
   if (props.voteReceived) {
     return (
       <div className="action ja-nein">
@@ -260,26 +274,31 @@ function JaNein(props) {
   );
 }
 
-function Discard(props) {
-  const [selectedCard, setSelectedCard] = useState(null);
-  function selectCard(i) {
-    if (i < 0 || i > props.policies.length) {
+function Discard(props: {
+  confirm: (i: number) => void;
+  veto?: (i: number) => void;
+  policies?: number[];
+  fasBoard?: number;
+}) {
+  const [selectedCard, setSelectedCard] = useState(-1);
+  function selectCard(i: number) {
+    if (!props.policies || i < 0 || i > props.policies.length) {
       return;
     }
     setSelectedCard(i);
   }
-  let cards = props.policies.map((value, index) => (
+  let cards = props.policies?.map((value, index) => (
     <PolicyCard
       key={index}
       isSelected={index == selectedCard}
-      isFascist={value}
+      cardValue={value}
       onClick={() => selectCard(index)}
     />
   ));
   return (
     <div className="action discard">
       <div className="policy-cards">{cards}</div>
-      {props.fasBoard == 5 && props.veto ? (
+      {props.veto ? (
         <div className="stacked-buttons">
           <button
             className="discard-button"
@@ -289,7 +308,7 @@ function Discard(props) {
           </button>
           <button
             className="veto-button"
-            onClick={() => props.veto(selectedCard)}
+            onClick={() => props.veto!(selectedCard)}
           >
             <h3>Veto</h3>
           </button>
@@ -306,23 +325,29 @@ function Discard(props) {
   );
 }
 
-function PolicyCard(props) {
-  //Takes Select, Index, and isFascist.
+const PolicyCard: React.FC<{
+  isSelected: boolean;
+  cardValue: CardValue;
+  onClick?: () => void;
+}> = (props) => {
+  const isFascist: boolean = props.cardValue === CardValue.Fascist;
   return (
     <div
       onClick={props.onClick}
-      className={`policy ${props.isFascist ? "fascist" : "liberal"} ${props.isSelected ? "selected" : ""
+      className={`policy ${isFascist ? "fascist" : "liberal"} ${props.isSelected ? "selected" : ""
         }`}
     >
-      <img src={props.isFascist ? fascistPolicy : liberalPolicy}></img>
+      <img src={isFascist ? fascistPolicy : liberalPolicy}></img>
     </div>
   );
 }
 
-function PresidentPeek(props) {
-  let policyValues = props.policies;
-  let cards = policyValues.map((value, index) => (
-    <PolicyCard key={index} isSelected={false} isFascist={value} />
+const PresidentPeek: React.FC<{
+  policies?: CardValue[];
+  confirm: () => void;
+}> = (props) => {
+  let cards = props.policies?.map((value, index) => (
+    <PolicyCard key={index} isSelected={false} cardValue={value} />
   ));
   return (
     <div className="action view-three">
@@ -333,31 +358,25 @@ function PresidentPeek(props) {
     </div>
   );
 }
-function ViewMembership(props) {
+const ViewMembership: React.FC<{
+  membership?: Membership;
+  confirm: () => void;
+}> = (props) => {
   return (
     <div className="action membership">
       <div className="membership-card">
-        <img
-          src={props.membership == 0 ? liberalMembership : fascistMembership}
-        />
+        {
+          props.membership == 0 ? (
+            <img src={liberalMembership} />
+          ) : props.membership == 1 ? (
+            <img src={fascistMembership} />
+          ) : (
+            <h1>?</h1>
+          )
+        }
       </div>
       <button className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>
-      </button>
-    </div>
-  );
-}
-
-function Murder(props) {
-  return (
-    <div className="action murder">
-      <button
-        className={!this.props.selected ? "disabled" : ""}
-        onClick={this.props.confirm}
-      >
-        {this.props.selected
-          ? "Murder " + this.props.selected
-          : "Choose A Target"}
       </button>
     </div>
   );

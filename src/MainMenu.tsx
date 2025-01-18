@@ -4,10 +4,10 @@ import SingleInputForm from "./parts/SingleInputForm";
 import Loading from "./parts/Loading";
 
 import FireBackground from "./rendering/FireBackground.js";
-import { useGameContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./GameContext.js";
+import { useLobbyContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext.js";
 
 const MainMenu = () => {
-  const { socket, connected, setLobbyID } = useGameContext();
+  const { socket, connected, setLobbyID } = useLobbyContext();
 
   const recentLobbyID = React.useMemo(() => {
     const storedLobbies = Object.keys(getLocalStorage(LOBBY_MAPPING_KEY) || {})
@@ -49,7 +49,7 @@ const MainMenu = () => {
 }
 
 const LobbyInput = ({ className }) => {
-  const { setLobbyID } = useGameContext();
+  const { setLobbyID } = useLobbyContext();
   const joinLobby = (lobbyName) => {
     if (lobbyName != "") {
       setLobbyID(lobbyName);

@@ -1,5 +1,4 @@
 import React from "react";
-import io from "socket.io-client";
 
 import { LibBoard, FasBoard } from "./parts/gameParts/Boards";
 import ActionBar from "./parts/gameParts/ActionBar";
@@ -9,9 +8,24 @@ import PlayerCard from "./parts/gameParts/PlayerCard";
 import EndWindow from "./parts/gameParts/EndWindow";
 
 import defaultGameState from "./parts/gameParts/context/defaultState";
+import { GameEventInfo, GameState, Round, UIInfo } from "./model/GameState";
+import { Socket } from "socket.io-client";
+import { PID } from "./model/Player";
+import { PlayerAction, GameEvent, GameEvents, PlayerActions } from "./model/GameEvent";
 
-export default class Hitler extends React.Component {
-  constructor(props) {
+interface UIInfoEvent {
+  name: string;
+  PID: PID;
+}
+
+interface Props {
+  socket: Socket;
+  lobbyID: string;
+  yourPID: PID;
+}
+
+export default class Hitler extends React.Component<Props, GameState> {
+  constructor(props: Props) {
     super(props);
     this.state = defaultGameState;
     this.clearUIInfo = this.clearUIInfo.bind(this);
@@ -21,24 +35,25 @@ export default class Hitler extends React.Component {
     this.activateGameSignals = this.activateGameSignals.bind(this);
   }
   clearUIInfo() {
-    let uiInfo = {
-      selectedPlayer: null,
+    let uiInfo: UIInfo = {
+      selectedPlayer: undefined,
       voteReceived: false,
       voted: {},
       disconnected: {},
     };
+
     this.setState({
       uiInfo: uiInfo,
     });
   }
-  sendUIInfo(arg) {
+  sendUIInfo(arg: UIInfoEvent) {
     //arg contains arg.name and other required arg info.
     //All shared UI events pass are sent to other players.
     //The info is broadcast to all other players, but updates instantly on the player's side.
     this.props.socket.emit("send ui info", arg);
     this.recieveUIInfo(arg);
   }
-  recieveUIInfo(arg) {
+  recieveUIInfo(arg: UIInfoEvent) {
     const uiInfo = this.state.uiInfo;
     switch (arg.name) {
       case "player voted":
@@ -68,7 +83,8 @@ export default class Hitler extends React.Component {
   componentDidMount() {
     this.activateGameSignals();
   }
-  componentDidUpdate(prevProps) {
+
+  componentDidUpdate(prevProps: Props) {
     if (this.props.socket != prevProps.socket) {
       this.activateGameSignals();
     }
@@ -76,12 +92,12 @@ export default class Hitler extends React.Component {
 
   activateGameSignals() {
     let socket = this.props.socket;
-    socket.on("full game info", (arg) => {
+    socket.on("full game info", (arg: { round: Round }) => {
       this.setState({
         rounds: [arg.round],
       });
     });
-    socket.on("new round", (arg) => {
+    socket.on("new round", (arg: { round: Round }) => {
       const rounds = this.state.rounds;
       let newRound = arg.round;
       this.clearUIInfo();
@@ -89,7 +105,7 @@ export default class Hitler extends React.Component {
         rounds: rounds.concat([newRound]),
       });
     });
-    socket.on("new state", (arg) => {
+    socket.on("new state", (arg: { state: GameEventInfo }) => {
       const rounds = this.state.rounds;
       const states = rounds[rounds.length - 1].states;
       rounds[rounds.length - 1].states = states.concat([arg.state]);
@@ -98,7 +114,9 @@ export default class Hitler extends React.Component {
         rounds: rounds,
       });
     });
-    socket.on("end game", (arg) => {
+    socket.on("end game", (arg: {
+      endState: Round;
+    }) => {
       let endState = arg.endState;
       const rounds = this.state.rounds;
       this.setState({
@@ -106,19 +124,19 @@ export default class Hitler extends React.Component {
       });
     });
     //Sent by the player with the bullet.
-    socket.on("ui event", (arg) => this.recieveUIInfo(arg));
+    socket.on("ui event", (arg: UIInfoEvent) => this.recieveUIInfo(arg));
   }
 
-  getPlayerAction(round) {
+  getPlayerAction(round: Round): PlayerAction {
     //Based on event info, constructs the 'action' for the specific player.
     //The action guides what shows up in the action bar, as well as the game status message.
     let currentState = round.states[round.states.length - 1];
-    let action = "";
+    let action: PlayerAction;
     let youArePresident = this.props.yourPID == currentState.presidentPID;
     let youAreChancellor = this.props.yourPID == currentState.chancellorPID;
     switch (currentState.currentEvent) {
-      case "chancellor pick":
-        action = youArePresident ? "your chancellor pick" : "chancellor pick";
+      case GameEvents.CHANCELLOR_PICK:
+        action = youArePresident ? PlayerActions.CHANCELLOR_PICK : PlayerActions.YOUR_CHANCELLOR_PICK
         break;
       case "president discard":
         action = youArePresident
@@ -152,8 +170,8 @@ export default class Hitler extends React.Component {
           ? "your president investigated"
           : "president investigated";
         break;
-      case "end game":
-        action = round.reason;
+      case GameEvents.END_GAME:
+        action = round.reason as GameEvent; // Todo
         break;
       default:
         action = currentState.currentEvent;
@@ -174,7 +192,6 @@ export default class Hitler extends React.Component {
     return (
       <div className="game-window">
         <StatusBar
-          lobbyID={this.props.lobbyID}
           currentState={currentState}
           players={players}
         />
@@ -182,7 +199,7 @@ export default class Hitler extends React.Component {
         <PlayerSidebar
           order={order}
           currentState={currentState}
-          reason={round.reason || null}
+          reason={round.reason}
           you={you}
           players={players}
           uiInfo={this.state.uiInfo}
@@ -208,7 +225,7 @@ export default class Hitler extends React.Component {
             uiInfo={this.state.uiInfo}
           />
         )}
-        {currentState.currentEvent == "end game" && (
+        {currentState.currentEvent == "end game" && round.reason && (
           <EndWindow reason={round.reason} />
         )}
       </div>

@@ -1,20 +1,23 @@
+import { PlayerAction } from "../../model/GameEvent";
+import { GameEventInfo, PlayerMap } from "../../model/GameState";
+
 //Status Phrases for Secret Hitler.
-export default function getStatusPhrase(currentState, players) {
+export default function getStatusPhrase(currentState: GameEventInfo, players: PlayerMap) {
   let presidentName, chancellorName, investigatedName, victimName;
-  if (players[currentState.presidentPID]) {
+  if (currentState.presidentPID && players[currentState.presidentPID]) {
     presidentName = players[currentState.presidentPID].username;
   }
-  if (players[currentState.chancellorPID]) {
+  if (currentState.chancellorPID && players[currentState.chancellorPID]) {
     chancellorName = players[currentState.chancellorPID].username;
   }
 
   investigatedName = currentState.investigatedName;
 
-  if (players[currentState.victim]) {
+  if (currentState.victim && players[currentState.victim]) {
     victimName = players[currentState.victim].username;
   }
-  const phrases = {
-    "pre game": `Welcome to the lobby!`,
+  const phrases: Record<PlayerAction, string> = {
+    "pre game": `The game will begin shortly`,
     "new round": "A new round has begun",
     "chancellor pick": `${presidentName} is picking a chancellor`,
     "your chancellor pick": "Pick Your Chancellor.",
@@ -41,13 +44,11 @@ export default function getStatusPhrase(currentState, players) {
     "president kill": `President ${presidentName} is picking someone to assassinate.`,
     "your president kill": "Shoot Someone.",
     "player killed": `${victimName} has been murdered.`,
+    "end game": "The Game Has Ended.",
     "liberal win hitler": "The Game Has Ended.",
     "liberal win cards": "The Game Has Ended.",
     "fascist win hitler": "The Game Has Ended.",
     "fascist win cards": "The Game Has Ended.",
   };
-  return (
-    phrases[currentState.action] ||
-    "Ayy Secret Hitler and Stuff. You're definitely supposed to see this."
-  );
+  return (currentState.action && phrases[currentState.action]);
 }
