@@ -1,31 +1,28 @@
 import React from "react";
-import Header from "./parts/Header.js";
+import Header from "./parts/Header";
 import SingleInputForm from "./parts/SingleInputForm";
 import Loading from "./parts/Loading";
 
-import FireBackground from "./rendering/FireBackground.js";
-import { useLobbyContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext.js";
+import FireBackground from "./rendering/FireBackground";
+import { useLobbyContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext";
 
 const MainMenu = () => {
   const { socket, connected, setLobbyID } = useLobbyContext();
 
-  const recentLobbyID = React.useMemo(() => {
+  const recentLobbyID: string | undefined = React.useMemo(() => {
     const storedLobbies = Object.keys(getLocalStorage(LOBBY_MAPPING_KEY) || {})
     if (storedLobbies.length > 0) {
       return storedLobbies[0];
     }
   }, []);
 
-  const rejoinButton = React.useCallback(() => {
-    setLobbyID(recentLobbyID)
-  }, [setLobbyID])
+  const createLobby = () => socket?.emit("create lobby");
 
-  const createLobby = () => socket.emit("create lobby");
   return (
     <div className="menu-window ">
       <FireBackground toggle={connected} />
       <div className="content">
-        <Header lobbyID={null} />
+        <Header />
         {connected &&
           <>
             <div className="new-lobby-div">
@@ -33,7 +30,7 @@ const MainMenu = () => {
                 <h4>Create Game</h4>
               </button>
               {recentLobbyID &&
-                <button className="rejoin-lobby fade-in" onClick={rejoinButton}>
+                <button className="rejoin-lobby fade-in" onClick={() => setLobbyID(recentLobbyID)}>
                   <h4>Rejoin {recentLobbyID} </h4>
                 </button>
               }
@@ -48,9 +45,9 @@ const MainMenu = () => {
   );
 }
 
-const LobbyInput = ({ className }) => {
+const LobbyInput: React.FC<{className: string}> = ({ className }) => {
   const { setLobbyID } = useLobbyContext();
-  const joinLobby = (lobbyName) => {
+  const joinLobby = (lobbyName: string) => {
     if (lobbyName != "") {
       setLobbyID(lobbyName);
     }

@@ -1,36 +1,38 @@
 import React from "react";
-import Header from "./parts/Header.js";
-import ChatRoom from "./parts/ChatRoom.js";
+import Header from "./parts/Header";
+import ChatRoom from "./parts/ChatRoom";
 import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
-import Hitler from './Hitler.js';
-import { useLobbyContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext.js";
-import FireBackground from "./rendering/FireBackground.js";
+import Hitler from './Hitler';
+import { useLobbyContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext";
+import FireBackground from "./rendering/FireBackground";
 import presHat from "./media/sidebar/president-hat.png";
+import { PID } from "./model/Player";
+import { PlayerMap } from "./model/GameState";
 
-const storeReconnectPID = (lobbyID, PID) => {
+const storeReconnectPID = (lobbyID: string, PID: PID) => {
   setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
 }
 
-export const getReconnectPID = (lobbyID) => {
+export function getReconnectPID(lobbyID: string): PID | undefined {
   const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
   return lobbyMapping[lobbyID]
 }
 
 export const Lobby = () => {
   const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useLobbyContext();
-  const [gameInfo, setGameInfo] = React.useState(null)
-  const [PID, setPID] = React.useState(null)
+  const [gameInfo, setGameInfo] = React.useState<{ gameStatus: string }>()
+  const [PID, setPID] = React.useState<PID | undefined>()
   const [lobbyExists, setLobbyExists] = React.useState(false)
   const [inLobby, setInLobby] = React.useState(false)
-  const [players, setPlayers] = React.useState({})
+  const [players, setPlayers] = React.useState<PlayerMap>({})
   const [nSpectators, setNSpectators] = React.useState(0)
   const [isSpectating, setIsSpectating] = React.useState(false)
   const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
 
   const defaultState = () => {
-    setGameInfo(null);
-    setPID(null);
+    setGameInfo(undefined);
+    setPID(undefined);
     setLobbyExists(false);
     setInLobby(false);
     setPlayers({});
@@ -38,34 +40,34 @@ export const Lobby = () => {
     setIsSpectating(false);
   }
 
-  const leaveLobby = (reason = null) => {
-    if (reason) {
-      setAlertMessage(reason);
+  const leaveLobby = (message?: string) => {
+    if (message) {
+      setAlertMessage(message);
     }
     setLobbyID('');
   }
 
-  const connect = (username) =>
-    socket.emit("join lobby", {
+  const connect = (username: string) =>
+    socket?.emit("join lobby", {
       username: username,
     });
 
-  const reconnect = (PID) => {
-    socket.emit("rejoin lobby", {
+  const reconnect = (PID: PID) => {
+    socket?.emit("rejoin lobby", {
       PID: PID,
     });
   }
 
-  const kickPlayer = (PID) => {
-    socket.emit("request kick", {
+  const kickPlayer = (PID: PID) => {
+    socket?.emit("request kick", {
       kickee: PID,
     });
   }
 
-  const startGame = () => socket.emit("game init");
+  const startGame = () => socket?.emit("game init");
 
   const spectateGame = () => {
-    socket.emit("spectator init");
+    socket?.emit("spectator init");
     setIsSpectating(true);
   }
 
@@ -79,14 +81,20 @@ export const Lobby = () => {
 
       socket.on("change lobby", (arg) => {
         leaveLobby();
-        setLobbyID(arg.ID, true);
+        setLobbyID(arg.ID);
       });
 
       socket.on("kick", () =>
         leaveLobby("You've been kicked From the lobby!")
       );
 
-      socket.on("lobby update info", (arg) => {
+      socket.on("lobby update info", (arg: {
+        lobbyInfo: {
+          players: PlayerMap,
+          gameInfo: { gameStatus: string },
+          nSpectators: number
+        }
+      }) => {
         if (!lobbyExists) {
           document
             .querySelector(".lobby-window .wave-background")
@@ -106,7 +114,7 @@ export const Lobby = () => {
   }, [lobbyID, socket]);
 
   React.useEffect(() => {
-    if (gameInfo?.gameStatus === 'ingame') {
+    if (gameInfo?.gameStatus === 'ingame' && lobbyID) {
       const reconnectPID = getReconnectPID(lobbyID)
       if (!PID && reconnectPID) {
         reconnect(reconnectPID);
@@ -118,13 +126,13 @@ export const Lobby = () => {
     }
   }, [gameInfo?.gameStatus, PID])
 
-  // Sloppy reset 
+  // Reset on lobby change
   React.useEffect(() => {
     defaultState();
   }, [lobbyID])
 
   let navButtons;
-  const you = players && players[PID];
+  const you = players && PID && players[PID];
   const isLeader = you && you.isLeader;
   if (!inLobby) {
     if (lobbyExists) {
@@ -137,7 +145,7 @@ export const Lobby = () => {
             <button className="spectate" onClick={spectateGame}>
               {`Spectate ${gameInfo?.gameStatus == "ingame" ? "without" : "with"} Roles`}
             </button> :
-            <button className="menu-exit" onClick={() => socket.emit("join new lobby")}>
+            <button className="menu-exit" onClick={() => socket?.emit("join new lobby")}>
               Join Next Game
             </button>
           }
@@ -158,21 +166,22 @@ export const Lobby = () => {
     );
   }
   return (
+    //@ts-ignore
     <div className="window" style={{ ['--president-hat']: `url(${presHat})` }}>
-      {(!inLobby || gameInfo.gameStatus == "pregame") && (
+      {(!inLobby || gameInfo?.gameStatus == "pregame") && (
         <div className={`lobby-window`}>
           {!connected && <FireBackground />}
-          <WaveBackground toggle={lobbyID} />
+          <WaveBackground toggle={!!lobbyID} />
           <div className="content">
             <div className="background" />
-            <Header lobbyID={lobbyID} />
+            <Header />
             <LobbyStatus
               connect={connect}
               gameInfo={gameInfo}
               lobbyExists={lobbyExists}
               inLobby={inLobby}
             />
-            {connected && <LobbyPlayerList
+            {connected && PID && <LobbyPlayerList
               PID={PID}
               players={players}
               reconnect={reconnect}
@@ -185,10 +194,9 @@ export const Lobby = () => {
           </div>
         </div>
       )}
-      {socket && (
+      {socket && lobbyID && PID && (
         <Hitler
           lobbyID={lobbyID}
-          spectating={isSpectating}
           yourPID={PID}
           socket={socket}
         />
@@ -196,7 +204,6 @@ export const Lobby = () => {
       {inLobby && (
         <ChatRoom
           socket={socket}
-          you={you}
           spectating={isSpectating}
         />
       )}
@@ -204,37 +211,35 @@ export const Lobby = () => {
   );
 }
 
-class NewPlayerForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: "",
-    };
-    this.MAX_LENGTH = 30; //30 is generous CHRIS >:(
-    this.join = this.join.bind(this);
-  }
-  join(username) {
-    if (username != "") {
-      this.props.connect(username);
+const NewPlayerForm: React.FC<{
+  connect: (username: string) => void
+}> = ({ connect }) => {
+  const join = (name: string) => {
+    if (name != "") {
+      connect(name);
     }
   }
-  render() {
-    return (
-      <div className="new-player-form">
-        <SingleInputForm
-          className="username-input"
-          button="Join"
-          MAX_LENGTH={this.MAX_LENGTH}
-          submit={this.join}
-        >
-          <label>Enter your Name:</label>
-        </SingleInputForm>
-      </div>
-    );
-  }
+  return (
+    <div className="new-player-form">
+      <SingleInputForm
+        className="username-input"
+        button="Join"
+        MAX_LENGTH={30}//30 is generous CHRIS >:(
+        submit={join}
+      >
+        <label>Enter your Name:</label>
+      </SingleInputForm>
+    </div>
+  );
+
 }
 
-function LobbyStatus(props) {
+const LobbyStatus: React.FC<{
+  connect: (username: string) => void,
+  lobbyExists: boolean,
+  gameInfo?: { gameStatus: string },
+  inLobby: boolean
+}> = (props) => {
   let status;
   if (!props.lobbyExists) {
     status = <h2>Loading Lobby <div className="dots" /></h2>;
@@ -250,60 +255,55 @@ function LobbyStatus(props) {
   return <div className="lobby-status">{status}</div>;
 }
 
-function LobbyPlayerList(props) {
+const LobbyPlayerList: React.FC<{
+  PID: PID,
+  players: PlayerMap,
+  reconnect: (PID: PID) => void,
+  kickPlayer: (PID: PID) => void
+}> = (props) => {
   let yourPID = props.PID;
   let you = props.players ? props.players[yourPID] : null;
   let iterablePlayers = Object.values(props.players);
-  let connectedPlayers,
-    disconnectedPlayers = [null, null];
-  let nDisconnectedPlayers = 0;
-  if (props.players) {
-    //Counting the disconnected Players using a nasty one-liner
-    iterablePlayers.forEach((player) => {
-      if (player.connected == false) {
-        nDisconnectedPlayers++;
-      }
-    });
-    //Creating the list of connected Players
-    connectedPlayers = iterablePlayers.map(
-      (player) =>
-        player.connected && (
-          <li
-            key={player.username}
-            className={
-              (player.isLeader ? "leader " : "") +
-              (player.PID == yourPID ? "you " : "")
-            }
-          >
-            {player.username}
-            {you && you.isLeader && player.PID != yourPID && (
-              <button
-                className="kick-button"
-                onClick={() => props.kickPlayer(player.PID)}
-              >
-                🥾
-              </button>
-            )}
-          </li>
-        )
-    );
+  let nDisconnectedPlayers = iterablePlayers.filter(({ connected }) => !connected).length;
+  //Creating the list of connected Players
+  const connectedPlayers: JSX.Element[] = iterablePlayers.map(
+    (player) =>
+      player.connected && (
+        <li
+          key={player.username}
+          className={
+            (player.isLeader ? "leader " : "") +
+            (player.PID == yourPID ? "you " : "")
+          }
+        >
+          {player.username}
+          {you && you.isLeader && player.PID != yourPID && (
+            <button
+              className="kick-button"
+              onClick={() => props.kickPlayer(player.PID)}
+            >
+              🥾
+            </button>
+          )}
+        </li>
+      )
+  );
 
-    //Creating the list of Disconnected Players
-    disconnectedPlayers = iterablePlayers.map(
-      (player) =>
-        !player.connected && (
-          <li
-            key={player.username}
-            className="disconnected"
-            onClick={() => {
-              props.reconnect(player.PID);
-            }}
-          >
-            {player.username}
-          </li>
-        )
-    );
-  }
+  //Creating the list of Disconnected Players
+  const disconnectedPlayers = iterablePlayers.map(
+    (player) =>
+      !player.connected && (
+        <li
+          key={player.username}
+          className="disconnected"
+          onClick={() => {
+            props.reconnect(player.PID);
+          }}
+        >
+          {player.username}
+        </li>
+      )
+  );
   return (
     <div className="player-list">
       {true ? (

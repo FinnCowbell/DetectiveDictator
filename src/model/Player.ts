@@ -5,6 +5,7 @@ export type PID = number;
 
 export interface Player {
   PID: PID;
+  isLeader: boolean;
   connected: boolean;
   username: string;
   membership: Membership;

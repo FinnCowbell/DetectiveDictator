@@ -9,13 +9,13 @@ const defaultState: GameState = {
       },
       players: {
         // Testing Players, for now.
-        101: { PID: 101, username: "Karl", membership: 1, alive: true, connected: true },
-        102: { PID: 102, username: "Joseph", membership: 0, alive: true, connected: true },
-        103: { PID: 103, username: "Adolf", membership: 2, alive: false, connected: true },
-        104: { PID: 104, username: "Franklin", membership: 0, alive: true, connected: true },
-        105: { PID: 105, username: "Paul", membership: 0, alive: true, connected: true },
-        106: { PID: 106, username: "Winston", membership: 0, alive: true, connected: true },
-        107: { PID: 107, username: "Chiang", membership: 0, alive: true, connected: true },
+        101: { PID: 101, username: "Karl", membership: 1, alive: true, connected: true, isLeader: true },
+        102: { PID: 102, username: "Joseph", membership: 0, alive: true, connected: true, isLeader: false },
+        103: { PID: 103, username: "Adolf", membership: 2, alive: false, connected: true, isLeader: false },
+        104: { PID: 104, username: "Franklin", membership: 0, alive: true, connected: true, isLeader: false },
+        105: { PID: 105, username: "Paul", membership: 0, alive: true, connected: true, isLeader: false },
+        106: { PID: 106, username: "Winston", membership: 0, alive: true, connected: true, isLeader: false },
+        107: { PID: 107, username: "Chiang", membership: 0, alive: true, connected: true, isLeader: false },
       },
       states: [
         {
@@ -33,6 +33,7 @@ const defaultState: GameState = {
           investigate: undefined,
           victim: undefined,
           you: {
+            isLeader: true,
             PID: 101, username: "Karl", membership: 1, alive: true, connected: true, hand: {}
           },
         }

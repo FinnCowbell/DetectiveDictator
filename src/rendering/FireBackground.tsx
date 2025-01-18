@@ -1,8 +1,8 @@
 import React, { RefObject } from "react";
 
 interface FireBackgroundProps {
-  className: string;
-  toggle: boolean;
+  className?: string;
+  toggle?: boolean;
 }
 
 interface FireBackgroundState {
