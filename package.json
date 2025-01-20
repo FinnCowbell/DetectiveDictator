@@ -16,7 +16,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-hot-loader": "^4.12.21",
-    "socket.io": "^2.4.0"
+    "socket.io": "latest"
   },
   "scripts": {
     "start": "node server/index.js",
@@ -42,9 +42,9 @@
     "favicons-webpack-plugin": "^5.0.2",
     "file-loader": "^6.0.0",
     "html-webpack-plugin": "^5.5.0",
-    "node-sass": "^7.0.0",
     "nodemon": "^2.0.3",
     "prettier": "^2.0.5",
+    "sass": "^1.83.4",
     "sass-loader": "^12.4.0",
     "style-loader": "^1.2.1",
     "ts-loader": "^9.5.2",
