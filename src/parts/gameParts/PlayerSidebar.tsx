@@ -7,22 +7,13 @@ import sent from "../../media/hands/fist.png";
 import presHat from "../../media/sidebar/president-hat.png";
 import chanHat from "../../media/sidebar/chancellor-hat.png";
 import bulletHole from "../../media/sidebar/bullet-holes.png";
-import { Membership } from "../../model/Membership";
-import { GameEndEvent, GameEvent, PlayerAction } from "../../model/GameEvent";
+import { PlayerAction } from "../../model/GameEvent";
 import { PID, Player } from "../../model/Player";
-import { GameEventInfo, PlayerMap, UIInfo } from "../../model/GameState";
 
+import { ICurrentGameContext } from "../../GameDetails";
+import { css } from "../../helpers/css";
 
-interface Props {
-  order: number[];
-  players: PlayerMap
-  currentState: GameEventInfo;
-  you: Player;
-  uiInfo: UIInfo;
-  reason?: GameEndEvent;
-  sendUIInfo: (info: { name: string; PID: PID }) => void;
-}
-
+type Props = ICurrentGameContext & { isMobile?: boolean };
 interface State {
   closed: boolean;
 }
@@ -44,12 +35,12 @@ export default class PlayerSidebar extends React.Component<Props, State> {
   }
   getMembership(player: Player) {
     const membershipClasses = {
-      "-1": "",
+      "-1": "unknown",
       0: "liberal",
       1: "fascist",
       2: "hitler",
     };
-    return membershipClasses[player.membership] || "";
+    return membershipClasses[player.membership] || "unknown";
   }
   changeSelectedPlayer(PID: number) {
     this.props.sendUIInfo({
@@ -58,10 +49,9 @@ export default class PlayerSidebar extends React.Component<Props, State> {
     });
   }
   getStatus(player: Player) {
-    let currentState = this.props.currentState;
-    if (player.alive && player.PID == currentState.presidentPID) {
+    if (player.alive && player.PID == this.props.presidentPID) {
       return "president";
-    } else if (player.alive && player.PID == currentState.chancellorPID) {
+    } else if (player.alive && player.PID == this.props.chancellorPID) {
       return "chancellor";
     } else if (!player.alive) {
       return "dead";
@@ -70,9 +60,13 @@ export default class PlayerSidebar extends React.Component<Props, State> {
     }
   }
   isConnected(player: Player): boolean {
-    return player.connected !== undefined ? player.connected : this.props.uiInfo.disconnected?.[player.PID];
+    if (this.props.uiInfo.disconnected[player.PID] !== undefined) {
+      return !this.props.uiInfo.disconnected[player.PID];
+    } else {
+      return player.connected;
+    }
   }
-  getVoteClass(player: Player) {
+  getVoteClass(player: Player): 'sent' | 'ja' | 'nein' | 'hidden' | undefined {
     //Gets the vote class
     //Ja, Nein, or Sent.
     //Sent = event is 'chancellor vote' and vote is true.
@@ -85,25 +79,25 @@ export default class PlayerSidebar extends React.Component<Props, State> {
       "end game",
     ]);
     let reason = this.props.reason;
-    let currentState = this.props.currentState;
-    let votes = currentState.votes || {};
+    let votes = this.props.votes || {};
     let vote = votes[player.PID];
     let voted = this.props.uiInfo.voted || {};
-    if (currentState.currentEvent == "chancellor vote" && voted[player.PID]) {
+    if (this.props.currentEvent == "chancellor vote" && voted[player.PID]) {
       return "sent";
-    }
-    if (showVoteEvents.has(currentState.currentEvent)) {
+    } else if (showVoteEvents.has(this.props.currentEvent)) {
       // Special case: If hitler is elected in then we'll want to know what the votes were.
       if (
-        currentState.currentEvent == "end game" &&
-        reason != "fascist win hitler"
+        vote === undefined ||
+        (this.props.currentEvent == "end game" &&
+          reason != "fascist win hitler")
       ) {
         return "hidden";
       } else {
-        return vote == true ? "ja" : vote == false ? "nein" : null;
+        return vote ? "ja" : "nein";
       }
+    } else {
+      return "hidden";
     }
-    return "hidden";
   }
   isPlayerSelectable(player: Player) {
     /*To be selectable:
@@ -116,18 +110,17 @@ export default class PlayerSidebar extends React.Component<Props, State> {
       //Dev mode assumed.
       return true;
     }
-    let currentState = this.props.currentState;
-    let currentEvent = currentState.currentEvent;
-    let presID = currentState.presidentPID;
-    let chanID = currentState.chancellorPID;
-    let prevPres = currentState.previousPresidentPID;
-    let prevChan = currentState.previousChancellorPID;
-    let you = this.props.you;
+    const currentEvent = this.props.currentEvent;
+    const presID = this.props.presidentPID;
+    const chanID = this.props.chancellorPID;
+    const prevPres = this.props.previousPresidentPID;
+    const prevChan = this.props.previousChancellorPID;
+    const you = this.props.you;
     if (!you || you.PID != presID) {
       return false;
     }
-    let cantSelect = new Set();
-    let selectEvents = new Set([
+    const cantSelect = new Set();
+    const selectEvents = new Set([
       "chancellor pick",
       "president pick",
       "president kill",
@@ -151,74 +144,78 @@ export default class PlayerSidebar extends React.Component<Props, State> {
     return false;
   }
   render() {
-    let order = this.props.order;
-    let players = this.props.players;
-    let currentState = this.props.currentState;
-    let you = this.props.you;
-    let pres = currentState.presidentPID;
-    let chan = currentState.chancellorPID;
-    let uiInfo = this.props.uiInfo;
+    const order = this.props.gameInfo.order;
+    const players = this.props.players;
+    const you = this.props.you;
+    const uiInfo = this.props.uiInfo;
 
-    let playerList = order.map((PID, index) => {
-      let player = players[PID];
+    const playerList = order.map((PID: PID, index: number) => {
+      const player = players[PID];
       const isYou = PID == you.PID ? "you " : "";
       const status = this.getStatus(player);
       const voteStatus = this.getVoteClass(player); //Null/undefined if doesnt exist.
-      const disconnected: boolean = this.isConnected(player);
+      const disconnected: boolean = !this.isConnected(player);
       const membershipClass = this.getMembership(player);
+      const borderClass = membershipClass + '-border';
       const selectable = this.isPlayerSelectable(player);
       const isSelected = PID == uiInfo.selectedPlayer;
       const isKillingPlayer =
-        this.props.currentState.currentEvent == "president kill";
+        this.props.currentEvent == "president kill";
       const hasBullet = isSelected && isKillingPlayer;
       return (
-        <div key={index} className={`player ${membershipClass} ${isYou} ${disconnected ? "disconnected" : ""}`}>
-          {isKillingPlayer && (
-            <div className="bullet-holder">
-              {hasBullet && <img className="bullet" src={bullet} />}
-            </div>
-          )}
-
-          <div
-            className={`player-bar ${isSelected && !hasBullet ? "selected" : ""
-              } ${selectable ? "selectable" : ""}`}
+        <div key={index} className={`player ${borderClass}  ${disconnected ? "disconnected" : ""}`}>
+          <div className={`player-inner ${membershipClass} ${isYou}`}
             onClick={() => {
               if (selectable) {
                 this.changeSelectedPlayer(PID);
               }
             }}>
-            {
-              status == "president" && (
-                <img className="pres hat" src={presHat} />
-              ) /*He get hat*/
-            }
-            {
-              status == "chancellor" && (
-                <img className="chan hat" src={chanHat} />
-              ) /*He also get hat*/
-            }
-            {status == "dead" && (
-              <img className="bullet-holes" src={bulletHole} />
+            {isKillingPlayer && (
+              <div className="bullet-holder">
+                {hasBullet && <img className="bullet" src={bullet} />}
+              </div>
             )}
-            <div className={"vote " + voteStatus}>
-              {voteStatus == "ja" ? <img src={ja} /> : null}
-              {voteStatus == "nein" ? <img src={nein} /> : null}
-              {voteStatus == "sent" ? <img src={sent} /> : null}
+
+            <div
+              className={`player-bar ${isSelected && !hasBullet ? "selected" : ""
+                } ${selectable ? "selectable" : ""}`}
+            >
+              {
+                status == "president" && (
+                  <img className="pres hat" src={presHat} />
+                ) /*He get hat*/
+              }
+              {
+                status == "chancellor" && (
+                  <img className="chan hat" src={chanHat} />
+                ) /*He also get hat*/
+              }
+              {status == "dead" && (
+                <img className="bullet-holes" src={bulletHole} />
+              )}
+              <div className={"vote " + voteStatus}>
+                {voteStatus == "ja" && <img src={ja} />}
+                {voteStatus == "nein" && <img src={nein} />}
+                {voteStatus == "sent" && <img src={sent} />}
+              </div>
+              <h2 className="username">{players[PID].username}</h2>
             </div>
-            <h2 className="username">{players[PID].username}</h2>
           </div>
-        </div>
+        </div >
       );
     });
     return (
-      <div className={`player-sidebar ${this.state.closed ? "closed" : ""}`}>
+      <div className={css('player-sidebar', { 'closed': this.state.closed, 'is-mobile': !!this.props.isMobile })
+      }>
         <div className="players">{playerList}</div>
-        <button
-          onClick={this.toggleState}
-          className={`toggle-button ${this.state.closed ? "toggled" : ""}`}>
-          <h1>{this.state.closed ? "<" : ">"}</h1>
-        </button>
-      </div>
+        {
+          !this.props.isMobile && <button
+            onClick={this.toggleState}
+            className={`toggle-button ${this.state.closed ? "toggled" : ""}`}>
+            <h1>{this.state.closed ? "<" : ">"}</h1>
+          </button>
+        }
+      </div >
     );
   }
 }

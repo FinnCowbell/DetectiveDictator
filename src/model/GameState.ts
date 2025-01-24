@@ -9,7 +9,6 @@ export interface GameInfo {
 export interface GameEventInfo {
   you: Player
   currentEvent: GameEvent;
-  action?: PlayerAction;
   libBoard: number;
   fasBoard: number;
   marker: number;

@@ -1,21 +1,15 @@
+import { useGameDetails } from "../../GameDetails";
 import { PlayerAction } from "../../model/GameEvent";
 import { GameEventInfo, PlayerMap } from "../../model/GameState";
 
 //Status Phrases for Secret Hitler.
-export default function getStatusPhrase(currentState: GameEventInfo, players: PlayerMap) {
-  let presidentName, chancellorName, investigatedName, victimName;
-  if (currentState.presidentPID && players[currentState.presidentPID]) {
-    presidentName = players[currentState.presidentPID].username;
-  }
-  if (currentState.chancellorPID && players[currentState.chancellorPID]) {
-    chancellorName = players[currentState.chancellorPID].username;
-  }
+export default function useStatusPhrase(): string {
+  const { players, presidentPID, chancellorPID, victim, investigatedName, playerAction } = useGameDetails();
 
-  investigatedName = currentState.investigatedName;
+  const presidentName: string | false = presidentPID !== undefined && players[presidentPID]?.username;
+  const chancellorName: string | false = chancellorPID !== undefined && players[chancellorPID]?.username;
+  const victimName: string | false = victim !== undefined && players[victim]?.username;
 
-  if (currentState.victim && players[currentState.victim]) {
-    victimName = players[currentState.victim].username;
-  }
   const phrases: Record<PlayerAction, string> = {
     "pre game": `The game will begin shortly`,
     "new round": "A new round has begun",
@@ -49,6 +43,6 @@ export default function getStatusPhrase(currentState: GameEventInfo, players: Pl
     "liberal win cards": "The Game Has Ended.",
     "fascist win hitler": "The Game Has Ended.",
     "fascist win cards": "The Game Has Ended.",
-  };
-  return (currentState.action && phrases[currentState.action]);
+  } as const;
+  return (playerAction && phrases[playerAction]);
 }

@@ -1,120 +1,89 @@
-import React, { RefObject } from "react";
+import React from "react";
 import SingleInputForm from "./SingleInputForm";
+import { useSocketContext } from "../SocketContext";
+import { useGameDetails } from "../GameDetails";
 
 interface ChatMessage {
   username: string;
   message: string;
 }
 
-interface ChatRoomProps {
-  socket: any;
-  spectating: boolean;
-}
+const MAX_LENGTH = 120;
 
-interface ChatRoomState {
-  position: string;
-  messages: ChatMessage[];
-  newChat: boolean;
-  notifyClass: string;
-}
+const ChatRoom: React.FC<{ isCard?: boolean }> = ({ isCard }) => {
+  const { socket } = useSocketContext();
+  const { spectating } = useGameDetails();
+  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [hasNewChat, setHasNewChat] = React.useState(false);
+  const sentRef = React.useRef<HTMLDivElement>(null);
 
-export default class ChatRoom extends React.Component<ChatRoomProps, ChatRoomState> {
-  MAX_LENGTH: number;
-  sent: RefObject<HTMLDivElement>;
-
-  constructor(props: ChatRoomProps) {
-    super(props);
-    this.sent = React.createRef();
-    this.state = {
-      position: "closed",
-      messages: [],
-      newChat: false,
-      notifyClass: "",
-    };
-    this.MAX_LENGTH = 120;
-    this.postChat = this.postChat.bind(this);
-    this.sendChat = this.sendChat.bind(this);
-    this.setMessages = this.setMessages.bind(this);
-    this.toggleWindow = this.toggleWindow.bind(this);
-  }
-
-  componentDidMount() {
-    let socket = this.props.socket;
-    socket.on("chat incoming", (arg: ChatMessage) => this.postChat(arg));
-    socket.on("full chat history", (chats: ChatMessage[]) => this.setMessages(chats));
-    socket.emit("full chat request");
-  }
-
-  setMessages(newMessages: ChatMessage[]) {
-    this.setState({
-      messages: newMessages,
-    });
-  }
-
-  toggleWindow() {
-    const oldPos = this.state.position;
-    this.setState({
-      position: oldPos == "open" ? "closed" : "open",
-      notifyClass: "",
-    });
-  }
-
-  postChat(msg: ChatMessage) {
-    const messages = this.state.messages;
-    let sentWindow = this.sent.current;
-    let notify = this.state.notifyClass;
-    if (this.state.position == "closed") {
-      notify = "notify";
-    }
-    this.setState({
-      messages: messages.concat([msg]),
-      notifyClass: notify,
-    });
+  const postChat = React.useCallback((msg: ChatMessage) => {
+    setMessages((prev) => prev.concat([msg]));
+    const sentWindow = sentRef.current;
+    setHasNewChat(true);
     sentWindow?.scrollTo({ behavior: "smooth", top: sentWindow?.scrollHeight });
-  }
+  }, [isOpen]);
 
-  sendChat(message: string) {
+  const sendChat = React.useCallback((message: string) => {
     if (message == "") {
       return false;
     }
-    this.props.socket.emit("chat send", { message: message });
+    socket.emit("chat send", { message: message });
     return true;
-  }
+  }, [socket]);
 
-  render() {
-    let chats = this.state.messages.map((msg, i) => (
-      <div key={i} className="message">
-        <p>
-          <strong>{msg.username}: </strong>
-          {msg.message}
-        </p>
-        <hr />
+  React.useEffect(() => {
+    const events = {
+      "chat incoming": (arg: ChatMessage) => postChat(arg),
+      "full chat history": (chats: ChatMessage[]) => setMessages(chats),
+    };
+    Object.entries(events).forEach(([event, handler]) => {
+      socket.on(event, handler);
+    });
+    return () => {
+      Object.entries(events).forEach(([event, handler]) => {
+        socket.off(event, handler);
+      });
+    }
+  }, [socket, postChat]);
+
+  React.useEffect(() => {
+    socket?.emit("full chat request");
+  }, [socket]);
+
+  const chats = React.useMemo(() => messages.map((msg, i) => (
+    <div key={i} className="message">
+      <p>
+        <strong>{msg.username}: </strong>
+        {msg.message}
+      </p>
+      <hr />
+    </div>
+  )), [messages]);
+
+  return (
+    <div className={`chat-window ${isOpen ? "open" : "closed"} ${isCard ? "card" : ""}`}>
+      <h3>Chat</h3>
+      <div ref={sentRef} className="sent-messages">
+        {chats}
       </div>
-    ));
-    let position = this.state.position;
-    let spectating = this.props.spectating;
-    let notifyClass = this.state.notifyClass;
-    return (
-      <div className={`chat-window ${this.state.position}`}>
-        <h3>Chat</h3>
-        <div ref={this.sent} className="sent-messages">
-          {chats}
-        </div>
-        {!this.props.spectating && (
-          <SingleInputForm
-            className="chat-input"
-            button="Send"
-            MAX_LENGTH={this.MAX_LENGTH}
-            submit={this.sendChat}
-          />
-        )}
-        <button
-          className={`toggle-button ${notifyClass}`}
-          onClick={this.toggleWindow}
-        >
-          {this.state.position == "open" ? "Close" : "Open"} Chat
-        </button>
-      </div>
-    );
-  }
-}
+      {!spectating && (
+        <SingleInputForm
+          className="chat-input"
+          button="Send"
+          MAX_LENGTH={MAX_LENGTH}
+          submit={sendChat}
+        />
+      )}
+      <button
+        className={`toggle-button ${hasNewChat ? 'notify' : ''}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        {isOpen ? "Close" : "Open"} Chat
+      </button>
+    </div>
+  );
+};
+
+export default ChatRoom;

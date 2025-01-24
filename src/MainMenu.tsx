@@ -4,10 +4,10 @@ import SingleInputForm from "./parts/SingleInputForm";
 import Loading from "./parts/Loading";
 
 import FireBackground from "./rendering/FireBackground";
-import { useLobbyContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext";
+import { useSocketContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./SocketContext";
 
 const MainMenu = () => {
-  const { socket, connected, setLobbyID } = useLobbyContext();
+  const { socket, connected, setLobbyID } = useSocketContext();
 
   const recentLobbyID: string | undefined = React.useMemo(() => {
     const storedLobbies = Object.keys(getLocalStorage(LOBBY_MAPPING_KEY) || {})
@@ -45,8 +45,8 @@ const MainMenu = () => {
   );
 }
 
-const LobbyInput: React.FC<{className: string}> = ({ className }) => {
-  const { setLobbyID } = useLobbyContext();
+const LobbyInput: React.FC<{ className: string }> = ({ className }) => {
+  const { setLobbyID } = useSocketContext();
   const joinLobby = (lobbyName: string) => {
     if (lobbyName != "") {
       setLobbyID(lobbyName);

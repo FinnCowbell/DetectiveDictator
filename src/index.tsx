@@ -2,10 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./styles.scss";
-import { GameContext } from "./LobbyContext";
+import { SocketContext } from "./SocketContext";
 
 ReactDOM.render((
-  <GameContext>
+  <SocketContext>
     <App />
-  </GameContext>), document.getElementById("root")
+  </SocketContext>), document.getElementById("root")
 );

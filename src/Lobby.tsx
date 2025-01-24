@@ -4,11 +4,13 @@ import ChatRoom from "./parts/ChatRoom";
 import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
 import Hitler from './Hitler';
-import { useLobbyContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY } from "./LobbyContext";
+import { useSocketContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY, clearLobbyMapping } from "./SocketContext";
 import FireBackground from "./rendering/FireBackground";
 import presHat from "./media/sidebar/president-hat.png";
 import { PID } from "./model/Player";
 import { PlayerMap } from "./model/GameState";
+import { GameContextProvider } from "./GameDetails";
+import { useIsMobile } from "./hooks/useIsMobile";
 
 const storeReconnectPID = (lobbyID: string, PID: PID) => {
   setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
@@ -20,21 +22,22 @@ export function getReconnectPID(lobbyID: string): PID | undefined {
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useLobbyContext();
-  const [gameInfo, setGameInfo] = React.useState<{ gameStatus: string }>()
+  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useSocketContext();
+  const [gameInfo, setGameInfo] = React.useState<{ gameStatus: string } | undefined>()
   const [PID, setPID] = React.useState<PID | undefined>()
   const [lobbyExists, setLobbyExists] = React.useState(false)
-  const [inLobby, setInLobby] = React.useState(false)
   const [players, setPlayers] = React.useState<PlayerMap>({})
   const [nSpectators, setNSpectators] = React.useState(0)
   const [isSpectating, setIsSpectating] = React.useState(false)
   const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
+  const isMobile = useIsMobile();
+
+  const inLobby = !!PID;
 
   const defaultState = () => {
     setGameInfo(undefined);
     setPID(undefined);
     setLobbyExists(false);
-    setInLobby(false);
     setPlayers({});
     setNSpectators(0);
     setIsSpectating(false);
@@ -73,14 +76,15 @@ export const Lobby = () => {
 
   React.useEffect(() => {
     if (lobbyID && socket) {
+      defaultState();
       socket.on("lobby joined", ({ PID, isSpectating }) => {
-        setInLobby(true);
+        // Store PID in local storage
+        storeReconnectPID(lobbyID, PID);
         setPID(PID);
         setIsSpectating(isSpectating);
       });
 
       socket.on("change lobby", (arg) => {
-        leaveLobby();
         setLobbyID(arg.ID);
       });
 
@@ -114,22 +118,22 @@ export const Lobby = () => {
   }, [lobbyID, socket]);
 
   React.useEffect(() => {
-    if (gameInfo?.gameStatus === 'ingame' && lobbyID) {
-      const reconnectPID = getReconnectPID(lobbyID)
-      if (!PID && reconnectPID) {
-        reconnect(reconnectPID);
-      } else if (PID && (!isSpectating || joinedBeforeGame)) {
-        storeReconnectPID(lobbyID, PID);
-      }
-    } else if (gameInfo?.gameStatus === 'pregame' && PID) {
+    if (PID && !joinedBeforeGame && gameInfo?.gameStatus === 'pregame') {
       setjoinedBeforeGame(true);
     }
-  }, [gameInfo?.gameStatus, PID])
 
-  // Reset on lobby change
-  React.useEffect(() => {
-    defaultState();
-  }, [lobbyID])
+    if (PID && lobbyID && !isSpectating && joinedBeforeGame && gameInfo?.gameStatus === 'ingame') {
+      storeReconnectPID(lobbyID, PID);
+    }
+
+    if (!PID && lobbyID && gameInfo?.gameStatus === 'ingame') {
+      const reconnectPID = getReconnectPID(lobbyID)
+      if (reconnectPID) {
+        clearLobbyMapping(lobbyID);
+        reconnect(reconnectPID);
+      }
+    }
+  }, [gameInfo?.gameStatus, lobbyID, isSpectating, joinedBeforeGame, PID])
 
   let navButtons;
   const you = players && PID && players[PID];
@@ -170,7 +174,7 @@ export const Lobby = () => {
     <div className="window" style={{ ['--president-hat']: `url(${presHat})` }}>
       {(!inLobby || gameInfo?.gameStatus == "pregame") && (
         <div className={`lobby-window`}>
-          {!connected && <FireBackground />}
+          {/* {!connected && <FireBackground />} */}
           <WaveBackground toggle={!!lobbyID} />
           <div className="content">
             <div className="background" />
@@ -194,19 +198,14 @@ export const Lobby = () => {
           </div>
         </div>
       )}
-      {socket && lobbyID && (
+      <GameContextProvider yourPid={PID} spectating={isSpectating}>
         <Hitler
-          lobbyID={lobbyID}
           yourPID={PID}
-          socket={socket}
         />
-      )}
-      {inLobby && (
-        <ChatRoom
-          socket={socket}
-          spectating={isSpectating}
-        />
-      )}
+        {inLobby && !isMobile && (
+          <ChatRoom />
+        )}
+      </GameContextProvider>
     </div>
   );
 }
@@ -260,7 +259,7 @@ const LobbyPlayerList: React.FC<{
   players: PlayerMap,
   reconnect: (PID: PID) => void,
   kickPlayer: (PID: PID) => void
-}> = ({yourPID, ...props}) => {
+}> = ({ yourPID, ...props }) => {
   let you = yourPID && props.players ? props.players[yourPID] : null;
   let iterablePlayers = Object.values(props.players);
   let nDisconnectedPlayers = iterablePlayers.filter(({ connected }) => !connected).length;

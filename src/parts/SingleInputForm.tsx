@@ -26,7 +26,7 @@ export default class SingleInputForm extends React.Component<SingleInputFormProp
   }
 
   public handleSubmit = (e?: React.KeyboardEvent) => {
-    if (!e || (e && (e as React.KeyboardEvent).keyCode == 13)) {
+    if (!e || (e && e.keyCode == 13)) {
       this.props.submit(this.state.text);
       this.setState({ text: "" });
     }
@@ -61,7 +61,7 @@ export default class SingleInputForm extends React.Component<SingleInputFormProp
           type="text"
           // Prevents edge autocomplete.
           autoComplete="new-password"
-          list="autocompleteOff" 
+          list="autocompleteOff"
         />
         {this.props.button && (
           <button onClick={() => this.handleSubmit()}>

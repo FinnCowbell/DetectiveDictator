@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLobbyContext } from "../LobbyContext";
+import { useSocketContext } from "../SocketContext";
 
 export const Alert = () => {
-  const { alertMessage, setAlertMessage } = useLobbyContext();
+  const { alertMessage, setAlertMessage } = useSocketContext();
   const [isOpen, setIsOpen] = useState(false);
   const interval = useRef<NodeJS.Timeout |undefined>();
 

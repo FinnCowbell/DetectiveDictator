@@ -1,4 +1,5 @@
 export const Membership = {
+  Unknown: -1,
   Liberal: 0,
   Fascist: 1,
   Hitler: 2,

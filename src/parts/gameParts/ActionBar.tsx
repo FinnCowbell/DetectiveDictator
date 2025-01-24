@@ -11,198 +11,186 @@ import { PID, Player } from "../../model/Player";
 import { PlayerAction } from "../../model/GameEvent";
 import { CardValue } from "../../model/Card";
 import { Membership } from "../../model/Membership";
+import { useGameDetails } from "../../GameDetails";
+import { useSocketContext } from "../../SocketContext";
 
-interface ActionBarProps {
-  socket: Socket;
-  currentState: GameEventInfo;
-  players: PlayerMap;
-  you: Player;
-  uiInfo: UIInfo;
-};
 
-export default class ActionBar extends React.Component<ActionBarProps> {
-  constructor(props: ActionBarProps) {
-    super(props);
-    this.pickPresident = this.pickPresident.bind(this);
-    this.pickChancellor = this.pickChancellor.bind(this);
-    this.sendVetoRequest = this.sendVetoRequest.bind(this);
-    this.sendVetoConfirmation = this.sendVetoConfirmation.bind(this);
-    this.discardPolicy = this.discardPolicy.bind(this);
-    this.castVote = this.castVote.bind(this);
-    this.viewPlayer = this.viewPlayer.bind(this);
-    this.doneViewing = this.doneViewing.bind(this);
-  }
-  pickChancellor() {
-    let socket = this.props.socket;
-    let selectedPlayer = this.props.uiInfo.selectedPlayer;
-    if (selectedPlayer != null) {
+export const ActionBar: React.FC<{}> = () => {
+  const { socket } = useSocketContext();
+  const {
+    playerAction,
+    uiInfo,
+    players,
+    fasBoard,
+    you
+  } = useGameDetails();
+
+  const pickChancellor = React.useCallback(() => {
+    if (uiInfo.selectedPlayer != null) {
       socket.emit("chancellor picked", {
-        pickedChancellor: selectedPlayer,
+        pickedChancellor: uiInfo.selectedPlayer,
       });
     }
-  }
-  castVote(isJa?: boolean) {
+  }, [socket, uiInfo])
+
+  const castVote = React.useCallback((isJa?: boolean) => {
     if (isJa == undefined) {
       return;
     }
-    this.props.socket.emit("cast vote", { vote: isJa });
-  }
-  discardPolicy(policyIndex: number) {
+    socket.emit("cast vote", { vote: isJa });
+  }, [socket])
+
+  const discardPolicy = React.useCallback((policyIndex: number) => {
     if (policyIndex < 0) {
       return;
     }
-    let actions = {
+    let actions: Partial<Record<PlayerAction, () => void>> = {
       "your president discard": () =>
-        this.props.socket.emit("president discarding", {
+        socket.emit("president discarding", {
           policyIndex: policyIndex,
         }),
       "your chancellor discard": () =>
-        this.props.socket.emit("chancellor discarding", {
+        socket.emit("chancellor discarding", {
           policyIndex: policyIndex,
         }),
-    } as Partial<Record<PlayerAction, () => void>>;
-    this.props.currentState.action && actions[this.props.currentState.action]?.();
-  }
+    };
+    playerAction && actions[playerAction]?.();
+  }, [
+    playerAction,
+    socket
+  ])
 
-  sendVetoRequest(policyIndex?: number) {
+  const sendVetoRequest = React.useCallback((policyIndex?: number) => {
     if (policyIndex == null) {
       return;
     }
-    this.props.socket.emit("veto request", { policyIndex });
-  }
+    socket.emit("veto request", { policyIndex });
+  }, [socket])
 
-  sendVetoConfirmation(isJa?: boolean) {
+  const sendVetoConfirmation = React.useCallback((isJa?: boolean) => {
     if (isJa == undefined) {
       return;
     }
-    this.props.socket.emit("confirm veto request", { isJa });
-  }
+    socket.emit("confirm veto request", { isJa });
+  }, [socket])
 
   //Executive Actions
-  doneViewing() {
-    this.props.socket.emit("president done");
-  }
-  viewPlayer(PID?: number) {
+  const doneViewing = React.useCallback(() => {
+    socket.emit("president done");
+  }, [socket])
+
+  const viewPlayer = React.useCallback((PID?: number) => {
     if (PID != null) {
-      this.props.socket.emit("president investigate request", {
+      socket.emit("president investigate request", {
         investigated: PID,
       });
     }
-  }
-  pickPresident() {
-    let selectedPlayer = this.props.uiInfo.selectedPlayer;
-    if (selectedPlayer != null) {
-      this.props.socket.emit("president picked", {
-        pickedPresident: selectedPlayer,
+  }, [socket]);
+
+  const pickPresident = React.useCallback(() => {
+    if (uiInfo.selectedPlayer != null) {
+      socket.emit("president picked", {
+        pickedPresident: uiInfo.selectedPlayer,
       });
     }
-  }
-  killPlayer(PID?: PID) {
-    let selectedPlayer = this.props.uiInfo.selectedPlayer;
-    if (selectedPlayer != null) {
-      this.props.socket.emit("president kill request", { victim: PID });
-    }
-  }
+  }, [socket, uiInfo])
 
-  render() {
-    let content;
-    let currentState = this.props.currentState;
-    let selectedPlayer = this.props.uiInfo.selectedPlayer ?
-      this.props.players[this.props.uiInfo.selectedPlayer] : undefined;
-    let selectedUsername = selectedPlayer && selectedPlayer.username;
-    let you = this.props.you;
-    let uiInfo = this.props.uiInfo;
-    let voted = uiInfo.voted || false;
-    switch (currentState.action) {
+  const killPlayer = React.useCallback((pid?: PID) => {
+    if (uiInfo.selectedPlayer != null) {
+      socket.emit("president kill request", { victim: pid });
+    }
+  }, [socket, uiInfo])
+
+  const content: JSX.Element = React.useMemo(() => {
+    const selectedPlayer = players[uiInfo.selectedPlayer || -1];
+    switch (playerAction) {
       case "your chancellor pick":
-        content = (
+        return (
           <PickPlayer
             verb="Pick"
-            confirm={this.pickChancellor}
-            pickedName={selectedUsername}
+            confirm={pickChancellor}
+            pickedName={selectedPlayer?.username}
           />
         );
         break;
       case "chancellor vote":
-        content = (
-          <JaNein confirm={this.castVote} voteReceived={voted[you.PID]} />
+        return (
+          <JaNein confirm={castVote} voteReceived={uiInfo.voted[you.PID]} />
         );
         break;
       case "your president discard":
-        content = (
-          <Discard confirm={this.discardPolicy} policies={you.hand?.policies} />
+        return (
+          <Discard confirm={discardPolicy} policies={you.hand?.policies} />
         );
         break;
       case "your chancellor discard":
-        content = (
+        return (
           <Discard
-            confirm={this.discardPolicy}
-            veto={currentState.fasBoard >= 5 ? this.sendVetoRequest : undefined}
+            confirm={discardPolicy}
+            veto={fasBoard >= 5 ? sendVetoRequest : undefined}
             policies={you.hand?.policies}
           />
         );
-        break;
       case "your veto requested":
-        content = <JaNein confirm={this.sendVetoConfirmation} />;
-        break;
+        return <JaNein confirm={sendVetoConfirmation} />;
       case "your president peek":
-        content = (
+        return (
           <PresidentPeek
             policies={you.hand?.policies}
-            confirm={this.doneViewing}
+            confirm={doneViewing}
           />
         );
-        break;
       case "your president pick":
-        content = (
+        return (
           <PickPlayer
             verb="Nominate"
-            confirm={this.pickPresident}
-            pickedName={selectedUsername}
+            confirm={pickPresident}
+            pickedName={selectedPlayer?.username}
           />
         );
-        break;
       case "your president kill":
-        content = (
+        return (
           <PickPlayer
             verb="Murder"
-            pickedName={selectedUsername}
-            confirm={() => this.killPlayer(this.props.uiInfo.selectedPlayer)}
-            />
+            pickedName={selectedPlayer?.username}
+            confirm={() => killPlayer(uiInfo.selectedPlayer)}
+          />
         );
-        break;
       case "your president investigate":
-        //Reusing pick chancellor window.
-        content = (
+        return (
           <PickPlayer
             verb="Investigate"
-            pickedName={selectedUsername}
-            confirm={() => this.viewPlayer(this.props.uiInfo.selectedPlayer)}
+            pickedName={selectedPlayer?.username}
+            confirm={() => viewPlayer(uiInfo.selectedPlayer)}
           />
         );
-        break;
       case "your president investigated":
-        content = (
+        return (
           <ViewMembership
             membership={you.hand?.investigatedMembership}
-            confirm={this.doneViewing}
+            confirm={doneViewing}
           />
         );
-        break;
       case "liberal win hitler":
       case "liberal win cards":
       case "fascist win hitler":
       case "fascist win cards":
       default:
-        content = <div className="action empty"></div>;
-        break;
+        return <div className="action empty"></div>;
     }
-    return (
-      <div className="action-bar-container">
-        <div className="action-bar">{content}</div>
-      </div>
-    );
-  }
+  }, [
+    socket,
+    playerAction,
+    uiInfo,
+    you,
+    players,
+  ]);
+
+  return (
+    <div className="action-bar-container">
+      <div className="action-bar">{content}</div>
+    </div>
+  );
 }
 
 function PickPlayer(props: {
@@ -228,7 +216,7 @@ function JaNein(props: {
   confirm: (isJa: boolean) => void;
   voteReceived?: boolean;
 }) {
-  const [isJa, setIsJa] = useState(false);
+  const [isJa, setIsJa] = useState<boolean | undefined>(undefined);
   if (props.voteReceived) {
     return (
       <div className="action ja-nein">
@@ -265,7 +253,7 @@ function JaNein(props: {
         </button>
       </div>
       <button
-        onClick={() => props.confirm(isJa)}
+        onClick={() => isJa !== undefined && props.confirm(isJa)}
         className={`vote-button ${props.voteReceived ? "hidden" : ""}`}
       >
         <h2>Cast Vote</h2>

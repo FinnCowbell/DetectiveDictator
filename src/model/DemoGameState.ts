@@ -1,6 +1,6 @@
-import { GameState } from "../../../model/GameState";
+import { GameState } from "./GameState";
 
-const defaultState: GameState = {
+const DEMO_STATE: GameState = {
   rounds: [
     {
       gameInfo: {
@@ -49,4 +49,4 @@ const defaultState: GameState = {
   },
 };
 
-export default defaultState;
+export default DEMO_STATE;

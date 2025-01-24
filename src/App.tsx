@@ -3,11 +3,11 @@ import React from "react";
 
 import Lobby from "./Lobby";
 import MainMenu from "./MainMenu";
-import { useLobbyContext } from "./LobbyContext";
+import { useSocketContext } from "./SocketContext";
 
 /*The main purpose of the App react component is socket room  management.*/
 const App = () => {
-  const { lobbyID } = useLobbyContext();
+  const { lobbyID } = useSocketContext();
   return (
     <>
       {lobbyID === '' && <MainMenu />}

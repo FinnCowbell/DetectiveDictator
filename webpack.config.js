@@ -3,6 +3,7 @@ const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin');
 process.traceDeprecation = true;
 
 const faviconConfig={
@@ -83,6 +84,7 @@ module.exports = (env) => {
         cache: true,
         favicons: faviconConfig,
       }),
+      new ESLintPlugin(),
       new CompressionPlugin(), 
       new webpack.EnvironmentPlugin({
       'DD_SERVER': 'localhost',

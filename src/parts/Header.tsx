@@ -1,9 +1,9 @@
 import React from "react";
 import getTitle from "./getTitle";
-import { useLobbyContext } from "../LobbyContext";
+import { useSocketContext } from "../SocketContext";
 
 const Header: React.FC = () => {
-  const { lobbyID } = useLobbyContext();
+  const { lobbyID } = useSocketContext();
   const shareSupported = navigator.share !== undefined;
   const url = React.useRef<HTMLInputElement>(null);
   const tooltip = React.useRef<HTMLDivElement>(null);
