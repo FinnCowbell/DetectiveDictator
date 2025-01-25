@@ -1,28 +1,28 @@
 @import "./borders";
 @import "./scrollbar";
 @import "./fonts";
+
 .chat-window {
+  z-index: 100;
   transition: left 0.1s;
   $width: 220px;
   position: fixed;
   bottom: 0px;
   left: 0px;
   width: $width;
-  border-bottom: 0.1px transparent solid;
-  border: 2px rgb(112, 112, 112) solid;
   @include status-border();
+
   h3 {
     font-family: $header-stack;
     text-align: center;
     font-size: 2em;
     margin: 0px 15px;
-    border-bottom: 3px solid black;
+    border-bottom: 15px solid black;
     border-image: url($border-path + "chat-line.png") 33 round;
     border-image-slice: 152 153 152 147;
-    border-image-width: 0px 0px 20px 0px;
-    border-image-outset: 15px;
-    margin-bottom: 15px;
+    border-image-width: 0px 0px 15px 0px;
   }
+
   .sent-messages {
     @include scroll-bar(#ccca);
     overflow-y: scroll;
@@ -32,16 +32,20 @@
     font-family: $main-stack;
     padding: 0px 5px;
   }
+
   .chat-input {
     margin-bottom: 10px;
     width: auto;
   }
+
   &.closed {
     left: -$width;
   }
+
   &.open {
     left: 0;
   }
+
   .toggle-button {
     position: absolute;
     right: -60px;
@@ -51,11 +55,34 @@
     border-left: unset;
     border-image-width: 10px;
     border-image-outset: 5px;
+
     &.notify {
       animation-name: blink;
       animation-iteration-count: infinite;
       animation-duration: 0.5s;
       animation-direction: alternate;
+    }
+  }
+
+  &.card {
+    width: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: unset;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    border-width: 3px;
+    z-index: 0;
+    .sent-messages {
+      flex: 1;
+      height: auto;
+    }
+
+    .toggle-button {
+      display: none;
     }
   }
 }
@@ -64,9 +91,11 @@
   .chat-window {
     left: 50px !important;
     display: block;
+
     .sent-messages {
       height: 250px;
     }
+
     .toggle-button {
       display: none;
     }

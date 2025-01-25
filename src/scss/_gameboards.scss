@@ -1,4 +1,3 @@
-$board-width: 800px;
 .boards {
   display: flex;
   flex-direction: column;
@@ -13,16 +12,8 @@ $board-width: 800px;
     justify-content: space-around;
     position: relative;
   }
-  canvas {
+  .board canvas {
     // 100px as opposed to a margin.
-    max-width: calc(100vw - 100px);
-  }
-}
-
-@media screen and (min-width: 1200px) {
-  .boards {
-    canvas {
-      max-width: 50vw;
-    }
+    max-height: calc(100vw - 100px);
   }
 }
