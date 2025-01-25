@@ -11655,7 +11655,7 @@ __metadata:
   checksum: 2ff5355ac348e6b40f2630a203b981728834dca96d6d621be96249764b2d0fc01dd54edfcc37f02214d02935de2cf0eefd6ce689d970d154ef493f01ba922390
   languageName: node
   linkType: hard
-
+  
 "webpack-dev-middleware@npm:^5.3.4":
   version: 5.3.4
   resolution: "webpack-dev-middleware@npm:5.3.4"
