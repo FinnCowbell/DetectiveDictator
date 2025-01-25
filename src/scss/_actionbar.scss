@@ -15,11 +15,13 @@ $inner-border-width: 15px;
   display: flex;
   align-items: center;
   cursor: pointer;
+
   h1 {
     font-family: $title-stack;
     text-align: center;
     width: 100%;
   }
+
   h1,
   h2,
   h3 {
@@ -30,12 +32,15 @@ $inner-border-width: 15px;
     text-align: center;
     width: 100%;
   }
+
   margin: 5px;
   padding: 0px;
   transition: filter 0.2s;
+
   &:active {
     border-style: inset;
   }
+
   &:hover {
     filter: brightness(0.85);
   }
@@ -53,14 +58,17 @@ $inner-border-width: 15px;
   width: $action-bar-width;
   max-height: $action-bar-height;
 }
+
 .action {
   height: $action-bar-height - ($inner-border-width * 2);
   display: flex;
+
   &.ja-nein {
     .vote-options {
       display: flex;
       justify-content: space-around;
       flex-grow: 1;
+
       .option {
         height: 100%;
         max-width: 20vw;
@@ -69,11 +77,13 @@ $inner-border-width: 15px;
         border: unset;
       }
     }
+
     .vote-button {
       flex-grow: 0;
       @include action-bar-button(90deg);
     }
   }
+
   &.discard,
   &.view-three {
     .policy-cards {
@@ -85,62 +95,76 @@ $inner-border-width: 15px;
       height: 100%;
       align-items: center;
       justify-content: space-around;
+
       .policy {
         height: 100%;
         width: auto;
         max-width: 20vw;
+
         img {
           height: 100%;
         }
       }
     }
+
     .discard-button,
     .continue-button {
       @include action-bar-button(90deg);
     }
+
     .stacked-buttons {
       display: flex;
       flex-direction: column;
+
       .discard-button {
         padding-left: 10px;
         padding-right: 10px;
+
         h3 {
           transform: rotate(0deg);
         }
       }
+
       .veto-button {
         @include action-bar-button(0deg);
         padding-left: 10px;
         padding-right: 10px;
       }
+
       button {
         flex-grow: 1;
       }
     }
   }
+
   &.pick-player,
   &.exit {
     justify-content: center;
     align-items: center;
+
     button {
       @include action-bar-button(0deg);
       min-width: 300px;
       padding: 50px;
     }
   }
+
   &.membership {
     display: flex;
+
     .membership-card {
       flex-grow: 1;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 10px;
+
       img {
         height: 160px;
         width: auto;
       }
     }
+
     button {
       @include action-bar-button(90deg);
     }
@@ -149,12 +173,19 @@ $inner-border-width: 15px;
 
 //Styling
 .action-bar {
-  background-color: $action-bar-bg;
   border: 13px solid black;
   border-image: url(./media/border/action-border.png) 30 round;
-  border-image-outset: 6px;
   margin: 6px;
+  box-sizing: border-box;
+  .action{
+    box-sizing: border-box;
+  }
+  > div {
+    background-color: $action-bar-bg;
+    padding: 6px;
+  }
 }
+
 .action {
   border: 15px solid $action-bar-ink;
 }
@@ -163,9 +194,11 @@ $inner-border-width: 15px;
 .discard .policy {
   cursor: pointer;
   transition: 0.25s filter;
+
   &:hover {
     filter: grayscale(50%);
   }
+
   &.selected {
     filter: grayscale(100%);
   }
@@ -176,24 +209,13 @@ $inner-border-width: 15px;
     cursor: pointer;
     transition: 0.25s transform;
     transform: scale(0.75);
+
     &:hover {
       transform: scale(0.85);
     }
+
     &.selected {
       transform: scale(1);
     }
   }
 }
-
-@media screen and (max-width: $action-bar-width * 1.11) {
-  // 1.11 = 100%/90%. Seamlessly converts to filled-width.
-  .action-bar {
-    width: 90vw;
-  }
-}
-
-// @media screen and (max-width: $action-bar-width){
-//   .action-bar{
-//     transform: scale(calc(300px / 100vw));
-//   }
-// }

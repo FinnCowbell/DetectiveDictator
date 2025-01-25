@@ -353,8 +353,7 @@ class Hitler extends GameModule {
       this.sendLatestState();
     });
 
-    socket.on("cast vote", (arg) => {
-      //arg.vote
+    socket.on("cast vote", ({vote}) => {
       let player = this.players[theirPID];
       if (this.currentEvent != "chancellor vote") {
         return this.error("Vote cast at invalid time!");
@@ -364,9 +363,9 @@ class Hitler extends GameModule {
       if (this.votes[theirPID] == 0 || this.votes[theirPID] == 1) {
         return this.error("Vote already exists!");
       }
-      this.votes[theirPID] = arg.vote;
+      this.votes[theirPID] = vote;
       this.nVoted++;
-      if (arg.vote == true) {
+      if (vote == true) {
         this.yesCount++;
       }
       //For now, repack the argument and send the UI event.
