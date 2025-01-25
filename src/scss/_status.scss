@@ -1,0 +1,49 @@
+@import "borders";
+//STATAUS BAR
+
+.mobile {
+  .status-bar{
+    font-size: .8rem;
+    padding: 12px 4px;;
+    box-sizing: border-box;
+    .status-div {
+      border-width: 0px;
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
+.status-bar {
+  grid-area: header;
+  display: flex;
+  align-items: space-between;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: auto;
+  margin-bottom: 20x;
+
+  .lobby-info {
+    grid-area: id;
+  }
+
+  .status-div {
+    width: inherit;
+    height: auto;
+    max-width: 800px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 0.1px transparent solid;
+    @include status-border();
+    font-family: $header-stack;
+    font-size: 1.4em;
+    padding-top: 5px;
+
+    h2 {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+}

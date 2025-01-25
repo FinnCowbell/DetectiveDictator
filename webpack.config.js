@@ -3,6 +3,7 @@ const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin');
 process.traceDeprecation = true;
 
 const faviconConfig={
@@ -15,7 +16,7 @@ const faviconConfig={
 module.exports = (env) => {
   let config = {
     entry: {
-      main: ["react-hot-loader/patch", "./src/index.js"], 
+      main: ["react-hot-loader/patch", "./src/index.tsx"], 
     },
     output: {
       path: path.resolve(__dirname, "dist/"),
@@ -26,6 +27,11 @@ module.exports = (env) => {
         {
           test: /\.(js|jsx)$/,
           use: "babel-loader",
+          exclude: /node_modules/,
+        },
+        {
+          test: /\.tsx?$/,
+          use: "ts-loader",
           exclude: /node_modules/,
         },
         {
@@ -62,7 +68,7 @@ module.exports = (env) => {
       ],
     },
     resolve: {
-      extensions: [".js", ".jsx"],
+      extensions: [".js", ".jsx", ".ts", ".tsx"],
       alias: {
         "react-dom": "@hot-loader/react-dom",
       },
@@ -78,6 +84,7 @@ module.exports = (env) => {
         cache: true,
         favicons: faviconConfig,
       }),
+      new ESLintPlugin(),
       new CompressionPlugin(), 
       new webpack.EnvironmentPlugin({
       'DD_SERVER': 'localhost',
