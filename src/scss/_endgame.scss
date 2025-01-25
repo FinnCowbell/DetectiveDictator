@@ -9,28 +9,43 @@ $part2-duration: 0.5s;
   display: flex;
   justify-content: center;
   align-items: center;
-
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  z-index: 1000;
 
   .content {
+    border: 5px solid black;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
     justify-content: space-around;
-    z-index: 10001;
     position: fixed;
     padding: 20px;
     margin: auto;
-    width: 500px;
+    max-width: 500px;
     height: 500px;
     opacity: 0;
     animation-name: fadeIn;
     animation-fill-mode: both;
     animation-delay: $part1-duration + 0.25s;
     animation-duration: $part2-duration;
+
+    .background {
+      position: absolute;
+      box-sizing: border-box;
+      top: 0;
+      left: 0;
+      width: 500px;
+      height: 500px;
+      margin-top: 10px;
+      margin-left: 10px;
+      background-color: $backdrop-color;
+      z-index: -1;
+      padding: 20px;
+    }
 
     h1 {
       font-family: $header-stack;
@@ -40,13 +55,15 @@ $part2-duration: 0.5s;
 
     .buttons {
       display: flex;
+      background-color: transparent !important;
       font-family: $subheader-stack;
-      justify-content: space-around;
+      width: auto;
+      justify-content: center;
     }
 
     .close-window {
       position: absolute;
-      top: 0;
+      top: 25px;
       right: 0;
       font-family: $subheader-stack;
       font-size: 2rem;
@@ -55,18 +72,20 @@ $part2-duration: 0.5s;
       cursor: pointer;
     }
 
-    .buttons button {
-      font-family: inherit;
-      font-size: 2em;
-      @include fascist-border();
-      border: 10px solid transparent;
-      outline: none;
+    .button {
+      font-size: 2rem;
+    }
+
+
+    button {
+      font-size: 2rem;
       cursor: pointer;
       transition: 0.1s;
 
       &:hover {
         filter: brightness(0.9);
       }
+
     }
   }
 
@@ -81,13 +100,12 @@ $part2-duration: 0.5s;
     animation-fill-mode: forwards;
     animation-timing-function: ease-in-out;
     animation-duration: $part1-duration;
-    z-index: 10000;
+    z-index: -1;
   }
 
   &.liberal {
-    .content {
-      border: 15px solid black;
-      @include unknown-border();
+
+    .background {
       background-color: $liberal-blue;
     }
 
@@ -95,18 +113,13 @@ $part2-duration: 0.5s;
       background-color: $liberal-blue;
     }
 
-    .buttons button {
-      @include unknown-border();
-      color: white;
-    }
   }
 
   opacity: .95;
 
   &.fascist {
-    .content {
-      border: 15px solid black;
-      @include hitler-border();
+
+    .background {
       background-color: $fascist-orange;
     }
 
@@ -115,10 +128,6 @@ $part2-duration: 0.5s;
       right: 0;
     }
 
-    .buttons button {
-      @include hitler-border();
-      color: white;
-    }
   }
 
 

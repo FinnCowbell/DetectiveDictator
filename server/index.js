@@ -1,11 +1,29 @@
 var fs = require("fs");
 var path = require("path");
 var express = require("express");
+const socketio = require("socket.io");
+const cors = require("cors");
 var app = express();
-var http = require("http").Server(app);
-var io = require("socket.io")(http, {
+var http = require("http");
+const server = http.createServer(app);
+var io = socketio(server, {
+  cors: {
+    origin: "*", // todo -- not this
+    methods: ["GET", "POST"]
+  },
   pingTimeout: 60000,
 });
+
+// Middleware
+app.use(cors());
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+
 var { Lobbies, Lobby, Player } = require("./lobby");
 var Game = require("./Game/Hitler");
 var Chat = require("./Game/ChatModule");
@@ -37,11 +55,17 @@ if (front) {
   app.get("/", (req, res) => {
     res.sendFile(__dirname + "/../dist/index.html");
   });
+} else {
+  // Example route
+  app.get('/', (req, res) => {
+  res.send('Server is running');
+});
+
 }
 
 //Initializing storage for all lobbies
 var lobbies = new Lobbies(io, devMode, ...LobbyModules);
-fs.readFile(__dirname + "/util/wwii.txt", "utf8", (err, data) => {
+fs.readFile(__dirname + "/util/lobbykey.txt", "utf8", (err, data) => {
   if (err) {
     console.error(err);
     return;
@@ -62,7 +86,7 @@ io.of("/menu").on("connection", (socket) => {
 });
 
 //___Run the server at the end___//
-http.listen(port, () => {
+server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
 
