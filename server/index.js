@@ -6,16 +6,21 @@ const cors = require("cors");
 var app = express();
 var http = require("http");
 const server = http.createServer(app);
+const corsOptions = {
+  origin: "https://secrethitler.js.org",
+  methods: ["GET", "POST"],
+};
+
 var io = socketio(server, {
-  cors: {
-    origin: "*", // todo -- not this
-    methods: ["GET", "POST"]
-  },
-  pingTimeout: 60000,
+  cors: corsOptions,
+  pingTimeout: 5000,
+  secure: true,
+  transports: ["websocket", "polling"],
 });
 
-// Middleware
-app.use(cors());
+io.origins(["https://secrethitler.js.org", "http://localhost:8000"]);
+
+app.use(cors(corsOptions));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
