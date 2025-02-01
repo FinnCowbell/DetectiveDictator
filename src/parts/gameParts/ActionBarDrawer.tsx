@@ -6,7 +6,7 @@ import { PlayerAction, PlayerActions } from "../../model/GameEvent";
 
 export const ActionBarDrawer: React.FC<{}> = () => {
   const [isOpened, setIsOpened] = React.useState(false);
-  const { playerAction, uiInfo } = useGameDetails();
+  const { playerAction, uiInfo, you } = useGameDetails();
 
   React.useEffect(() => {
     const AUTO_OPEN_ACTIONS: PlayerAction[] = [PlayerActions.YOUR_VETO_REQUESTED,
@@ -27,7 +27,15 @@ export const ActionBarDrawer: React.FC<{}> = () => {
       (SELECT_PLAYER_ACTIONS.includes(playerAction) && uiInfo.selectedPlayer != null)) {
       setIsOpened(true);
     }
-  }, [playerAction, uiInfo.selectedPlayer]);
+  }, [playerAction, uiInfo.selectedPlayer, uiInfo.voted, you.PID]);
+
+  const closeDrawer = React.useCallback(() => {
+    setIsOpened(false);
+  }, []);
+
+  const openDrawer = React.useCallback(() => {
+    setIsOpened(true);
+  }, []);
 
 
   return (
@@ -36,7 +44,7 @@ export const ActionBarDrawer: React.FC<{}> = () => {
         <button className="toggle-button" onClick={() => { setIsOpened((prev) => !prev) }}>
           ^
         </button>
-        <ActionBar />
+        <ActionBar closeDrawer={closeDrawer} openDrawer={openDrawer}/>
       </div>
     </div >
   )

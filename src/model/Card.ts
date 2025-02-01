@@ -1,4 +1,4 @@
-export const CardValue ={
+export const CardValue = {
   Liberal: 0,
   Fascist: 1,
 }
