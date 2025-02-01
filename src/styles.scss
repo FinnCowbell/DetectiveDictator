@@ -424,3 +424,46 @@ button {
     width: 50px;
   }
 }
+
+.policy {
+  height: calc(100% - 20px);
+  margin: 2px;
+  padding: 4px;
+  box-sizing: border-box;
+  transition: 0.25s filter;
+  // div should take available space but not be influenced by the image size. width: 0 does this.
+  width: 0;
+  flex: 1;
+  // Image still needs to be tappable, so we need some reasonable minimum
+  min-width: 50px;
+  // Image should be centered in the space.
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &:hover {
+    filter: grayscale(50%);
+  }
+  img{
+    max-height: 100%;
+    border-radius: 10px;
+  }
+  &:not(.flipped){
+    img{
+      filter: grayscale(50%) contrast(.1) brightness(30%);
+      border: 2px solid black;
+    }
+  }
+  &:hover {
+    filter: grayscale(50%);
+  }
+  &.selected.selected {
+    filter: grayscale(100%);
+  }
+}
+
+.bullet-holder{
+  pointer-events: none;
+  img{
+    pointer-events: inherit;
+  }
+}

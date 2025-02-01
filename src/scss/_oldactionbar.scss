@@ -72,10 +72,6 @@ $action-bar-height: 300px;
     .policy {
       height: calc(100% - 20px);
       transition: 0.25s filter;
-      img {
-        height: 100%;
-      }
-      filter: grayscale(0%);
       &:hover {
         filter: grayscale(50%);
       }

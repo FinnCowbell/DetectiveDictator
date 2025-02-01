@@ -178,6 +178,7 @@ $padding5: 50px;
             left: -25px;
             bottom: -20px;
             transform: rotate(-15deg);
+
             &.nein {
               left: 0px;
               transform: scaleX(-1) rotate(20deg);
@@ -186,6 +187,23 @@ $padding5: 50px;
 
           .bullet-holes {
             left: unset;
+          }
+        }
+
+        position: relative;
+
+        .bullet-holder {
+          position: absolute;
+          bottom: 0;
+          left: -20px;
+          width: 70px;
+          height: auto;
+          transform: rotate(-30deg);
+          z-index:10;
+
+          img {
+            max-width: 100%;
+            height: auto;
           }
         }
       }
@@ -272,18 +290,22 @@ $padding5: 50px;
       width: 50px;
       height: 50px;
     }
+
     &.pressed {
       transform: scale(.9);
     }
+
     &.holding {
       @include hitler-border();
       background-color: none;
       transform: rotate(45deg) scale(1.1);
+
       >div {
         background-color: $hitler-red;
         padding: 0;
       }
-      img{
+
+      img {
         filter: none;
       }
     }

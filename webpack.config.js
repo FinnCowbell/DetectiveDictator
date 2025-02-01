@@ -15,6 +15,7 @@ const faviconConfig={
 
 module.exports = (env) => {
   let config = {
+    devtool: 'eval-cheap-source-map',
     entry: {
       main: ["react-hot-loader/patch", "./src/index.tsx"], 
     },
