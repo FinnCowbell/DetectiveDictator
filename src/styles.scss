@@ -349,8 +349,8 @@ button {
   }
 
   pointer-events: none;
-  transition: 0.25s right filter;
-  will-change: filter;
+  transition: 0.25s right filter transform;
+  will-change: filter transform right;
 
   .player {
     .player-bar {
@@ -369,7 +369,8 @@ button {
 
 
     &.disconnected {
-      filter: grayscale(.6) blur(1.5px);
+      filter: grayscale(.5) blur(1.3px);
+      transform: scale(.95);
     }
 
     &.you .player-bar .username {

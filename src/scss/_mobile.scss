@@ -106,13 +106,15 @@ $padding5: 50px;
     .board-container {
       justify-content: start;
       width: 100%;
-      padding: $padding1 $padding3;
+      padding: $padding3 $padding3;
       box-sizing: border-box;
-      overflow-x: scroll;
       scroll-behavior: smooth;
       overflow-x: scroll;
+      overflow-y: hidden;
       display: flex;
       align-items: start;
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: none;
       scroll-snap-type: x mandatory;
       touch-action: pan-x;
 
