@@ -1,4 +1,4 @@
-import { GameEndEvent, GameEvent, PlayerAction } from "./GameEvent";
+import { GameEndEvent, GameEvent } from "./GameEvent";
 import { PID, Player } from "./Player";
 
 export interface GameInfo {
@@ -14,8 +14,8 @@ export interface GameEventInfo {
   marker: number;
   presidentPID?: PID;
   chancellorPID?: PID;
-  previousPresidentPID?: PID | null;
-  previousChancellorPID?: PID | null;
+  previousPresPID?: PID | null;
+  previousChanPID?: PID | null;
   votes?: { [key: PID]: boolean };
   nInDraw?: number;
   nInDiscard?: number;

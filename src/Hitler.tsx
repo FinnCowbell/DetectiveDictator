@@ -14,7 +14,7 @@ import { useIsMobile } from "./hooks/useIsMobile";
 import { Eye } from "./parts/gameParts/Eye";
 import { ActionBarDrawer } from "./parts/gameParts/ActionBarDrawer";
 import ChatRoom from "./parts/ChatRoom";
-import { GameEvent, GameEvents } from "./model/GameEvent";
+import { GameEvent, GameEvents, PlayerAction } from "./model/GameEvent";
 
 interface Props {
   yourPID?: PID;
@@ -67,29 +67,40 @@ const MobileLayout: React.FC<{}> = () => {
   const {
     gameInfo,
     togglePrivateInfo,
-    currentEvent
+    playerAction,
+    you
   } = gameDetails;
 
+  // Start on the player screen
+  React.useEffect(() => {
+    playerScreen.current?.scrollIntoView({ behavior: 'instant', block: 'center' });
+  }, []);
 
   React.useEffect(() => {
-    const BOARD_EVENTS: GameEvent[] = [
+    const BOARD_EVENTS: PlayerAction[] = [
       GameEvents.LIBERAL_POLICY_PLACED,
       GameEvents.FASCIST_POLICY_PLACED,
     ];
 
-    if (BOARD_EVENTS.includes(currentEvent)) {
+    const PLAYER_EVENTS: PlayerAction[] = [
+      'your chancellor pick',
+      'your president investigate',
+      'your president kill',
+    ]
+    if (BOARD_EVENTS.includes(playerAction)) {
       setTimeout(() => {
         boardScreen.current?.scrollIntoView({ behavior: "smooth", block: 'center' });
       }, 100);
+    } else if (PLAYER_EVENTS.includes(playerAction)) {
+      setTimeout(() => {
+        playerScreen.current?.scrollIntoView({ behavior: "smooth", block: 'center' });
+      }, 100);
     }
   }, [
-    currentEvent
+    playerAction
   ]);
 
 
-  React.useEffect(() => {
-    playerScreen.current?.scrollIntoView({ behavior: 'instant', block: 'center' });
-  }, []);
 
   return (
     <div className="mobile game-bg">
@@ -103,7 +114,7 @@ const MobileLayout: React.FC<{}> = () => {
             {...gameDetails}
             isMobile
           />
-          {!gameDetails.reason && (<Eye toggle={togglePrivateInfo} />)}
+          {!gameDetails.reason && you.alive && (<Eye toggle={togglePrivateInfo} />)}
         </div>
         <div className="screen boards" ref={boardScreen}>
           <div className="boards-container">

@@ -20,10 +20,16 @@ function throttle(func: any, limit: number) {
 export const ActionBarDrawer: React.FC<{}> = () => {
   const [isOpened, setIsOpened] = React.useState(false);
   const { playerAction, uiInfo, you } = useGameDetails();
+  const [prevAction, setPrevAction] = React.useState<PlayerAction | null>(null);
 
   React.useEffect(() => {
+    if (prevAction === playerAction) {
+      // Prevent automatic actions from happening more than once.
+      return;
+    }
+    setPrevAction(playerAction);
+
     const AUTO_OPEN_ACTIONS: PlayerAction[] = [PlayerActions.YOUR_VETO_REQUESTED,
-    PlayerActions.YOUR_PRESIDENT_PEEK,
     PlayerActions.YOUR_PRESIDENT_PICK,
     PlayerActions.YOUR_PRESIDENT_KILL,
     PlayerActions.YOUR_PRESIDENT_INVESTIGATE,
@@ -40,7 +46,7 @@ export const ActionBarDrawer: React.FC<{}> = () => {
       (SELECT_PLAYER_ACTIONS.includes(playerAction) && uiInfo.selectedPlayer != null)) {
       setIsOpened(true);
     }
-  }, [playerAction, uiInfo.selectedPlayer, uiInfo.voted, you.PID]);
+  }, [prevAction, playerAction, uiInfo.selectedPlayer, uiInfo.voted, you.PID]);
 
   const closeDrawer = React.useCallback(() => {
     setIsOpened(false);
@@ -53,6 +59,10 @@ export const ActionBarDrawer: React.FC<{}> = () => {
   const debouncedToggleOpen = React.useCallback(throttle(() => {
     setIsOpened((isOpened) => !isOpened);
   }, 100), []);
+
+  if (!you.alive) {
+    return null;
+  }
 
   return (
     <div className={css('action-bar-placeholder')}>

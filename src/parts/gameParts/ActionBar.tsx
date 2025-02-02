@@ -59,9 +59,11 @@ export const ActionBar: React.FC<{
           }),
       };
       playerAction && actions[playerAction]?.();
+      closeDrawer?.();
     }, [
       playerAction,
-      socket
+      socket,
+      closeDrawer
     ])
 
     const sendVetoRequest = React.useCallback((policyIndex?: number) => {
@@ -69,7 +71,8 @@ export const ActionBar: React.FC<{
         return;
       }
       socket.emit("veto request", { policyIndex });
-    }, [socket])
+      closeDrawer?.();
+    }, [socket, closeDrawer])
 
     const sendVetoConfirmation = React.useCallback((isJa?: boolean) => {
       if (isJa == undefined) {
@@ -81,7 +84,8 @@ export const ActionBar: React.FC<{
     //Executive Actions
     const doneViewing = React.useCallback(() => {
       socket.emit("president done");
-    }, [socket])
+      closeDrawer?.();
+    }, [socket, closeDrawer])
 
     const viewPlayer = React.useCallback((PID?: number) => {
       if (PID != null) {
@@ -116,7 +120,6 @@ export const ActionBar: React.FC<{
               pickedName={selectedPlayer?.username}
             />
           );
-          break;
         case "chancellor vote":
           return (
             <JaNein confirm={castVote} voteReceived={uiInfo.voted[you.PID]} />
@@ -126,7 +129,6 @@ export const ActionBar: React.FC<{
           return (
             <Discard confirm={discardPolicy} policies={you.hand?.policies} />
           );
-          break;
         case "your chancellor discard":
           return (
             <Discard
@@ -351,7 +353,7 @@ const PresidentPeek: React.FC<{
   policies?: CardValue[];
   confirm: () => void;
 }> = (props) => {
-  let cards = props.policies?.map((value, index) => (
+    const cards = props.policies?.map((value, index) => (
     <PolicyCard key={index} isSelected={false} cardValue={value} />
   ));
   return (

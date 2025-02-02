@@ -2,7 +2,6 @@
 @import "_colors.scss";
 
 $backdrop-color: rgb(198, 198, 198);
-$shadow: rgb(159, 156, 156);
 
 .lobby-window,
 .menu-window {
@@ -120,25 +119,21 @@ $shadow: rgb(159, 156, 156);
 
       font-family: $header-stack;
       font-size: 1.25em;
-      cursor: pointer;
 
-      &:hover {
-        color: rgb(32, 32, 32);
-
-        span {
-          font-family: $subheader-stack;
-          opacity: 1;
-        }
-      }
-
-      span {
+      .tooltip {
+        cursor: pointer;
+        font-family: $subheader-stack;
+        opacity: 1;
         transition: 0s;
         position: absolute;
-        right: 0px;
-        opacity: 0;
+        left: calc(100% + 5px);
         font-size: 1rem;
         color: white;
         text-shadow: 1px 1px 1px $shadow;
+
+        &:hover {
+          filter: brightness(.9);
+        }
       }
     }
   }
@@ -187,20 +182,6 @@ $shadow: rgb(159, 156, 156);
     background-color: transparent;
     border: none;
     font-size: 1rem
-  }
-
-  .existing-lobby,
-  .lobby-status,
-  .num-spectators,
-  .lobby-title,
-  .disconnected-players ul {
-
-    h1,
-    h2,
-    h3,
-    li {
-      text-shadow: 3px 3px 0px $shadow;
-    }
   }
 
   .existing-lobby {
@@ -257,6 +238,7 @@ $shadow: rgb(159, 156, 156);
     }
 
     .connected-players {
+
       ul {
         color: darken($liberal-blue, 20%);
 

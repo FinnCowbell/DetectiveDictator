@@ -16,11 +16,11 @@ const EndWindow: React.FC<{
     "fascist win hitler": "Hitler has been Elected.",
   };
 
-  return !closed ?  (
+  return !closed ? (
     <div
       className={`animation-overlay ${reason.includes("fascist") ? "fascist" : "liberal"}`}>
       <div className={`slidein-background`}></div>
-      <div className="content">
+      <div className={`content end-window ${reason.includes("fascist") ? "fascist" : "liberal"}`}>
         <div className="background"></div>
         <h1>{endPhrases[reason]}</h1>
         <div className="buttons">

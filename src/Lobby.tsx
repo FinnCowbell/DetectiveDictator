@@ -11,6 +11,7 @@ import { PID } from "./model/Player";
 import { PlayerMap } from "./model/GameState";
 import { GameContextProvider } from "./GameDetails";
 import { useIsMobile } from "./hooks/useIsMobile";
+import { useMobileViewportStyles } from "./hooks/useMobileViewportStyles";
 
 const storeReconnectPID = (lobbyID: string, PID: PID) => {
   setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
@@ -22,7 +23,8 @@ export function getReconnectPID(lobbyID: string): PID | undefined {
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useSocketContext();
+  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useSocketContext(); 
+  useMobileViewportStyles();
   const [gameInfo, setGameInfo] = React.useState<{ gameStatus: string } | undefined>()
   const [PID, setPID] = React.useState<PID | undefined>()
   const [lobbyExists, setLobbyExists] = React.useState(false)

@@ -15,7 +15,7 @@ $inner-border-width: 15px;
   display: flex;
   align-items: center;
   cursor: pointer;
-  flex: 0;
+  flex: 0 1 auto;
 
   h1 {
     font-family: $title-stack;
@@ -71,6 +71,9 @@ $inner-border-width: 15px;
       flex-grow: 1;
 
       .option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         height: 100%;
         max-width: 20vw;
         background-color: transparent;
@@ -80,7 +83,6 @@ $inner-border-width: 15px;
     }
 
     .vote-button {
-      flex-grow: 0;
       @include action-bar-button(90deg);
     }
   }
@@ -88,7 +90,9 @@ $inner-border-width: 15px;
   &.discard,
   &.view-three {
     .policy-cards {
+      margin-left: 5px;
       display: flex;
+      gap: 2px;
       flex-direction: row;
       //NOTE: Flex grow needs to be defined very early
       // Otherwise, the content will be justified first AND then size will be adjusted, resulting in strange behavior.
@@ -205,16 +209,21 @@ $inner-border-width: 15px;
 
 .ja-nein {
   .vote-options .option img {
+    height:100%;
+    width: auto;
+    transition: .25s transform, .25s filter;
     cursor: pointer;
-    transition: 0.25s transform;
-    will-change: transform;
-    transform: scale(0.75);
-
+    will-change: transform filter;
+    transform: scale(0.8);
+    filter: grayscale(30%);
+    
     &:hover {
       transform: scale(0.85);
+      filter: grayscale(0%);
     }
-
+    
     &.selected {
+      filter: grayscale(0%) saturate(120%);
       transform: scale(1);
     }
   }

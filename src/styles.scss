@@ -102,8 +102,8 @@ button {
   height: 100%;
 
   .game-window {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     margin: 0;
     z-index: 1;
     // background-color: rgb(12, 12, 73);
@@ -137,7 +137,7 @@ button {
     // margin-bottom: 25px;
     position: absolute;
     display: flex;
-    max-height: 100vh;
+    max-height: 100%;
     grid-template-areas: 'players';
     margin-left: 75px; //Assures the open button doesnt cover the chat button on small screens
     right: 0;
@@ -172,7 +172,7 @@ button {
     .players {
       // grid-area: players;
       background-color: rgba(0, 0, 0, 0.906);
-      max-height: 100vh;
+      max-height: 100%;
       padding-left: 50px;
       @include scroll-bar(rgb(126, 126, 126));
       overflow-x: hidden;
@@ -221,7 +221,8 @@ button {
       word-wrap: break-word;
       width: 200px;
 
-      transition: 0.25s right;;
+      transition: 0.25s right;
+      ;
 
       .username {
         // slight text-shadow
@@ -447,30 +448,72 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
+
   &:hover {
     filter: grayscale(50%);
   }
-  img{
+
+  img {
     max-height: 100%;
     border-radius: 10px;
   }
-  &:not(.flipped){
-    img{
+
+  &:not(.flipped) {
+    img {
       filter: grayscale(50%) contrast(.1) brightness(30%);
       border: 2px solid black;
     }
   }
+
   &:hover {
     filter: grayscale(50%);
   }
+
   &.selected.selected {
     filter: grayscale(100%);
   }
 }
 
-.bullet-holder{
+.bullet-holder {
   pointer-events: none;
-  img{
+
+  img {
     pointer-events: inherit;
+  }
+}
+
+// Text shadow in menus
+.existing-lobby,
+.lobby-status,
+.num-spectators,
+.lobby-title,
+.disconnected-players ul {
+
+  h1,
+  h2,
+  h3,
+  li {
+    text-shadow: 3px 3px 0px $shadow;
+  }
+}
+
+.connected-players,
+.disconnected-players {
+
+  h1,
+  h2,
+  h3,
+  li {
+    text-shadow: 3px 3px 0px $lighter-shadow;
+  }
+}
+
+.end-window {
+
+  h1,
+  h2,
+  h3,
+  li {
+    text-shadow: 3px 3px 0px $transparent-shadow;
   }
 }

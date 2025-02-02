@@ -15,6 +15,7 @@ var io = socketio(server, {
   pingTimeout: 5000,
   secure: true,
   transports: ["websocket", "polling"],
+  connectionStateRecovery: {},
 });
 
 app.use(cors(corsOptions));

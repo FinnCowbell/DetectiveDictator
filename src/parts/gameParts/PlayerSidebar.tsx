@@ -110,38 +110,35 @@ export default class PlayerSidebar extends React.Component<Props, State> {
       //Dev mode assumed.
       return true;
     }
-    const currentEvent = this.props.currentEvent;
+    const playerAction = this.props.playerAction;
     const presID = this.props.presidentPID;
     const chanID = this.props.chancellorPID;
-    const prevPres = this.props.previousPresidentPID;
-    const prevChan = this.props.previousChancellorPID;
+    const prevPres = this.props.previousPresPID;
+    const prevChan = this.props.previousChanPID;
     const you = this.props.you;
     if (!you || you.PID != presID) {
       return false;
     }
     const cantSelect = new Set();
     const selectEvents = new Set([
-      "chancellor pick",
-      "president pick",
-      "president kill",
-      "president investigate",
+      "your chancellor pick",
+      "your president pick",
+      "your president kill",
+      "your president investigate",
     ]);
-    if (currentEvent == "chancellor pick") {
+    if (playerAction == "your chancellor pick") {
       cantSelect.add(prevChan);
       cantSelect.add(prevPres);
       cantSelect.add(presID);
-    } else if (currentEvent == "president pick") {
+    } else if (playerAction == "your president pick") {
       cantSelect.add(presID);
       cantSelect.add(chanID);
     }
-    if (
+    return (
       player.alive &&
       !cantSelect.has(player.PID) &&
-      selectEvents.has(currentEvent)
-    ) {
-      return true;
-    }
-    return false;
+      selectEvents.has(playerAction)
+    )
   }
   render() {
     const order = this.props.gameInfo.order;

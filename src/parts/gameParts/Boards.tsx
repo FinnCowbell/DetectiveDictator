@@ -138,7 +138,9 @@ class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
   componentDidUpdate(prevProps: Omit<BoardProps, "nPlayers">) {
     this.update();
     if (prevProps.nCards !== this.props.nCards) {
+      setTimeout(() => {
       this.scrollToCard(this.props.nCards);
+      }, 500);
     }
   }
 
