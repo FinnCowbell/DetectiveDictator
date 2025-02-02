@@ -1,6 +1,6 @@
 {
-  "name": "DetectiveDictator",
-  "short_name": "DetectiveDictator",
+  "name": "detectivedictator",
+  "short_name": "detectivedictator",
   "description": "An Online Version of the Mafia-style WWII Electon Game!",
   "dir": "auto",
   "lang": "en-US",
