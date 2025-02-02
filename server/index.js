@@ -1,5 +1,4 @@
 var fs = require("fs");
-var path = require("path");
 var express = require("express");
 const socketio = require("socket.io");
 const cors = require("cors");
@@ -7,7 +6,7 @@ var app = express();
 var http = require("http");
 const server = http.createServer(app);
 const corsOptions = {
-  origin: "https://secrethitler.js.org",
+  origin: ["https://secrethitler.js.org", "http://localhost:8000"],
   methods: ["GET", "POST"],
 };
 
@@ -17,8 +16,6 @@ var io = socketio(server, {
   secure: true,
   transports: ["websocket", "polling"],
 });
-
-io.origins(["https://secrethitler.js.org", "http://localhost:8000"]);
 
 app.use(cors(corsOptions));
 
