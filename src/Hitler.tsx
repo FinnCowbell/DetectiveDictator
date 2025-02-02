@@ -103,6 +103,7 @@ const MobileLayout: React.FC<{}> = () => {
             {...gameDetails}
             isMobile
           />
+          {!gameDetails.reason && (<Eye toggle={togglePrivateInfo} />)}
         </div>
         <div className="screen boards" ref={boardScreen}>
           <div className="boards-container">
@@ -117,9 +118,9 @@ const MobileLayout: React.FC<{}> = () => {
         </div>
       </div>
       <ActionBarDrawer />
-      {gameDetails.currentEvent == "end game" && gameDetails.reason ? (
+      {gameDetails.currentEvent == "end game" && gameDetails.reason && (
         <EndWindow reason={gameDetails.reason} />
-      ) : <Eye toggle={togglePrivateInfo} />}
+      )}
 
     </div >
   )

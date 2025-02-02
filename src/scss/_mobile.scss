@@ -99,7 +99,7 @@ $padding5: 50px;
     overflow-x: hidden;
     display: flex;
     //UX - Make sure enough space for user to scroll _between_ boards.
-    gap: 16px;
+    gap: $padding4;
     flex-direction: column;
     align-items: start;
 
@@ -112,7 +112,7 @@ $padding5: 50px;
       overflow-x: scroll;
       overflow-y: hidden;
       display: flex;
-      align-items: start;
+      align-items: initial;
       overscroll-behavior-x: none;
       overscroll-behavior-y: none;
       scroll-snap-type: x mandatory;
@@ -232,6 +232,7 @@ $padding5: 50px;
 
   .action-bar-placeholder {
     height: $action-bar-spacing;
+    
 
 
     .floating-region {
@@ -244,7 +245,10 @@ $padding5: 50px;
       flex-direction: column;
       justify-content: center;
       z-index: 5;
-
+      pointer-events: none;
+      * {
+        pointer-events: all;
+      }
       // box-sizing: border-box;
       .toggle-button {
         //centered on screen, half moon
@@ -292,9 +296,9 @@ $padding5: 50px;
   }
 
   .eye {
-    position: fixed;
-    bottom: $padding1;
-    left: $padding2;
+    position: absolute;
+    bottom: $padding3;
+    right: $padding3;
     width: 50px;
     height: 50px;
     justify-content: center;
@@ -302,7 +306,7 @@ $padding5: 50px;
     display: flex;
     user-select: none;
     font-size: 2.5rem;
-    z-index: 10;
+    // z-index: 10;
     @include unknown-border();
     filter: drop-shadow(5px 5px 0px rgb(56, 56, 56));
     transition: .25s transform;
