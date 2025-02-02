@@ -65,6 +65,8 @@ $padding5: 50px;
       }
 
       &.chat-screen {
+        // Far left: so only enable pan-right
+        touch-action: pan-right;
         box-sizing: border-box;
         padding: $padding4 $padding4;
 
@@ -79,6 +81,7 @@ $padding5: 50px;
       }
 
       >.boards-container {
+        touch-action: pan-x;
         width: 100%;
         height: 100%;
         display: flex;
@@ -111,6 +114,7 @@ $padding5: 50px;
       display: flex;
       align-items: start;
       scroll-snap-type: x mandatory;
+      touch-action: pan-x;
 
       .board,
       canvas {
@@ -335,4 +339,8 @@ $padding5: 50px;
       }
     }
   }
+}
+
+* {
+  touch-action: pan-x pan-y;
 }
