@@ -30,6 +30,8 @@ input {
 
 button {
   margin: 0;
+  -webkit-appearance: none !important;
+  color: $unknown-color;
   background-color: #eee;
   font-family: $header-stack;
   font-size: 15px;
@@ -149,6 +151,7 @@ button {
       left: -40px;
       margin: auto 0 5px auto;
       transition: 0.125s transform;
+      will-change: transform;
       background-color: black;
       // background-image: linear-gradient(to right, rgb(106, 106, 106) 0%, rgba(25,25,25,.75) 100%);
       border-bottom-left-radius: 15px;
@@ -185,6 +188,7 @@ button {
       width: inherit;
       margin-top: 40px;
       transition: .25s filter;
+      will-change: filter;
 
 
       &:last-child {
@@ -217,8 +221,7 @@ button {
       word-wrap: break-word;
       width: 200px;
 
-      transition: 0.25s;
-
+      transition: 0.25s right;;
 
       .username {
         // slight text-shadow
@@ -346,7 +349,8 @@ button {
   }
 
   pointer-events: none;
-  transition: 0.25s right;
+  transition: 0.25s right filter;
+  will-change: filter;
 
   .player {
     .player-bar {
@@ -393,6 +397,7 @@ button {
 
 .player-inner {
   transition: background-color 0.25s;
+  will-change: background-color;
   transition-timing-function: ease-in-out;
 }
 
@@ -431,6 +436,7 @@ button {
   padding: 4px;
   box-sizing: border-box;
   transition: 0.25s filter;
+  will-change: filter;
   // div should take available space but not be influenced by the image size. width: 0 does this.
   width: 0;
   flex: 1;

@@ -192,6 +192,7 @@ $inner-border-width: 15px;
 .discard .policy {
   cursor: pointer;
   transition: 0.25s filter;
+  will-change: filter;
 
   &:hover {
     filter: grayscale(50%);
@@ -206,6 +207,7 @@ $inner-border-width: 15px;
   .vote-options .option img {
     cursor: pointer;
     transition: 0.25s transform;
+    will-change: transform;
     transform: scale(0.75);
 
     &:hover {

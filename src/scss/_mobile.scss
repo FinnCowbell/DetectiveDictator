@@ -2,7 +2,7 @@
 @import './borders';
 @import './fonts';
 
-$action-bar-spacing: 30px;
+$action-bar-spacing: 100px;
 $padding1: 4px;
 $padding2: 12px;
 $padding3: 16px;
@@ -14,7 +14,11 @@ $padding5: 50px;
   // No text selection on anything by default
   * {
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
+
+  // PRevent buttons from having text style overwritten
 
   display: flex;
   flex-direction: column;
@@ -63,6 +67,7 @@ $padding5: 50px;
       &.chat-screen {
         box-sizing: border-box;
         padding: $padding4 $padding4;
+
         .sent-messages * {
           user-select: text;
         }
@@ -173,7 +178,7 @@ $padding5: 50px;
           }
 
           .hat.pres {
-            left: -40px;
+            left: -30px;
             top: -35px;
           }
 
@@ -240,10 +245,19 @@ $padding5: 50px;
         position: relative;
         margin: auto;
         border-radius: 50%;
-        bottom: -35px;
-        width: 50px;
-        height: 50px;
+        bottom: -30px;
+        max-width: 50px;
+        max-height: 50px;
+        // text should be centered, vertically and horizontally
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        // larger font
+        font-size: 24px;
+        padding: 20px;
+        font-family: $subheader-stack;
         background-color: $action-bar-bg;
+        color: $action-bar-ink;
         border: 8px solid #2b2b2b;
       }
 
@@ -273,8 +287,8 @@ $padding5: 50px;
 
   .eye {
     position: fixed;
-    bottom: $padding2;
-    right: $padding2;
+    bottom: $padding1;
+    left: $padding2;
     width: 50px;
     height: 50px;
     justify-content: center;
@@ -284,7 +298,9 @@ $padding5: 50px;
     font-size: 2.5rem;
     z-index: 10;
     @include unknown-border();
-    transition: .1s transform;
+    filter: drop-shadow(5px 5px 0px rgb(56, 56, 56));
+    transition: .25s transform;
+    will-change: transform;
 
     >div {
       width: 52px;

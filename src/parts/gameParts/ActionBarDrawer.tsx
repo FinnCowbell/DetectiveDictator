@@ -51,8 +51,8 @@ export const ActionBarDrawer: React.FC<{}> = () => {
   }, []);
 
   const debouncedToggleOpen = React.useCallback(throttle(() => {
-    setIsOpened(!isOpened);
-  }, 100), [isOpened]);
+    setIsOpened((isOpened) => !isOpened);
+  }, 100), []);
 
   return (
     <div className={css('action-bar-placeholder')}>

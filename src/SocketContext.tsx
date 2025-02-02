@@ -105,9 +105,9 @@ export const SocketContext: React.FC = ({ children }) => {
   const setLobbyID = React.useCallback((newId: string) => {
     _setLobbyID(newId);
     if (newId) {
-      history.pushState(null, '', "#lobby=" + newId);
+      history.replaceState(null, '', "#lobby=" + newId);
     } else {
-      history.pushState(null, '', "#");
+      history.replaceState(null, '', "#");
     }
   }, [_setLobbyID]);
 
