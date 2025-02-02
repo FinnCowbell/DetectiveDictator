@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React from "react";
 
 interface SingleInputFormProps {
   className?: string;
@@ -8,67 +8,60 @@ interface SingleInputFormProps {
   children?: React.ReactNode;
 }
 
-interface SingleInputFormState {
-  text: string;
-}
 
-export default class SingleInputForm extends React.Component<SingleInputFormProps, SingleInputFormState> {
-  input: RefObject<HTMLDivElement>;
-  DEFAULT_MAX_LENGTH: number;
+const SingleInputForm: React.FC<SingleInputFormProps> = ({ className, button, MAX_LENGTH, submit, children }) => {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const DEFAULT_MAX_LENGTH = 240;
+  const [text, setText] = React.useState("");
 
-  constructor(props: SingleInputFormProps) {
-    super(props);
-    this.input = React.createRef();
-    this.state = {
-      text: "",
-    };
-    this.DEFAULT_MAX_LENGTH = 240;
-  }
-
-  public handleSubmit = (e?: React.KeyboardEvent) => {
+  const handleSubmit = (e?: React.KeyboardEvent) => {
     if (!e || (e && e.keyCode == 13)) {
-      this.props.submit(this.state.text);
-      this.setState({ text: "" });
+      submit(text);
+      setText("");
     }
   }
 
-  public handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let text = e.target.value;
-    const MAX_LENGTH = this.props.MAX_LENGTH || this.DEFAULT_MAX_LENGTH;
+    MAX_LENGTH = MAX_LENGTH || DEFAULT_MAX_LENGTH;
     if (text.length > MAX_LENGTH) {
       // Truncate anything that's pasted to the first MAX_LENGTH characters.
       text = text.split("").splice(0, MAX_LENGTH).join("");
       // Also add the "error" animation to the textbox for a second.
-      this.input.current?.classList.add("error");
+      containerRef.current?.classList.add("error");
     } else {
-      this.input.current?.classList.remove("error");
+      containerRef.current?.classList.remove("error");
     }
-    this.setState({ text: text });
+    setText(text);
   }
 
-  render() {
-    return (
-      <div
-        ref={this.input}
-        className={`single-input-form ${this.props.className || ""}`}
-      >
-        {this.props.children}
-        <input
-          className="input-box"
-          value={this.state.text}
-          onKeyDown={this.handleSubmit}
-          onChange={this.handleChange}
-          type="text"
-          // Prevents edge autocomplete.
-          autoComplete="new-password"
-          list="autocompleteOff"
-        />
-        {this.props.button && (
-          <button onClick={() => this.handleSubmit()}>
-            {this.props.button}
-          </button>
-        )}
+  return (
+    <div
+      ref={containerRef}
+      className={`single-input-form ${className || ""}`}
+    >
+      <div onClick={() => inputRef.current?.focus()}>
+        {children}
       </div>
-    );
-  }
+      <input
+        ref={inputRef}
+        className="input-box"
+        value={text}
+        onKeyDown={handleSubmit}
+        onChange={handleChange}
+        type="text"
+        // Prevents edge autocomplete.
+        autoComplete="new-password"
+        list="autocompleteOff"
+      />
+      {button && (
+        <button onClick={() => handleSubmit()}>
+          {button}
+        </button>
+      )}
+    </div>
+  );
 }
+
+export default SingleInputForm;

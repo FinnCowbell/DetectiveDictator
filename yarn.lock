@@ -2766,55 +2766,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"DetectiveDictator@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "DetectiveDictator@workspace:."
-  dependencies:
-    "@babel/core": ^7.9.6
-    "@babel/preset-env": ^7.9.6
-    "@babel/preset-react": ^7.9.4
-    "@eslint/js": ^9.18.0
-    "@hot-loader/react-dom": ^16.13.0
-    "@types/react": 16
-    "@types/react-dom": 16
-    "@types/socket.io": 2
-    "@types/socket.io-client": ^3.0.0
-    babel-cli: 6
-    babel-core: ^6.26.3
-    babel-loader: ^8.1.0
-    babel-preset-react: ^6.24.1
-    ccapture.js: ^1.1.0
-    compression-webpack-plugin: ^9.2.0
-    css-loader: ^3.5.3
-    eslint: ^9.18.0
-    eslint-plugin-react: ^7.37.4
-    eslint-plugin-react-hooks: ^5.1.0
-    eslint-webpack-plugin: ^4.2.0
-    express: ^4.19.2
-    favicons: ^6.2.2
-    favicons-webpack-plugin: ^5.0.2
-    file-loader: ^6.0.0
-    globals: ^15.14.0
-    html-webpack-plugin: ^5.5.0
-    nodemon: ^2.0.3
-    prettier: ^2.0.5
-    react: ^16.13.1
-    react-dom: ^16.13.1
-    react-hot-loader: ^4.12.21
-    sass: ^1.83.4
-    sass-loader: ^12.4.0
-    socket.io: latest
-    style-loader: ^1.2.1
-    ts-loader: ^9.5.2
-    typescript: ^5.7.3
-    typescript-eslint: ^8.21.0
-    url-loader: ^4.1.0
-    webpack: ^5.65.0
-    webpack-cli: ^4.9.1
-    webpack-dev-server: ^4.6.0
-  languageName: unknown
-  linkType: soft
-
 "abbrev@npm:^2.0.0":
   version: 2.0.0
   resolution: "abbrev@npm:2.0.0"
@@ -4778,6 +4729,55 @@ __metadata:
   checksum: 832184ec458353e41533ac9c622f16c19f7c02d8b10c303dfd3a756f56be93e903616c0bb2d4226183c9351c15fc0b3dba41a17a2308262afabcfa3776e6ae6e
   languageName: node
   linkType: hard
+
+"detectivedictator@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "detectivedictator@workspace:."
+  dependencies:
+    "@babel/core": ^7.9.6
+    "@babel/preset-env": ^7.9.6
+    "@babel/preset-react": ^7.9.4
+    "@eslint/js": ^9.18.0
+    "@hot-loader/react-dom": ^16.13.0
+    "@types/react": 16
+    "@types/react-dom": 16
+    "@types/socket.io": 2
+    "@types/socket.io-client": ^3.0.0
+    babel-cli: 6
+    babel-core: ^6.26.3
+    babel-loader: ^8.1.0
+    babel-preset-react: ^6.24.1
+    ccapture.js: ^1.1.0
+    compression-webpack-plugin: ^9.2.0
+    css-loader: ^3.5.3
+    eslint: ^9.18.0
+    eslint-plugin-react: ^7.37.4
+    eslint-plugin-react-hooks: ^5.1.0
+    eslint-webpack-plugin: ^4.2.0
+    express: ^4.19.2
+    favicons: ^6.2.2
+    favicons-webpack-plugin: ^5.0.2
+    file-loader: ^6.0.0
+    globals: ^15.14.0
+    html-webpack-plugin: ^5.5.0
+    nodemon: ^2.0.3
+    prettier: ^2.0.5
+    react: ^16.13.1
+    react-dom: ^16.13.1
+    react-hot-loader: ^4.12.21
+    sass: ^1.83.4
+    sass-loader: ^12.4.0
+    socket.io: latest
+    style-loader: ^1.2.1
+    ts-loader: ^9.5.2
+    typescript: ^5.7.3
+    typescript-eslint: ^8.21.0
+    url-loader: ^4.1.0
+    webpack: ^5.65.0
+    webpack-cli: ^4.9.1
+    webpack-dev-server: ^4.6.0
+  languageName: unknown
+  linkType: soft
 
 "dns-packet@npm:^5.2.2":
   version: 5.6.1

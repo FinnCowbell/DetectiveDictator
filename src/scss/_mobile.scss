@@ -10,6 +10,12 @@ $padding4: 30px;
 $padding5: 50px;
 
 .mobile {
+
+  // No text selection on anything by default
+  * {
+    user-select: none;
+  }
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -57,6 +63,9 @@ $padding5: 50px;
       &.chat-screen {
         box-sizing: border-box;
         padding: $padding4 $padding4;
+        .sent-messages * {
+          user-select: text;
+        }
       }
 
       >.player-sidebar {
@@ -199,7 +208,7 @@ $padding5: 50px;
           width: 70px;
           height: auto;
           transform: rotate(-30deg);
-          z-index:10;
+          z-index: 10;
 
           img {
             max-width: 100%;

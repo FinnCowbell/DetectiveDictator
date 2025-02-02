@@ -172,7 +172,7 @@ export default class PlayerSidebar extends React.Component<Props, State> {
             }}>
             {isKillingPlayer && (
               <div className="bullet-holder">
-                {hasBullet && <img className="bullet" src={bullet} />}
+                {hasBullet && <Decoration className="bullet" src={bullet} />}
               </div>
             )}
 
@@ -182,21 +182,21 @@ export default class PlayerSidebar extends React.Component<Props, State> {
             >
               {
                 status == "president" && (
-                  <img className="pres hat" src={presHat} />
+                  <Decoration className="pres hat" src={presHat} />
                 ) /*He get hat*/
               }
               {
                 status == "chancellor" && (
-                  <img className="chan hat" src={chanHat} />
+                  <Decoration className="chan hat" src={chanHat} />
                 ) /*He also get hat*/
               }
               {status == "dead" && (
-                <img className="bullet-holes" src={bulletHole} />
+                <Decoration className="bullet-holes" src={bulletHole} />
               )}
               <div className={"vote " + voteStatus}>
-                {voteStatus == "ja" && <img src={ja} />}
-                {voteStatus == "nein" && <img src={nein} />}
-                {voteStatus == "sent" && <img src={sent} />}
+                {voteStatus == "ja" && <Decoration src={ja} />}
+                {voteStatus == "nein" && <Decoration src={nein} />}
+                {voteStatus == "sent" && <Decoration src={sent} />}
               </div>
               <h2 className="username">{players[PID].username}</h2>
             </div>
@@ -218,4 +218,8 @@ export default class PlayerSidebar extends React.Component<Props, State> {
       </div >
     );
   }
+}
+
+const Decoration: React.FC<Partial<Pick<HTMLImageElement, 'className' | 'src'>>> = ({ className, src }) => {
+  return <img className={className} draggable={false} src={src} />
 }

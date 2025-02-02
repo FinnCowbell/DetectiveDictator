@@ -24,7 +24,8 @@
     "build-gh-pages": "DD_SERVER=dd-backend.finnnav.in DD_PORT=443 webpack --config webpack.config.js --mode production",
     "start-back": "node server/index.js -nofront",
     "build-dev": "webpack --config webpack.config.js --mode development",
-    "test-front": "DD_SERVER=localhost DD_PORT=1945 webpack-dev-server --mode development --hot",
+    "test-local": "DD_SERVER=localhost DD_PORT=1945 webpack-dev-server --mode development --hot",
+    "test-front": "DD_SERVER=dd-backend.finnnav.in DD_PORT=443 webpack-dev-server --mode development --hot",
     "test-back": "nodemon --watch server server/index.js -dev -nofront"
   },
   "devDependencies": {

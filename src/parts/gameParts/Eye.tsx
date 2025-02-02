@@ -33,7 +33,7 @@ export const Eye: React.FC<{ toggle: (arg: boolean) => void }> = ({ toggle }) =>
       onTouchStart={handleMouseDown}
     >
       <div>
-        <img src={eye} />
+        <img draggable={false} src={eye} />
       </div>
     </div>
   );

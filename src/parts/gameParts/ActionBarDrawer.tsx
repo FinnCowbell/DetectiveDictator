@@ -1,8 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { ActionBar } from "./ActionBar";
 import { useGameDetails } from "../../GameDetails";
 import { css } from "../../helpers/css";
 import { PlayerAction, PlayerActions } from "../../model/GameEvent";
+
+function throttle(func: any, limit: number) {
+  let inThrottle: boolean;
+  return function (...args: any[]) {
+    if (!inThrottle) {
+      //@ts-expect-error - w/e
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
 
 export const ActionBarDrawer: React.FC<{}> = () => {
   const [isOpened, setIsOpened] = React.useState(false);
@@ -37,14 +50,20 @@ export const ActionBarDrawer: React.FC<{}> = () => {
     setIsOpened(true);
   }, []);
 
+  const debouncedToggleOpen = React.useCallback(throttle(() => {
+    setIsOpened(!isOpened);
+  }, 100), [isOpened]);
 
   return (
     <div className={css('action-bar-placeholder')}>
       <div className={css('floating-region', { 'is-opened': isOpened })}>
-        <button className="toggle-button" onClick={() => { setIsOpened((prev) => !prev) }}>
+        <button className="toggle-button"
+          onClick={debouncedToggleOpen}
+          onTouchStart={debouncedToggleOpen}
+        >
           ^
         </button>
-        <ActionBar closeDrawer={closeDrawer} openDrawer={openDrawer}/>
+        <ActionBar closeDrawer={closeDrawer} openDrawer={openDrawer} />
       </div>
     </div >
   )
