@@ -4,7 +4,6 @@ package-lock.json
 .cache/
 coverage/
 dist/
-dist/index.html
 *.log
 
 # OS generated files
