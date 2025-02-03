@@ -80,41 +80,7 @@ export const GameContextProvider: React.FC<IGameContextProviderProps> = ({ child
     }
   }, []);
 
-  const activateGameSignals = useCallback(() => {
-    socket.on("full game info", (arg: { round: Round }) => {
-      setRounds(() => [arg.round]);
-    });
 
-    socket.on("new round", ({ round }: { round: Round }) => {
-      clearUIInfo();
-      setRounds((prev) => [...(prev || []), round]);
-    });
-
-    socket.on("new state", ({ state }: { state: GameEventInfo }) => {
-      clearUIInfo();
-      setRounds((prev) => {
-        const currentRound = prev?.length ? prev[prev.length - 1] : undefined;
-        if (!prev || !currentRound) return prev;
-        return [
-          ...prev.slice(0, prev.length - 1),
-          {
-            ...currentRound,
-            states: currentRound?.states.concat([state])
-          }
-        ]
-      })
-    });
-
-    socket.on("end game", ({ endState }: {
-      endState: Round;
-    }) => {
-      setRounds((rounds) => (rounds || []).concat([endState]));
-    });
-
-    socket.on("ui event", (arg: UIInfoEvent) => {
-      recieveUIInfo(arg);
-    });
-  }, [socket]);
 
   const sendUIInfo = useCallback((arg: UIInfoEvent) => {
     //arg contains arg.name and other required arg info.
@@ -125,10 +91,49 @@ export const GameContextProvider: React.FC<IGameContextProviderProps> = ({ child
   }, [socket, recieveUIInfo])
 
   useEffect(() => {
-    if (socket) {
-      activateGameSignals();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const gameSignals: { [key: string]: (...args: any[]) => void } = {
+      "full game info": (arg: { round: Round }) => {
+        setRounds(() => [arg.round]);
+      },
+      "new round": ({ round }: { round: Round }) => {
+        clearUIInfo();
+        setRounds((prev) => [...(prev || []), round]);
+      },
+      "new state": ({ state }: { state: GameEventInfo }) => {
+        clearUIInfo();
+        setRounds((prev) => {
+          const currentRound = prev?.length ? prev[prev.length - 1] : undefined;
+          if (!prev || !currentRound) return prev;
+          return [
+            ...prev.slice(0, prev.length - 1),
+            {
+              ...currentRound,
+              states: currentRound?.states.concat([state])
+            }
+          ]
+        })
+      },
+      "end game": ({ endState }: {
+        endState: Round;
+      }) => {
+        setRounds((rounds) => (rounds || []).concat([endState]));
+      },
+      "ui event": (arg: UIInfoEvent) => {
+        recieveUIInfo(arg);
+      },
     }
-  }, [socket]);
+    if (socket) {
+      Object.entries(gameSignals).forEach(([signal, handler]) => {
+        socket.on(signal, handler);
+      });
+      return () => {
+        Object.entries(gameSignals).forEach(([signal, handler]) => {
+          socket.off(signal, handler);
+        });
+      }
+    }
+  }, [socket, clearUIInfo, recieveUIInfo]);
 
   const privateRounds = useMemo(() => { if (privateInfo || !rounds) return rounds; else return filterPrivateInfo(rounds, yourPid); }, [privateInfo, rounds, yourPid]);
 
