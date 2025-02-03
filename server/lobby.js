@@ -177,6 +177,9 @@ class Lobby {
     //Should this logic be elsewhere?
     if (this.game.gameStatus == "pregame") {
       return this.kickPlayer(PID);
+    } else {
+      // We inform the player they were  disconnected explicitly so they can initiate necessary game reconnect signals. _slight_ spaghetti, I think.
+      player.socket.emit("connection lost");
     }
     // Unlink socketID to playerID.
     //We're not using this socket ID again, so we want to get rid of it.

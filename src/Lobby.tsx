@@ -116,6 +116,10 @@ export const Lobby = () => {
       socket.on("connect", () => {
         socket.emit("connection init request");
       });
+
+      socket.on("connection lost", () => {
+        socket.emit("rejoin lobby");
+      });
     }
   }, [lobbyID, socket]);
 
