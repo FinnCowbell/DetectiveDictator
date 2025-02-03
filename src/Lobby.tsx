@@ -118,7 +118,13 @@ export const Lobby = () => {
       });
 
       socket.on("connection lost", () => {
-        socket.emit("rejoin lobby", { PID });
+        const PID: PID | undefined = getReconnectPID(lobbyID);
+        if(PID) {
+          socket.emit("rejoin lobby", { PID });
+        } else {
+          setAlertMessage("Connection Lost!");
+          setLobbyID('');
+        }
       });
     }
   }, [lobbyID, socket]);
