@@ -118,7 +118,7 @@ export const Lobby = () => {
       });
 
       socket.on("connection lost", () => {
-        socket.emit("rejoin lobby");
+        socket.emit("rejoin lobby", { PID });
       });
     }
   }, [lobbyID, socket]);
