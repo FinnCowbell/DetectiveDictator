@@ -202,9 +202,12 @@ class Lobby {
   reconnectPlayer(PID, socket) {
     //Linking disconnected player PID to socket.
     if (!this.disconnectedPlayers[PID]) {
-      return this.error(
+      this.error(
         "Player tried reconnecting, but not in disconnected list!"
       );
+      this.error(`PID: ${PID}`);
+      this.log(this.disconnectedPlayers);
+      return -1
     }
     let player = this.disconnectedPlayers[PID];
     delete this.disconnectedPlayers[PID];
