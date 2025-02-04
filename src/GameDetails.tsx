@@ -1,17 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import demoGameState from "./model/DemoGameState";
-import { GameEventInfo, Round, UIInfo } from "./model/GameState";
+import { GameEventInfo, Round, UIInfo, UIInfoEvent } from "./model/GameState";
 import { PID, Player } from "./model/Player";
 import { PlayerAction } from "./model/GameEvent";
 import { useSocketContext } from "./SocketContext";
 import { usePlayerAction } from "./hooks/usePlayerAction";
 import { filterPrivateInfo } from "./helpers/filterPrivateInfo";
-
-interface UIInfoEvent {
-  name: string;
-  PID: PID;
-}
 
 interface IGameContextProviderProps {
   yourPid?: PID;
@@ -95,6 +90,7 @@ export const GameContextProvider: React.FC<IGameContextProviderProps> = ({ child
     const gameSignals: { [key: string]: (...args: any[]) => void } = {
       "full game info": (arg: { round: Round }) => {
         setRounds(() => [arg.round]);
+        arg.round.uiEvents?.forEach(recieveUIInfo);
       },
       "new round": ({ round }: { round: Round }) => {
         clearUIInfo();

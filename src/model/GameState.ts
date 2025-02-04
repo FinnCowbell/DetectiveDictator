@@ -6,6 +6,11 @@ export interface GameInfo {
   style: number;
 }
 
+export interface UIInfoEvent {
+  name: string;
+  PID: PID;
+}
+
 export interface GameEventInfo {
   you: Player
   currentEvent: GameEvent;
@@ -33,6 +38,7 @@ export interface Round {
   players: PlayerMap;
   states: GameEventInfo[];
   reason?: GameEndEvent;
+  uiEvents?: UIInfoEvent[];
 }
 
 export interface UIInfo {

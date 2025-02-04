@@ -575,6 +575,11 @@ class Hitler extends GameModule {
       return this.error("Ui info requirements not met!");
     }
     socket.broadcast.emit("ui event", arg);
+
+    // Also store ui info in the round.
+    let round = this.latestRound();
+    if(!round.uiEvents) round.uiEvents = [];
+    round.uiEvents.push(arg);
   }
 
   enactPolicy(value) {
