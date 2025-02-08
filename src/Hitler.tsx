@@ -96,7 +96,6 @@ const MobileLayout: React.FC = () => {
   ]);
 
 
-
   return (
     <div className="mobile game-bg">
       <StatusBar />

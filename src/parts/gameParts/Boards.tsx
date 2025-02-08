@@ -62,7 +62,28 @@ class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
       this.canvas.current!.height = LIB_CANVAS_HEIGHT;
     }
     this.update();
+    this.containerRef.current!.addEventListener('pointerdown', this.handlePointerDown);
+    this.containerRef.current!.addEventListener('pointerup', this.handlePointerUp);
   }
+
+  componentWillUnmount() {
+    this.containerRef.current!.removeEventListener('pointerdown', this.handlePointerDown);
+    this.containerRef.current!.removeEventListener('pointerup', this.handlePointerUp);
+  }
+
+  handlePointerDown = (event: PointerEvent) => {
+    const touchPoints = event.getCoalescedEvents().length;
+    if (event.pointerType === 'touch' && touchPoints !== 2) {
+      this.containerRef.current!.style.overflowX = 'hidden';
+    } else {
+      this.containerRef.current!.style.overflowX = 'auto';
+    }
+  };
+
+  handlePointerUp = () => {
+    this.containerRef.current!.style.overflowX = 'auto';
+  }
+
   update() {
     this.drawImage();
     this.updateMarker();
@@ -139,7 +160,7 @@ class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
     this.update();
     if (prevProps.nCards !== this.props.nCards) {
       setTimeout(() => {
-      this.scrollToCard(this.props.nCards);
+        this.scrollToCard(this.props.nCards);
       }, 500);
     }
   }
@@ -204,7 +225,29 @@ class FasBoard extends React.Component<BoardProps> {
       this.canvas.current!.height = FAS_CANVAS_HEIGHT;
     }
     this.update();
+    this.containerRef.current!.addEventListener('pointerdown', this.handlePointerDown);
+    this.containerRef.current!.addEventListener('pointerup', this.handlePointerUp);
   }
+  
+  componentWillUnmount() {
+    this.containerRef.current!.removeEventListener('pointerdown', this.handlePointerDown);
+    this.containerRef.current!.addEventListener('pointerup', this.handlePointerUp);
+  }
+
+  handlePointerDown = (event: PointerEvent) => {
+    const touchPoints = event.getCoalescedEvents().length;
+    if (event.pointerType === 'touch' && touchPoints !== 2) {
+      this.containerRef.current!.style.overflowX = 'hidden';
+    } else {
+      this.containerRef.current!.style.overflowX = 'auto';
+    }
+  };
+
+  handlePointerUp = () => {
+    this.containerRef.current!.style.overflowX = 'auto';
+  }
+
+
   update() {
     this.drawImage();
     this.updateCards();
