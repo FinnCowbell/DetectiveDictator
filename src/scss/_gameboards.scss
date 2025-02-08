@@ -5,15 +5,38 @@
   justify-content: center;
   grid-area: boards;
   width: auto;
+
+  .boards-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 20px;
+  }
+
   .board-container {
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
     position: relative;
+
+    height: 0;
   }
-  .board canvas {
-    // 100px as opposed to a margin.
-    max-height: calc(100vw - 100px);
+
+  &:not(.screen) {
+    padding: 24px;
+
+    .board {
+      width: auto;
+      max-height: 100%;
+      flex: 1;
+
+      canvas {
+        max-height: 100%;
+        max-width: 100%;
+        width: auto;
+      }
+    }
   }
 }

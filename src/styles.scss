@@ -129,6 +129,10 @@ button {
   overflow-x: hidden;
   scrollbar-width: none;
 
+  .boards {
+    max-width: 100%
+  }
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -226,8 +230,8 @@ button {
 
       .username {
         // slight text-shadow
-        text-shadow: 1px 1px 1px black;
-        overflow-y: hidden;
+        font-family: $subheader-stack;
+        text-shadow: 4px 4px 0px rgb(32 32 32);
       }
 
       &.selectable {
@@ -309,6 +313,10 @@ button {
       &.closed {
         right: 0px;
       }
+    }
+
+    .boards {
+      max-width: 800px;
     }
   }
 

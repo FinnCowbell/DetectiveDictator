@@ -19,7 +19,7 @@ function throttle(func: any, limit: number) {
 
 export const ActionBarDrawer: React.FC<{}> = () => {
   const [isOpened, setIsOpened] = React.useState(false);
-  const { playerAction, uiInfo, you } = useGameDetails();
+  const { playerAction, uiInfo, you, spectating } = useGameDetails();
   const [prevAction, setPrevAction] = React.useState<PlayerAction | null>(null);
 
   React.useEffect(() => {
@@ -60,7 +60,7 @@ export const ActionBarDrawer: React.FC<{}> = () => {
     setIsOpened((isOpened) => !isOpened);
   }, 100), []);
 
-  if (!you.alive) {
+  if (!you.alive || spectating) {
     return null;
   }
 

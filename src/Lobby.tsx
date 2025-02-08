@@ -23,7 +23,7 @@ export function getReconnectPID(lobbyID: string): PID | undefined {
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useSocketContext(); 
+  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useSocketContext();
   useMobileViewportStyles();
   const [gameInfo, setGameInfo] = React.useState<{ gameStatus: string } | undefined>()
   const [PID, setPID] = React.useState<PID | undefined>()
@@ -119,7 +119,7 @@ export const Lobby = () => {
 
       socket.on("connection lost", () => {
         const PID: PID | undefined = getReconnectPID(lobbyID);
-        if(PID) {
+        if (PID) {
           socket.emit("rejoin lobby", { PID });
         } else {
           setAlertMessage("Connection Lost!");
@@ -147,43 +147,35 @@ export const Lobby = () => {
     }
   }, [gameInfo?.gameStatus, lobbyID, isSpectating, joinedBeforeGame, PID])
 
-  let navButtons;
   const you = players && PID && players[PID];
   const isLeader = you && you.isLeader;
-  if (!inLobby) {
-    if (lobbyExists) {
-      navButtons = (
-        <div>
-          <button className="menu-exit" onClick={() => leaveLobby()}>
-            Return to Menu
-          </button>
-          {gameInfo?.gameStatus !== "postgame" ?
-            <button className="spectate" onClick={spectateGame}>
-              {`Spectate ${gameInfo?.gameStatus == "ingame" ? "without" : "with"} Roles`}
-            </button> :
-            <button className="menu-exit" onClick={() => socket?.emit("join new lobby")}>
-              Join Next Game
-            </button>
-          }
-        </div >
+  const navButtons: JSX.Element[] = [
+    <button key='menu' className="menu-exit" onClick={() => leaveLobby()}>
+      Menu
+    </button>
+  ];
+  if (!inLobby && lobbyExists) {
+    if (gameInfo?.gameStatus !== "postgame") {
+      navButtons.push(
+        <button key='spectate' className="spectate" onClick={spectateGame}>
+          {`Spectate ${gameInfo?.gameStatus == "ingame" ? "without" : "with"} Roles`}
+        </button>
       );
     } else {
-      navButtons = (
-        <button className="menu-exit" onClick={() => leaveLobby()}>
-          Return to Menu
-        </button>
+      navButtons.push(<button className="menu-exit" onClick={() => socket?.emit("join new lobby")}>
+        Join Next Game
+      </button>
       );
     }
   } else if (isLeader) {
-    navButtons = (
+    navButtons.push(
       <button className="game-start" onClick={startGame}>
         Start Game
       </button>
     );
   }
   return (
-    //@ts-ignore
-    <div className="window" style={{ ['--president-hat']: `url(${presHat})` }}>
+    <div className="window" >
       {(!inLobby || gameInfo?.gameStatus == "pregame") && (
         <div className={`lobby-window`}>
           {/* {!connected && <FireBackground />} */}
@@ -203,7 +195,11 @@ export const Lobby = () => {
               reconnect={reconnect}
               kickPlayer={kickPlayer}
             />}
-            <div className="bottom-button">{navButtons}</div>
+            <div className="bottom-button">
+              <div>
+                {navButtons}
+              </div>
+            </div>
             <div className="num-spectators">
               {lobbyExists && <h3>Spectators: {nSpectators}</h3>}
             </div>
@@ -212,7 +208,6 @@ export const Lobby = () => {
       )}
       <GameContextProvider yourPid={PID} spectating={isSpectating}>
         <Hitler
-          yourPID={PID}
         />
         {inLobby && !isMobile && (
           <ChatRoom />
@@ -315,13 +310,12 @@ const LobbyPlayerList: React.FC<{
       )
   );
   return (
-    <div className="player-list">
-      {true ? (
-        <div className="connected-players">
-          <h3>Connected Players:</h3>
-          <ul>{connectedPlayers}</ul>
-        </div>
-      ) : null}
+    //@ts-expect-error - blah
+    <div className="player-list" style={{ ['--president-hat']: `url(${presHat})` }}>
+      <div className="connected-players">
+        <h3>Connected Players:</h3>
+        <ul>{connectedPlayers}</ul>
+      </div>
       {nDisconnectedPlayers > 0 ? (
         <div className="disconnected-players">
           <h3>Disconnected Players:</h3>

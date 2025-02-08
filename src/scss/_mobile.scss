@@ -180,7 +180,7 @@ $padding5: 50px;
           .username {
             // slight text-shadow
             font-family: $subheader-stack;
-            filter: drop-shadow(1px 1px 2px black);
+            text-shadow: 4px 4px 0px rgb(32 32 32);
           }
 
           .hat.pres {

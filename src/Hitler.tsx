@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React from "react";
 
 import { LibBoard, FasBoard } from "./parts/gameParts/Boards";
 import { ActionBar } from "./parts/gameParts/ActionBar";
@@ -7,20 +7,15 @@ import PlayerSidebar from "./parts/gameParts/PlayerSidebar";
 import PlayerCard from "./parts/gameParts/PlayerCard";
 import EndWindow from "./parts/gameParts/EndWindow";
 
-import { PID } from "./model/Player";
-import { useSocketContext } from "./SocketContext";
 import { useGameDetails } from "./GameDetails";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { Eye } from "./parts/gameParts/Eye";
 import { ActionBarDrawer } from "./parts/gameParts/ActionBarDrawer";
 import ChatRoom from "./parts/ChatRoom";
-import { GameEvent, GameEvents, PlayerAction } from "./model/GameEvent";
+import { GameEvents, PlayerAction } from "./model/GameEvent";
 
-interface Props {
-  yourPID?: PID;
-}
 
-const Hitler: React.FC<Props> = () => {
+const Hitler: React.FC = () => {
   const gameDetails = useGameDetails();
   const {
     you,
@@ -40,7 +35,7 @@ const Hitler: React.FC<Props> = () => {
         {...gameDetails}
       />
       <div className="boards">
-        <div className="board-container">
+        <div className="boards-container">
           <LibBoard
             draw={gameDetails.nInDraw}
             discard={gameDetails.nInDiscard}
@@ -60,7 +55,7 @@ const Hitler: React.FC<Props> = () => {
   );
 };
 
-const MobileLayout: React.FC<{}> = () => {
+const MobileLayout: React.FC = () => {
   const gameDetails = useGameDetails();
   const playerScreen = React.useRef<HTMLDivElement>(null);
   const boardScreen = React.useRef<HTMLDivElement>(null);
@@ -132,7 +127,6 @@ const MobileLayout: React.FC<{}> = () => {
       {gameDetails.currentEvent == "end game" && gameDetails.reason && (
         <EndWindow reason={gameDetails.reason} />
       )}
-
     </div >
   )
 }
