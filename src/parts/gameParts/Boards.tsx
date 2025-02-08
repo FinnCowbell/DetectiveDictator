@@ -62,27 +62,28 @@ class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
       this.canvas.current!.height = LIB_CANVAS_HEIGHT;
     }
     this.update();
-    this.containerRef.current!.addEventListener('pointerdown', this.handlePointerDown);
-    this.containerRef.current!.addEventListener('pointerup', this.handlePointerUp);
+    this.containerRef.current!.addEventListener('touchstart', this.handleTouchStart);
+    this.containerRef.current!.addEventListener('touchend', this.handleTouchEnd);
   }
 
   componentWillUnmount() {
-    this.containerRef.current!.removeEventListener('pointerdown', this.handlePointerDown);
-    this.containerRef.current!.removeEventListener('pointerup', this.handlePointerUp);
+    this.containerRef.current!.removeEventListener('touchstart', this.handleTouchStart);
+    this.containerRef.current!.removeEventListener('touchend', this.handleTouchEnd);
   }
 
-  handlePointerDown = (event: PointerEvent) => {
-    const touchPoints = event.getCoalescedEvents().length;
-    if (event.pointerType === 'touch' && touchPoints !== 2) {
+  handleTouchStart = (event: TouchEvent) => {
+    const touchPoints = event.touches.length;
+    if (touchPoints !== 2) {
       this.containerRef.current!.style.overflowX = 'hidden';
     } else {
       this.containerRef.current!.style.overflowX = 'auto';
     }
   };
 
-  handlePointerUp = () => {
+  handleTouchEnd = () => {
     this.containerRef.current!.style.overflowX = 'auto';
-  }
+  };
+
 
   update() {
     this.drawImage();
@@ -225,28 +226,27 @@ class FasBoard extends React.Component<BoardProps> {
       this.canvas.current!.height = FAS_CANVAS_HEIGHT;
     }
     this.update();
-    this.containerRef.current!.addEventListener('pointerdown', this.handlePointerDown);
-    this.containerRef.current!.addEventListener('pointerup', this.handlePointerUp);
-  }
-  
-  componentWillUnmount() {
-    this.containerRef.current!.removeEventListener('pointerdown', this.handlePointerDown);
-    this.containerRef.current!.addEventListener('pointerup', this.handlePointerUp);
+    this.containerRef.current!.addEventListener('touchstart', this.handleTouchStart);
+    this.containerRef.current!.addEventListener('touchend', this.handleTouchEnd);
   }
 
-  handlePointerDown = (event: PointerEvent) => {
-    const touchPoints = event.getCoalescedEvents().length;
-    if (event.pointerType === 'touch' && touchPoints !== 2) {
+  componentWillUnmount() {
+    this.containerRef.current!.removeEventListener('touchstart', this.handleTouchStart);
+    this.containerRef.current!.removeEventListener('touchend', this.handleTouchEnd);
+  }
+
+  handleTouchStart = (event: TouchEvent) => {
+    const touchPoints = event.touches.length;
+    if (touchPoints !== 2) {
       this.containerRef.current!.style.overflowX = 'hidden';
     } else {
       this.containerRef.current!.style.overflowX = 'auto';
     }
   };
 
-  handlePointerUp = () => {
+  handleTouchEnd = () => {
     this.containerRef.current!.style.overflowX = 'auto';
-  }
-
+  };
 
   update() {
     this.drawImage();

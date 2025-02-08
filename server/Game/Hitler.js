@@ -5,8 +5,8 @@ var GameModule = require("./GameModule");
 class Hitler extends GameModule {
   constructor(lobby) {
     super(lobby);
-    this.MIN_PLAYERS = 4;
-    this.MAX_PLAYERS = 10;
+    this.MIN_PLAYERS = 5;
+    this.MAX_PLAYERS = 15;
     this.gameStatus = "pregame"
     this.gameInfo = {
       order: [], //Order of players by PID.
@@ -112,9 +112,9 @@ class Hitler extends GameModule {
   }
 
   assignRoles() {
-    // PLAYERS | 5 | 6 | 7 | 8 | 9 | 10
-    // LIBERALS| 3 | 4 | 4 | 5 | 5 | 6
-    // FASCISTS| 2 | 2 | 3 | 3 | 4 | 4
+    // PLAYERS | 5 | 6 | 7 | 8 | 9 | 10 | 11 ...
+    // LIBERALS| 3 | 4 | 4 | 5 | 5 | 6  | 6
+    // FASCISTS| 2 | 2 | 3 | 3 | 4 | 4  | 5
     //Liberal: 0 Fascist: 1 Hitler: 2
     let nPlaying = this.gameInfo.order.length;
     let nLiberals = Math.ceil((nPlaying + 1) / 2);
@@ -638,7 +638,7 @@ class Hitler extends GameModule {
       //7-8 players
       return board78[this.fasBoard];
     } else {
-      // 9-10 players
+      // 9+ players
       return board910[this.fasBoard];
     }
   }
