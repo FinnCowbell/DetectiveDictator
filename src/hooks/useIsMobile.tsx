@@ -1,15 +1,19 @@
 import { useState, useCallback, useEffect } from "react";
 
+const INNER_WIDTH_THRESHOLD = 800;
+// For horizontal orientation.
+const INNER_HEIGHT_THRESHOLD = 500;
+
+function isScreenMobileDimensions(): boolean {
+  return window.innerWidth < INNER_WIDTH_THRESHOLD || window.innerHeight < INNER_HEIGHT_THRESHOLD;
+}
+
 export const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
+  const [isMobile, setIsMobile] = useState(isScreenMobileDimensions());
   const handleResize = useCallback(() => {
-    if (window.innerWidth < 800) {
-      setIsMobile(true);
-    } else if (window.innerWidth >= 800) {
-      setIsMobile(false);
-    }
+    setIsMobile(isScreenMobileDimensions());
   }, []);
-  useEffect(() => { 
+  useEffect(() => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
