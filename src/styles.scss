@@ -15,6 +15,10 @@
 $hand-vertical-offset: -2px;
 $hand-horizontal-offset: -57px;
 
+body {
+  background-color: $status-background;
+}
+
 h1,
 h2,
 h3,
@@ -89,7 +93,7 @@ button {
 .fade-out {
   animation: fadeIn 1s;
   animation-direction: reverse;
-  animation-fill-mode: both;
+  animation-fill-mode: th;
 }
 
 .window {
