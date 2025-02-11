@@ -1,3 +1,4 @@
+const { reduceEachTrailingCommentRange } = require("typescript");
 var CardDeck = require("./CardDeck");
 var GameModule = require("./GameModule");
 //Generally: 0 = Liberal, >0 = Fascist.
@@ -77,6 +78,9 @@ class Hitler extends GameModule {
   }
 
   reconnectPlayer(player) {
+    if (this.gameStatus === "pregame") {
+      return;
+    }
     this.activateGameSignals(player);
     player.socket.emit("full game info", this.getRoundInfo(player.PID));
     this.io.emit("ui event", { "name": "reconnect", "PID": player.PID });
@@ -353,7 +357,7 @@ class Hitler extends GameModule {
       this.sendLatestState();
     });
 
-    socket.on("cast vote", ({vote}) => {
+    socket.on("cast vote", ({ vote }) => {
       let player = this.players[theirPID];
       if (this.currentEvent != "chancellor vote") {
         return this.error("Vote cast at invalid time!");
@@ -578,7 +582,7 @@ class Hitler extends GameModule {
 
     // Also store ui info in the round.
     let round = this.latestRound();
-    if(!round.uiEvents) round.uiEvents = [];
+    if (!round.uiEvents) round.uiEvents = [];
     round.uiEvents.push(arg);
   }
 

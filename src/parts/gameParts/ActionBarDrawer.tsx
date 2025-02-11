@@ -56,8 +56,9 @@ export const ActionBarDrawer: React.FC<{}> = () => {
     setIsOpened(true);
   }, []);
 
-  const debouncedToggleOpen = React.useCallback(throttle(() => {
+  const debouncedToggleOpen = React.useCallback(throttle((ev: { preventDefault: () => void; }) => {
     setIsOpened((isOpened) => !isOpened);
+    ev.preventDefault();
   }, 100), []);
 
   if (!you.alive || spectating) {
@@ -70,10 +71,12 @@ export const ActionBarDrawer: React.FC<{}> = () => {
         <button className="toggle-button"
           onClick={debouncedToggleOpen}
           onTouchStart={debouncedToggleOpen}
+          // Prevent from accidently triggering a click on inner elements.
+          onTouchEnd={(ev) => ev.preventDefault()}
         >
           ^
         </button>
-        <ActionBar closeDrawer={closeDrawer} openDrawer={openDrawer} />
+        <ActionBar isEmpty={!isOpened} closeDrawer={closeDrawer} openDrawer={openDrawer} />
       </div>
     </div >
   )

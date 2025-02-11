@@ -461,28 +461,16 @@ button {
   justify-content: center;
   align-items: center;
 
-  &:hover {
-    filter: grayscale(50%);
-  }
-
   img {
     max-height: 100%;
     border-radius: 10px;
   }
 
-  &:not(.flipped) {
-    img {
-      filter: grayscale(50%) contrast(.1) brightness(30%);
-      border: 2px solid black;
-    }
-  }
-
-  &:hover {
-    filter: grayscale(50%);
-  }
-
   &.selected.selected {
-    filter: grayscale(100%);
+    .selected-overlay.selected-overlay {
+      opacity: 1;
+      filter: grayscale(75%);
+    }
   }
 }
 

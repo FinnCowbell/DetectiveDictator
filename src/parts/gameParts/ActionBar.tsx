@@ -3,6 +3,7 @@ import liberalPolicy from "../../media/liberal-policy.png";
 import fascistPolicy from "../../media/fascist-policy.png";
 import liberalMembership from "../../media/liberal-membership.png";
 import fascistMembership from "../../media/fascist-membership.png";
+import discardedCard from "../../media/discarded-policy.png";
 import jaPic from "../../media/hands/ja.png";
 import neinPic from "../../media/hands/nein.png";
 import { PID } from "../../model/Player";
@@ -16,8 +17,10 @@ import { useSocketContext } from "../../SocketContext";
 export const ActionBar: React.FC<{
   openDrawer?: () => void;
   closeDrawer?: () => void;
+  isEmpty?: boolean
 }> = ({
-  closeDrawer
+  closeDrawer,
+  isEmpty
 }) => {
     const { socket } = useSocketContext();
     const {
@@ -110,6 +113,9 @@ export const ActionBar: React.FC<{
     }, [socket, uiInfo])
 
     const content: JSX.Element = React.useMemo(() => {
+      if (isEmpty) return (
+        <div className="action empty"></div>
+      )
       const selectedPlayer = players[uiInfo.selectedPlayer || -1];
       switch (playerAction) {
         case "your chancellor pick":
@@ -190,6 +196,7 @@ export const ActionBar: React.FC<{
       uiInfo,
       you,
       players,
+      isEmpty
     ]);
 
     return (
@@ -237,7 +244,7 @@ function JaNein(props: {
         </div>
       </div>
     );
-  } //else
+  }
   return (
     <div className="action ja-nein">
       <div className="vote-options">
@@ -274,8 +281,13 @@ function Discard(props: {
   policies?: number[];
   fasBoard?: number;
 }) {
+  const [flipped, setFlipped] = useState(false);
   const [selectedCard, setSelectedCard] = useState(-1);
   function selectCard(i: number) {
+    if (!flipped) {
+      setFlipped(true);
+      return;
+    }
     if (!props.policies || i < 0 || i > props.policies.length) {
       return;
     }
@@ -287,6 +299,7 @@ function Discard(props: {
       isSelected={index == selectedCard}
       cardValue={value}
       onClick={() => selectCard(index)}
+      flipped={flipped}
     />
   ));
   return (
@@ -298,7 +311,7 @@ function Discard(props: {
             className="discard-button"
             onClick={() => props.confirm(selectedCard)}
           >
-            <h3>Discard</h3>
+            <h3>Destroy</h3>
           </button>
           <button
             className="veto-button"
@@ -312,7 +325,7 @@ function Discard(props: {
           className="discard-button"
           onClick={() => props.confirm(selectedCard)}
         >
-          <h2>Discard</h2>
+          <h2>Destroy</h2>
         </button>
       )}
     </div>
@@ -323,8 +336,8 @@ const PolicyCard: React.FC<{
   isSelected: boolean;
   cardValue: CardValue;
   onClick?: () => void;
+  flipped?: boolean;
 }> = (props) => {
-  const [isFlipped, setIsFlipped] = useState(false);
   const cardClass = {
     [CardValue.Fascist]: 'fascist',
     [CardValue.Liberal]: 'liberal'
@@ -335,16 +348,18 @@ const PolicyCard: React.FC<{
   }
 
   const onClick = () => {
-    setIsFlipped(true);
     props.onClick?.();
   }
   return (
     <div
       onClick={onClick}
-      className={`policy ${cardClass[props.cardValue]} ${isFlipped && 'flipped'} ${props.isSelected ? "selected" : ""
+      className={`policy ${cardClass[props.cardValue]} ${props.flipped && 'flipped'} ${props.isSelected ? "selected" : ""
         }`}
     >
       <img src={cards[props.cardValue]}></img>
+      <div className="selected-overlay">
+        <img src={discardedCard} />
+      </div>
     </div>
   );
 }
@@ -353,12 +368,13 @@ const PresidentPeek: React.FC<{
   policies?: CardValue[];
   confirm: () => void;
 }> = (props) => {
-    const cards = props.policies?.map((value, index) => (
-    <PolicyCard key={index} isSelected={false} cardValue={value} />
+  const [flipped, setFlipped] = useState(false);
+  const cards = props.policies?.map((value, index) => (
+    <PolicyCard flipped={flipped} key={index} isSelected={false} cardValue={value} onClick={() => setFlipped(true)} />
   ));
   return (
     <div className="action view-three">
-      <div className="policy-cards">{cards}</div>
+      <div className={`policy-cards ${!flipped ? 'flipped' : ''}`}>{cards}</div>
       <button className="continue-button" onClick={props.confirm}>
         <h2>Continue</h2>
       </button>

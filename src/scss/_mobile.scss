@@ -52,7 +52,7 @@ $padding5: 50px;
       display: flex;
       width: 100vw;
       height: 100%;
-      overflow-y: scroll;
+      overflow: hidden;
 
       min-height: 100%;
       min-width: 100vw;
@@ -61,7 +61,7 @@ $padding5: 50px;
 
       & .player-screen {
         box-sizing: border-box;
-        overflow-x: hidden;
+        overflow: hidden;
       }
 
       &.chat-screen {
@@ -78,6 +78,7 @@ $padding5: 50px;
       >.player-sidebar {
         padding: $padding4 $padding3;
         box-sizing: border-box;
+        overflow-y: scroll;
       }
 
       >.boards-container {
@@ -153,7 +154,7 @@ $padding5: 50px;
         min-height: 30px;
         max-height: max(150px, 25%);
 
-        transition: transform .25s;
+        transition: transform .25s $bouncey-motion-2;
 
         &:has(.selected) {
           transform: scale(.9);
@@ -238,7 +239,7 @@ $padding5: 50px;
       bottom: -180px;
       margin-left: -8px 0px;
       width: calc(100vw - 16px);
-      transition: bottom 0.25s;
+      transition: bottom 0.25s $bouncey-motion-1;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -307,7 +308,7 @@ $padding5: 50px;
     // z-index: 10;
     @include unknown-border();
     filter: drop-shadow(5px 5px 0px rgb(56, 56, 56));
-    transition: .25s transform;
+    transition: .25s transform $bouncey-motion-2;
     will-change: transform;
 
     >div {
@@ -319,6 +320,8 @@ $padding5: 50px;
     }
 
     img {
+      -webkit-user-select: none;
+      user-select: none;
       filter: hue-rotate(190deg) contrast(150%);
       width: 50px;
       height: 50px;

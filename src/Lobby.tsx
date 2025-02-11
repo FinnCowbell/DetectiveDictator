@@ -134,18 +134,18 @@ export const Lobby = () => {
       setjoinedBeforeGame(true);
     }
 
-    if (PID && lobbyID && !isSpectating && joinedBeforeGame && gameInfo?.gameStatus === 'ingame') {
+    if (socket && PID && lobbyID && !isSpectating && joinedBeforeGame && gameInfo?.gameStatus !== 'postgame') {
       storeReconnectPID(lobbyID, PID);
     }
 
-    if (!PID && lobbyID && gameInfo?.gameStatus === 'ingame') {
+    if (socket && !PID && lobbyID && lobbyExists && gameInfo?.gameStatus !== 'postgame') {
       const reconnectPID = getReconnectPID(lobbyID)
       if (reconnectPID) {
         clearLobbyMapping(lobbyID);
         reconnect(reconnectPID);
       }
     }
-  }, [gameInfo?.gameStatus, lobbyID, isSpectating, joinedBeforeGame, PID])
+  }, [gameInfo?.gameStatus, lobbyID, lobbyExists, isSpectating, joinedBeforeGame, PID, socket])
 
   const you = players && PID && players[PID];
   const isLeader = you && you.isLeader;
@@ -302,10 +302,20 @@ const LobbyPlayerList: React.FC<{
           key={player.username}
           className="disconnected"
           onClick={() => {
-            props.reconnect(player.PID);
+            if (yourPID == null) {
+              props.reconnect(player.PID);
+            }
           }}
         >
           {player.username}
+          {you && you.isLeader && player.PID != yourPID && (
+            <button
+              className="kick-button"
+              onClick={() => props.kickPlayer(player.PID)}
+            >
+              🥾
+            </button>
+          )}
         </li>
       )
   );

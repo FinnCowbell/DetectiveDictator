@@ -174,13 +174,8 @@ class Lobby {
     //If the game isn't running, disconnects should just kick the player.
     let player = this.getPlayerBySocketID(socket.id);
     let PID = player.PID;
-    //Should this logic be elsewhere?
-    if (this.game.gameStatus == "pregame") {
-      return this.kickPlayer(PID);
-    } else {
-      // We inform the player they were  disconnected explicitly so they can initiate necessary game reconnect signals. _slight_ spaghetti, I think.
-      player.socket.emit("connection lost");
-    }
+    // We inform the player they were  disconnected explicitly so they can initiate necessary game reconnect signals. _slight_ spaghetti, I think.
+    player.socket.emit("connection lost");
     // Unlink socketID to playerID.
     //We're not using this socket ID again, so we want to get rid of it.
     delete this._sidpid[socket.id];
@@ -248,7 +243,7 @@ class Lobby {
       this.error("Kick: Player does not exist.");
       return false;
     }
-    let SID = player.socket.id;
+    let SID = player.socket?.id;
     delete this._sidpid[SID];
     delete this.players[PID];
     if (player.connected) {
@@ -265,10 +260,11 @@ class Lobby {
       this.nPlayers--;
     }
     this.log(`Player ${player.username} kicked from the lobby.`);
-    player.socket.emit("kick");
+    player.socket?.emit("kick");
     this.emitUpdateLobby();
     return true;
   }
+
   requestKick(kickeePID, socket) {
     let player = this.getPlayerBySocketID(socket.id);
     if (player.isLeader) {

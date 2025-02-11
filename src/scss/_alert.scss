@@ -1,4 +1,6 @@
 @import "./fonts";
+@import "./colors";
+
 .alert-bar {
   position: fixed;
   display: flex;
@@ -12,7 +14,7 @@
   border-bottom: 3px solid rgb(150, 151, 74);
   margin: 0px;
   padding: 0px;
-  transition: .2s top;
+  transition: .2s top $bouncey-motion-1;
   z-index: 999;
   font-family: $main-stack;
   button {
