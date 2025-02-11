@@ -30,7 +30,7 @@ export const Lobby = () => {
   const [lobbyExists, setLobbyExists] = React.useState(false)
   const [players, setPlayers] = React.useState<PlayerMap>({})
   const [nSpectators, setNSpectators] = React.useState(0)
-  const [isSpectating, setIsSpectating] = React.useState(false)
+  const [isSpectating, setIsSpectating] = React.useState<boolean>(false)
   const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
   const isMobile = useIsMobile();
 
@@ -81,7 +81,9 @@ export const Lobby = () => {
       defaultState();
       socket.on("lobby joined", ({ PID, isSpectating }) => {
         // Store PID in local storage
-        storeReconnectPID(lobbyID, PID);
+        if (isSpectating === false) {
+          storeReconnectPID(lobbyID, PID);
+        }
         setPID(PID);
         setIsSpectating(isSpectating);
       });
