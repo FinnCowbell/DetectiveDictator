@@ -309,6 +309,10 @@ class Lobby {
     } else if (!this.getPlayerBySocketID(socket.id).isLeader) {
       socket.emit("alert", "You cannot start the game!");
       return false;
+      // no players can be disconnected
+    } else if (this.nConnected != this.nPlayers) {
+      socket.emit("alert", "Not all players are connected!");
+      return false;
     }
     this.gameModules.forEach((m) => m.init());
   }
