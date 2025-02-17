@@ -16,6 +16,7 @@ class ChatModule extends GameModule {
   reconnectPlayer(player) {
     this.activateSignals(player);
   }
+
   connectSpectator(player) {
     //Spectators as of now cannot send messages.
     player.socket.on("full chat request", () => {
@@ -24,6 +25,8 @@ class ChatModule extends GameModule {
   }
   activateSignals(player) {
     let socket = player.socket;
+    if (!socket) return;
+    
     socket.on("chat send", (arg) => {
       let chat = {
         username: player.username,

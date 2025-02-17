@@ -336,6 +336,8 @@ class Hitler extends GameModule {
     let socket = player.socket;
     let theirPID = player.PID;
 
+    if (!socket) return;
+
     socket.on("chancellor picked", (arg) => {
       let picked = arg.pickedChancellor;
       if (this.currentEvent != "chancellor pick") {
