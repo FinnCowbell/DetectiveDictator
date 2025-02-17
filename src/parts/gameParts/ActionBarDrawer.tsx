@@ -22,12 +22,19 @@ export const ActionBarDrawer: React.FC<{}> = () => {
   const { playerAction, uiInfo, you, spectating } = useGameDetails();
   const [prevAction, setPrevAction] = React.useState<PlayerAction | null>(null);
 
+  const closeDrawer = React.useCallback(() => {
+    setIsOpened(false);
+  }, []);
+
+  const openDrawer = React.useCallback(() => {
+    setIsOpened(true);
+  }, []);
+
   React.useEffect(() => {
     if (prevAction === playerAction) {
       // Prevent automatic actions from happening more than once.
       return;
     }
-    setPrevAction(playerAction);
 
     const AUTO_OPEN_ACTIONS: PlayerAction[] = [PlayerActions.YOUR_VETO_REQUESTED,
     PlayerActions.YOUR_PRESIDENT_PICK,
@@ -44,17 +51,10 @@ export const ActionBarDrawer: React.FC<{}> = () => {
     ];
     if (AUTO_OPEN_ACTIONS.includes(playerAction) ||
       (SELECT_PLAYER_ACTIONS.includes(playerAction) && uiInfo.selectedPlayer != null)) {
-      setIsOpened(true);
+      openDrawer();
+      setPrevAction(playerAction);
     }
-  }, [prevAction, playerAction, uiInfo.selectedPlayer, uiInfo.voted, you.PID]);
-
-  const closeDrawer = React.useCallback(() => {
-    setIsOpened(false);
-  }, []);
-
-  const openDrawer = React.useCallback(() => {
-    setIsOpened(true);
-  }, []);
+  }, [prevAction, playerAction, uiInfo.selectedPlayer, uiInfo.voted, you.PID, openDrawer]);
 
   const debouncedToggleOpen = React.useCallback(throttle((ev: { preventDefault: () => void; }) => {
     setIsOpened((isOpened) => !isOpened);

@@ -12,7 +12,7 @@ const MAX_LENGTH = 120;
 
 const ChatRoom: React.FC<{ isCard?: boolean }> = ({ isCard }) => {
   const { socket } = useSocketContext();
-  const { spectating } = useGameDetails();
+  const { spectating, you } = useGameDetails();
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [isOpen, setIsOpen] = React.useState(false);
   const [hasNewChat, setHasNewChat] = React.useState(false);
@@ -50,7 +50,7 @@ const ChatRoom: React.FC<{ isCard?: boolean }> = ({ isCard }) => {
 
   React.useEffect(() => {
     socket?.emit("full chat request");
-  }, [socket]);
+  }, [socket, you.PID]);
 
   const chats = React.useMemo(() => messages.map((msg, i) => (
     <div key={i} className="message">
