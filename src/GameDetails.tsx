@@ -7,6 +7,7 @@ import { PlayerAction } from "./model/GameEvent";
 import { useSocketContext } from "./SocketContext";
 import { usePlayerAction } from "./hooks/usePlayerAction";
 import { filterPrivateInfo } from "./helpers/filterPrivateInfo";
+import { useIsMobile } from "./hooks/useIsMobile";
 
 interface IGameContextProviderProps {
   yourPid?: PID;
@@ -45,7 +46,8 @@ export const GameContextProvider: React.FC<IGameContextProviderProps> = ({ child
   const { socket, lobbyID } = useSocketContext();
   const [rounds, setRounds] = useState<Round[] | undefined>();
   const [uiInfo, setUIInfo] = useState<UIInfo>(EMPTY_UI_INFO);
-  const [privateInfo, setPrivateInfo] = useState(false);
+  const isMobile = useIsMobile();
+  const [privateInfo, setPrivateInfo] = useState(!isMobile);
 
   const clearUIInfo = useCallback(() => {
     setUIInfo(EMPTY_UI_INFO);
