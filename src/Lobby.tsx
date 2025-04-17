@@ -32,6 +32,7 @@ export const Lobby = () => {
   const [nSpectators, setNSpectators] = React.useState(0)
   const [isSpectating, setIsSpectating] = React.useState<boolean>(false)
   const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
+  const wasConnected = React.useRef(false);
   const isMobile = useIsMobile();
 
   const inLobby = !!PID;
@@ -58,10 +59,37 @@ export const Lobby = () => {
     });
 
   const reconnect = (PID: PID) => {
+    console.log("Attempting to reconnect with PID:", PID);
     socket?.emit("rejoin lobby", {
       PID: PID,
     });
   }
+
+  // Function to attempt reconnection
+  const attemptReconnect = React.useCallback(() => {
+    const reconnectPID = getReconnectPID(lobbyID || '');
+    if (lobbyID && reconnectPID && wasConnected.current) {
+      console.log("Attempting to reconnect to game...");
+      reconnect(reconnectPID);
+    }
+  }, [lobbyID, wasConnected]);
+
+  // Handle visibility change (app going to background/foreground)
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("Page became visible, checking connection status");
+        if (!connected && wasConnected.current) {
+          attemptReconnect();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [connected, attemptReconnect]);
 
   const kickPlayer = (PID: PID) => {
     socket?.emit("request kick", {
@@ -79,57 +107,97 @@ export const Lobby = () => {
   React.useEffect(() => {
     if (lobbyID && socket) {
       defaultState();
-      socket.on("lobby joined", ({ PID, isSpectating }) => {
-        // Store PID in local storage
-        if (isSpectating === false) {
-          storeReconnectPID(lobbyID, PID);
+      
+      const messages: { [event: string]: (...args: any[]) => void } = {
+        "lobby joined": ({ PID, isSpectating }) => {
+          // Store PID in local storage
+          if (isSpectating === false) {
+            storeReconnectPID(lobbyID, PID);
+          }
+          setPID(PID);
+          setIsSpectating(isSpectating);
+          wasConnected.current = true;
+        },
+        "change lobby": (arg) => {
+          setLobbyID(arg.ID);
+        },
+        "kick": () => {
+          wasConnected.current = false;
+          leaveLobby("You've been kicked From the lobby!");
+        },
+        "lobby update info": (arg: {
+          lobbyInfo: {
+            players: PlayerMap,
+            gameInfo: { gameStatus: string },
+            nSpectators: number
+          }
+        }) => {
+          if (!lobbyExists) {
+            document
+              .querySelector(".lobby-window .wave-background")
+              ?.classList.add("fade");
+          }
+          setLobbyExists(true)
+          setPlayers(arg.lobbyInfo.players)
+          setGameInfo(arg.lobbyInfo.gameInfo)
+          setNSpectators(arg.lobbyInfo.nSpectators)
+        },
+        // Socket.IO built-in reconnection events
+        "reconnect": (attemptNumber) => {
+          console.log(`Socket reconnected after ${attemptNumber} attempts`);
+          // If we were previously in a game, try to rejoin
+          if (wasConnected.current) {
+            attemptReconnect();
+          }
+        },
+        "reconnect_attempt": (attemptNumber) => {
+          console.log(`Socket reconnection attempt #${attemptNumber}`);
+        },
+        "reconnect_error": (err) => {
+          console.error("Socket reconnection error:", err);
+        },
+        "reconnect_failed": () => {
+          console.error("Socket reconnection failed after all attempts");
+          setAlertMessage("Lost Connection!");
+        },
+        "disconnect": () => {
+          console.log("Socket disconnected");
+          // Use disconnect instead of connection lost to initiate reconnect
+          if (wasConnected.current) {
+            const reconnectPID: PID | undefined = getReconnectPID(lobbyID);
+            if (reconnectPID) {
+              // Add a small delay to allow socket.io to try automatic reconnection first
+              setTimeout(() => {
+                if (!connected && wasConnected.current) {
+                  reconnect(reconnectPID);
+                }
+              }, 1000);
+            } else {
+              setAlertMessage("Connection Lost!");
+              setLobbyID('');
+            }
+          }
+        },
+        "connect": () => {
+          socket.emit("connection init request");
         }
-        setPID(PID);
-        setIsSpectating(isSpectating);
+      };
+
+      // Register all event handlers
+      Object.keys(messages).forEach(event => {
+        socket.on(event, messages[event]);
       });
 
-      socket.on("change lobby", (arg) => {
-        setLobbyID(arg.ID);
-      });
-
-      socket.on("kick", () =>
-        leaveLobby("You've been kicked From the lobby!")
-      );
-
-      socket.on("lobby update info", (arg: {
-        lobbyInfo: {
-          players: PlayerMap,
-          gameInfo: { gameStatus: string },
-          nSpectators: number
+      return () => {
+        // Clean up all event handlers
+        if (socket) {
+          Object.keys(messages).forEach(event => {
+            socket.off(event, messages[event]);
+          });
         }
-      }) => {
-        if (!lobbyExists) {
-          document
-            .querySelector(".lobby-window .wave-background")
-            ?.classList.add("fade");
-        }
-        setLobbyExists(true)
-        setPlayers(arg.lobbyInfo.players)
-        setGameInfo(arg.lobbyInfo.gameInfo)
-        setNSpectators(arg.lobbyInfo.nSpectators)
-      });
-
-      //establishing lobby connection needs to occur After signals have been triggered.
-      socket.on("connect", () => {
-        socket.emit("connection init request");
-      });
-
-      socket.on("connection lost", () => {
-        const PID: PID | undefined = getReconnectPID(lobbyID);
-        if (PID) {
-          socket.emit("rejoin lobby", { PID });
-        } else {
-          setAlertMessage("Connection Lost!");
-          setLobbyID('');
-        }
-      });
+      };
     }
-  }, [lobbyID, socket]);
+  }, [lobbyID, socket, attemptReconnect, connected, lobbyExists]);
 
   React.useEffect(() => {
     if (PID && !joinedBeforeGame && gameInfo?.gameStatus === 'pregame') {

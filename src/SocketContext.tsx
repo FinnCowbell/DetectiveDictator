@@ -98,9 +98,8 @@ export const SocketContext: React.FC = ({ children }) => {
   const [lobbyID, _setLobbyID] = React.useState<string>(getQueryStrings()[LOBBY_QSP] || '');
   const [alertMessage, setAlertMessage] = React.useState('');
   const [connected, setConnected] = React.useState(false);
-  const disconnector = React.useRef<NodeJS.Timeout>()
+  const disconnector = React.useRef<NodeJS.Timeout>();
   const socket = useGameSocket(lobbyID);
-
 
   const setLobbyID = React.useCallback((newId: string) => {
     _setLobbyID(newId);
@@ -156,6 +155,10 @@ export const SocketContext: React.FC = ({ children }) => {
       },
       "connect_error": (err: Error) => {
         console.error("Connection error:", err);
+      },
+      "disconnect": () => {
+        console.log("Socket disconnected");
+        setConnected(false);
       },
       "lobby created": (arg: { ID: string }) => {
         setLobbyID(arg.ID);
