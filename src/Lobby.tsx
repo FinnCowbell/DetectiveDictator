@@ -3,8 +3,14 @@ import Header from "./parts/Header";
 import ChatRoom from "./parts/ChatRoom";
 import SingleInputForm from "./parts/SingleInputForm";
 import WaveBackground from "./rendering/WaveBackground";
-import Hitler from './Hitler';
-import { useSocketContext, setLocalStorage, getLocalStorage, LOBBY_MAPPING_KEY, clearLobbyMapping } from "./SocketContext";
+import Hitler from "./Hitler";
+import {
+  useSocketContext,
+  setLocalStorage,
+  getLocalStorage,
+  LOBBY_MAPPING_KEY,
+  clearLobbyMapping,
+} from "./SocketContext";
 import FireBackground from "./rendering/FireBackground";
 import presHat from "./media/sidebar/president-hat.png";
 import { PID } from "./model/Player";
@@ -15,24 +21,26 @@ import { useMobileViewportStyles } from "./hooks/useMobileViewportStyles";
 
 const storeReconnectPID = (lobbyID: string, PID: PID) => {
   setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
-}
+};
 
 export function getReconnectPID(lobbyID: string): PID | undefined {
   const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
-  return lobbyMapping[lobbyID]
+  return lobbyMapping[lobbyID];
 }
 
 export const Lobby = () => {
-  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } = useSocketContext();
+  const { lobbyID, socket, setAlertMessage, setLobbyID, connected } =
+    useSocketContext();
   useMobileViewportStyles();
-  const [gameInfo, setGameInfo] = React.useState<{ gameStatus: string } | undefined>()
-  const [PID, setPID] = React.useState<PID | undefined>()
-  const [lobbyExists, setLobbyExists] = React.useState(false)
-  const [players, setPlayers] = React.useState<PlayerMap>({})
-  const [nSpectators, setNSpectators] = React.useState(0)
-  const [isSpectating, setIsSpectating] = React.useState<boolean>(false)
-  const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false)
-  const wasConnected = React.useRef(false);
+  const [gameInfo, setGameInfo] = React.useState<
+    { gameStatus: string } | undefined
+  >();
+  const [PID, setPID] = React.useState<PID | undefined>();
+  const [lobbyExists, setLobbyExists] = React.useState(false);
+  const [players, setPlayers] = React.useState<PlayerMap>({});
+  const [nSpectators, setNSpectators] = React.useState(0);
+  const [isSpectating, setIsSpectating] = React.useState<boolean>(false);
+  const [joinedBeforeGame, setjoinedBeforeGame] = React.useState(false);
   const isMobile = useIsMobile();
 
   const inLobby = !!PID;
@@ -44,14 +52,21 @@ export const Lobby = () => {
     setPlayers({});
     setNSpectators(0);
     setIsSpectating(false);
-  }
+  };
+
+  React.useEffect(() => {
+    // the lobby changed. reset.
+    if (lobbyID) {
+      defaultState();
+    }
+  }, [lobbyID]);
 
   const leaveLobby = (message?: string) => {
     if (message) {
       setAlertMessage(message);
     }
-    setLobbyID('');
-  }
+    setLobbyID("");
+  };
 
   const connect = (username: string) =>
     socket?.emit("join lobby", {
@@ -63,31 +78,31 @@ export const Lobby = () => {
     socket?.emit("rejoin lobby", {
       PID: PID,
     });
-  }
+  };
 
   // Function to attempt reconnection
   const attemptReconnect = React.useCallback(() => {
-    const reconnectPID = getReconnectPID(lobbyID || '');
-    if (lobbyID && reconnectPID && wasConnected.current) {
+    const reconnectPID = getReconnectPID(lobbyID || "");
+    if (lobbyID && reconnectPID) {
       console.log("Attempting to reconnect to game...");
       reconnect(reconnectPID);
     }
-  }, [lobbyID, wasConnected]);
+  }, [lobbyID]);
 
   // Handle visibility change (app going to background/foreground)
   React.useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         console.log("Page became visible, checking connection status");
-        if (!connected && wasConnected.current) {
+        if (!connected) {
           attemptReconnect();
         }
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [connected, attemptReconnect]);
 
@@ -95,146 +110,167 @@ export const Lobby = () => {
     socket?.emit("request kick", {
       kickee: PID,
     });
-  }
+  };
 
   const startGame = () => socket?.emit("game init");
 
   const spectateGame = () => {
     socket?.emit("spectator init");
     setIsSpectating(true);
-  }
+  };
 
   React.useEffect(() => {
-    if (lobbyID && socket) {
-      defaultState();
-      
-      const messages: { [event: string]: (...args: any[]) => void } = {
-        "lobby joined": ({ PID, isSpectating }) => {
-          // Store PID in local storage
-          if (isSpectating === false) {
-            storeReconnectPID(lobbyID, PID);
-          }
-          setPID(PID);
-          setIsSpectating(isSpectating);
-          wasConnected.current = true;
-        },
-        "change lobby": (arg) => {
-          setLobbyID(arg.ID);
-        },
-        "kick": () => {
-          wasConnected.current = false;
-          leaveLobby("You've been kicked From the lobby!");
-        },
-        "lobby update info": (arg: {
-          lobbyInfo: {
-            players: PlayerMap,
-            gameInfo: { gameStatus: string },
-            nSpectators: number
-          }
-        }) => {
-          if (!lobbyExists) {
-            document
-              .querySelector(".lobby-window .wave-background")
-              ?.classList.add("fade");
-          }
-          setLobbyExists(true)
-          setPlayers(arg.lobbyInfo.players)
-          setGameInfo(arg.lobbyInfo.gameInfo)
-          setNSpectators(arg.lobbyInfo.nSpectators)
-        },
-        // Socket.IO built-in reconnection events
-        "reconnect": (attemptNumber) => {
-          console.log(`Socket reconnected after ${attemptNumber} attempts`);
-          // If we were previously in a game, try to rejoin
-          if (wasConnected.current) {
-            attemptReconnect();
-          }
-        },
-        "reconnect_attempt": (attemptNumber) => {
-          console.log(`Socket reconnection attempt #${attemptNumber}`);
-        },
-        "reconnect_error": (err) => {
-          console.error("Socket reconnection error:", err);
-        },
-        "reconnect_failed": () => {
-          console.error("Socket reconnection failed after all attempts");
-          setAlertMessage("Lost Connection!");
-        },
-        "disconnect": () => {
-          console.log("Socket disconnected");
-          // Use disconnect instead of connection lost to initiate reconnect
-          if (wasConnected.current) {
-            const reconnectPID: PID | undefined = getReconnectPID(lobbyID);
-            if (reconnectPID) {
-              // Add a small delay to allow socket.io to try automatic reconnection first
-              setTimeout(() => {
-                if (!connected && wasConnected.current) {
-                  reconnect(reconnectPID);
-                }
-              }, 1000);
-            } else {
-              setAlertMessage("Connection Lost!");
-              setLobbyID('');
-            }
-          }
-        },
-        "connect": () => {
-          socket.emit("connection init request");
-        }
-      };
-
-      // Register all event handlers
-      Object.keys(messages).forEach(event => {
-        socket.on(event, messages[event]);
-      });
-
-      return () => {
-        // Clean up all event handlers
-        if (socket) {
-          Object.keys(messages).forEach(event => {
-            socket.off(event, messages[event]);
-          });
-        }
-      };
+    if (!lobbyID || !socket) {
+      return;
     }
-  }, [lobbyID, socket, attemptReconnect, connected, lobbyExists]);
+    const messages: { [event: string]: (...args: any[]) => void } = {
+      "lobby joined": ({ PID, isSpectating }) => {
+        // Store PID in local storage
+        if (isSpectating === false) {
+          storeReconnectPID(lobbyID, PID);
+        }
+        setPID(PID);
+        setIsSpectating(isSpectating);
+      },
+      "change lobby": (arg) => {
+        setLobbyID(arg.ID);
+      },
+      kick: () => {
+        leaveLobby("You've been kicked From the lobby!");
+      },
+      "lobby update info": (arg: {
+        lobbyInfo: {
+          players: PlayerMap;
+          gameInfo: { gameStatus: string };
+          nSpectators: number;
+        };
+      }) => {
+        if (!lobbyExists) {
+          document
+            .querySelector(".lobby-window .wave-background")
+            ?.classList.add("fade");
+        }
+        setLobbyExists(true);
+        setPlayers(arg.lobbyInfo.players);
+        setGameInfo(arg.lobbyInfo.gameInfo);
+        setNSpectators(arg.lobbyInfo.nSpectators);
+      },
+      // Socket.IO built-in reconnection events
+      reconnect: (attemptNumber) => {
+        console.log(`Socket reconnected after ${attemptNumber} attempts`);
+        // If we were previously in a game, try to rejoin
+        lobbyExists && attemptReconnect();
+      },
+      reconnect_attempt: (attemptNumber) => {
+        console.log(`Socket reconnection attempt #${attemptNumber}`);
+      },
+      reconnect_error: (err) => {
+        console.error("Socket reconnection error:", err);
+      },
+      reconnect_failed: () => {
+        console.error("Socket reconnection failed after all attempts");
+        setAlertMessage("Lost Connection!");
+      },
+      disconnect: () => {
+        console.log("Socket disconnected");
+        // Use disconnect instead of connection lost to initiate reconnect
+        if (lobbyExists) {
+          const reconnectPID: PID | undefined = getReconnectPID(lobbyID);
+          if (reconnectPID) {
+            // Add a small delay to allow socket.io to try automatic reconnection first
+            setTimeout(() => {
+              if (!connected) {
+                reconnect(reconnectPID);
+              }
+            }, 1000);
+          } else {
+            setAlertMessage("Connection Lost!");
+            setLobbyID("");
+          }
+        }
+      },
+      connect: () => {
+        socket.emit("connection init request");
+      },
+    };
+
+    // Register all event handlers
+    Object.keys(messages).forEach((event) => {
+      socket.on(event, messages[event]);
+    });
+
+    return () => {
+      // Clean up all event handlers
+      if (socket) {
+        Object.keys(messages).forEach((event) => {
+          socket.off(event, messages[event]);
+        });
+      }
+    };
+  }, [lobbyID, socket, attemptReconnect, lobbyExists]);
 
   React.useEffect(() => {
-    if (PID && !joinedBeforeGame && gameInfo?.gameStatus === 'pregame') {
+    if (PID && !joinedBeforeGame && gameInfo?.gameStatus === "pregame") {
       setjoinedBeforeGame(true);
     }
 
-    if (socket && PID && lobbyID && !isSpectating && joinedBeforeGame && gameInfo?.gameStatus !== 'postgame') {
+    if (
+      socket &&
+      PID &&
+      lobbyID &&
+      !isSpectating &&
+      joinedBeforeGame &&
+      gameInfo?.gameStatus !== "postgame"
+    ) {
       storeReconnectPID(lobbyID, PID);
     }
 
-    if (socket && !PID && lobbyID && lobbyExists && gameInfo?.gameStatus !== 'postgame') {
-      const reconnectPID = getReconnectPID(lobbyID)
+    if (
+      socket &&
+      !PID &&
+      lobbyID &&
+      lobbyExists &&
+      gameInfo?.gameStatus !== "postgame"
+    ) {
+      const reconnectPID = getReconnectPID(lobbyID);
       if (reconnectPID) {
         clearLobbyMapping(lobbyID);
         reconnect(reconnectPID);
       }
     }
-  }, [gameInfo?.gameStatus, lobbyID, lobbyExists, isSpectating, joinedBeforeGame, PID, socket])
+  }, [
+    gameInfo?.gameStatus,
+    lobbyID,
+    lobbyExists,
+    isSpectating,
+    joinedBeforeGame,
+    PID,
+    socket,
+  ]);
 
   const you = players && PID && players[PID];
   const isLeader = you && you.isLeader;
   const navButtons: JSX.Element[] = [
-    <button key='menu' className="menu-exit" onClick={() => leaveLobby()}>
+    <button key="menu" className="menu-exit" onClick={() => leaveLobby()}>
       Menu
-    </button>
+    </button>,
   ];
   if (!inLobby && lobbyExists) {
     if (gameInfo?.gameStatus !== "postgame") {
       navButtons.push(
-        <button key='spectate' className="spectate" onClick={spectateGame}>
-          {`Spectate ${gameInfo?.gameStatus == "ingame" ? "without" : "with"} Roles`}
+        <button key="spectate" className="spectate" onClick={spectateGame}>
+          {`Spectate ${
+            gameInfo?.gameStatus == "ingame" ? "without" : "with"
+          } Roles`}
         </button>
       );
     } else {
-      navButtons.push(<button className="menu-exit" onClick={() => socket?.emit("join new lobby")}>
-        Join Next Game
-      </button>
+      navButtons.push(
+        <button
+          className="menu-exit"
+          onClick={() => socket?.emit("join new lobby")}>
+          Join Next Game
+        </button>
       );
     }
   } else if (isLeader) {
@@ -245,7 +281,7 @@ export const Lobby = () => {
     );
   }
   return (
-    <div className="window" >
+    <div className="window">
       {(!inLobby || gameInfo?.gameStatus == "pregame") && (
         <div className={`lobby-window`}>
           {/* {!connected && <FireBackground />} */}
@@ -259,16 +295,16 @@ export const Lobby = () => {
               lobbyExists={lobbyExists}
               inLobby={inLobby}
             />
-            {connected && <LobbyPlayerList
-              yourPID={PID}
-              players={players}
-              reconnect={reconnect}
-              kickPlayer={kickPlayer}
-            />}
+            {connected && (
+              <LobbyPlayerList
+                yourPID={PID}
+                players={players}
+                reconnect={reconnect}
+                kickPlayer={kickPlayer}
+              />
+            )}
             <div className="bottom-button">
-              <div>
-                {navButtons}
-              </div>
+              <div>{navButtons}</div>
             </div>
             <div className="num-spectators">
               {lobbyExists && <h3>Spectators: {nSpectators}</h3>}
@@ -277,48 +313,47 @@ export const Lobby = () => {
         </div>
       )}
       <GameContextProvider yourPid={PID} spectating={isSpectating}>
-        <Hitler
-        />
-        {inLobby && !isMobile && (
-          <ChatRoom />
-        )}
+        <Hitler />
+        {inLobby && !isMobile && <ChatRoom />}
       </GameContextProvider>
     </div>
   );
-}
+};
 
 const NewPlayerForm: React.FC<{
-  connect: (username: string) => void
+  connect: (username: string) => void;
 }> = ({ connect }) => {
   const join = (name: string) => {
     if (name != "") {
       connect(name);
     }
-  }
+  };
   return (
     <div className="new-player-form">
       <SingleInputForm
         className="username-input"
         button="Join"
-        MAX_LENGTH={30}//30 is generous CHRIS >:(
-        submit={join}
-      >
+        MAX_LENGTH={30} //30 is generous CHRIS >:(
+        submit={join}>
         <label>Enter your Name:</label>
       </SingleInputForm>
     </div>
   );
-
-}
+};
 
 const LobbyStatus: React.FC<{
-  connect: (username: string) => void,
-  lobbyExists: boolean,
-  gameInfo?: { gameStatus: string },
-  inLobby: boolean
+  connect: (username: string) => void;
+  lobbyExists: boolean;
+  gameInfo?: { gameStatus: string };
+  inLobby: boolean;
 }> = (props) => {
   let status;
   if (!props.lobbyExists) {
-    status = <h2>Loading Lobby <div className="dots" /></h2>;
+    status = (
+      <h2>
+        Loading Lobby <div className="dots" />
+      </h2>
+    );
   } else if (props.gameInfo && props.gameInfo.gameStatus == "ingame") {
     status = <h2>Game in Progress!</h2>;
   } else if (props.gameInfo && props.gameInfo.gameStatus == "postgame") {
@@ -329,17 +364,19 @@ const LobbyStatus: React.FC<{
     status = <NewPlayerForm connect={props.connect}></NewPlayerForm>;
   }
   return <div className="lobby-status">{status}</div>;
-}
+};
 
 const LobbyPlayerList: React.FC<{
-  yourPID?: PID,
-  players: PlayerMap,
-  reconnect: (PID: PID) => void,
-  kickPlayer: (PID: PID) => void
+  yourPID?: PID;
+  players: PlayerMap;
+  reconnect: (PID: PID) => void;
+  kickPlayer: (PID: PID) => void;
 }> = ({ yourPID, ...props }) => {
   let you = yourPID && props.players ? props.players[yourPID] : null;
   let iterablePlayers = Object.values(props.players);
-  let nDisconnectedPlayers = iterablePlayers.filter(({ connected }) => !connected).length;
+  let nDisconnectedPlayers = iterablePlayers.filter(
+    ({ connected }) => !connected
+  ).length;
   //Creating the list of connected Players
   const connectedPlayers: JSX.Element[] = iterablePlayers.map(
     (player) =>
@@ -349,14 +386,12 @@ const LobbyPlayerList: React.FC<{
           className={
             (player.isLeader ? "leader " : "") +
             (player.PID == yourPID ? "you " : "")
-          }
-        >
+          }>
           {player.username}
           {you && you.isLeader && player.PID != yourPID && (
             <button
               className="kick-button"
-              onClick={() => props.kickPlayer(player.PID)}
-            >
+              onClick={() => props.kickPlayer(player.PID)}>
               🥾
             </button>
           )}
@@ -375,14 +410,12 @@ const LobbyPlayerList: React.FC<{
             if (yourPID == null) {
               props.reconnect(player.PID);
             }
-          }}
-        >
+          }}>
           {player.username}
           {you && you.isLeader && player.PID != yourPID && (
             <button
               className="kick-button"
-              onClick={() => props.kickPlayer(player.PID)}
-            >
+              onClick={() => props.kickPlayer(player.PID)}>
               🥾
             </button>
           )}
@@ -390,8 +423,10 @@ const LobbyPlayerList: React.FC<{
       )
   );
   return (
-    //@ts-expect-error - blah
-    <div className="player-list" style={{ ['--president-hat']: `url(${presHat})` }}>
+    <div
+      className="player-list"
+      //@ts-expect-error - blah
+      style={{ ["--president-hat"]: `url(${presHat})` }}>
       <div className="connected-players">
         <h3>Connected Players:</h3>
         <ul>{connectedPlayers}</ul>
@@ -404,6 +439,6 @@ const LobbyPlayerList: React.FC<{
       ) : null}
     </div>
   );
-}
+};
 
 export default Lobby;

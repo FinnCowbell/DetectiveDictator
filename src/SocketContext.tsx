@@ -158,7 +158,6 @@ export const SocketContext: React.FC = ({ children }) => {
       },
       "disconnect": () => {
         console.log("Socket disconnected");
-        setConnected(false);
       },
       "lobby created": (arg: { ID: string }) => {
         setLobbyID(arg.ID);
