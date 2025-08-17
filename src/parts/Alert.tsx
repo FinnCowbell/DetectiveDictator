@@ -4,7 +4,7 @@ import { useSocketContext } from "../SocketContext";
 export const Alert = () => {
   const { alertMessage, setAlertMessage } = useSocketContext();
   const [isOpen, setIsOpen] = useState(false);
-  const interval = useRef<NodeJS.Timeout |undefined>();
+  const interval = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     if (alertMessage != '') {

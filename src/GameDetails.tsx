@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react";
 
 import demoGameState from "./model/DemoGameState";
 import { GameEventInfo, Round, UIInfo, UIInfoEvent } from "./model/GameState";
@@ -9,7 +9,7 @@ import { usePlayerAction } from "./hooks/usePlayerAction";
 import { filterPrivateInfo } from "./helpers/filterPrivateInfo";
 import { useIsMobile } from "./hooks/useIsMobile";
 
-interface IGameContextProviderProps {
+interface IGameContextProviderProps extends PropsWithChildren<{}> {
   yourPid?: PID;
   spectating?: boolean;
 }

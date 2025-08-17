@@ -13,7 +13,7 @@ const Header: React.FC = () => {
   }, []);
 
   const getLobbyURL = () => {
-    return `${window.location.origin}${window.location.pathname}#lobby=${lobbyID}`;
+    return `${window.location.origin}${window.location.pathname}?lobby=${lobbyID}`;
   };
 
   const shareURL = () => {

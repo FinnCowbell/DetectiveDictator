@@ -1,4 +1,4 @@
-import React from "react";
+import React, { JSX } from "react";
 import Header from "./parts/Header";
 import ChatRoom from "./parts/ChatRoom";
 import SingleInputForm from "./parts/SingleInputForm";

@@ -19,9 +19,9 @@ interface BoardProps {
 
 //Boards don't need a state.
 class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
-  private canvas: React.RefObject<HTMLCanvasElement>;
-  private libBoard: React.RefObject<HTMLImageElement>;
-  private policy: React.RefObject<HTMLImageElement>;
+  private canvas: React.RefObject<HTMLCanvasElement | null>;
+  private libBoard: React.RefObject<HTMLImageElement | null>;
+  private policy: React.RefObject<HTMLImageElement | null>;
   private markerColor: string;
   private liberalText: string;
   private markerLocations: number[][];
@@ -32,7 +32,7 @@ class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
   private cardY: number;
   private cardWidth: number;
   private cardHeight: number;
-  private containerRef: React.RefObject<HTMLDivElement>;
+  private containerRef: React.RefObject<HTMLDivElement | null>;
 
   constructor(props: BoardProps) {
     super(props);
@@ -200,10 +200,10 @@ class LibBoard extends React.Component<Omit<BoardProps, "nPlayers">> {
 const FAS_CANVAS_WIDTH = 2074
 const FAS_CANVAS_HEIGHT = 687
 class FasBoard extends React.Component<BoardProps> {
-  private canvas: React.RefObject<HTMLCanvasElement>;
-  private policy: React.RefObject<HTMLImageElement>;
-  private board: React.RefObject<HTMLImageElement>;
-  private containerRef: React.RefObject<HTMLDivElement>;
+  private canvas: React.RefObject<HTMLCanvasElement | null>;
+  private policy: React.RefObject<HTMLImageElement | null>;
+  private board: React.RefObject<HTMLImageElement | null>;
+  private containerRef: React.RefObject<HTMLDivElement | null>;
   private cardY: number;
   private cardXs: number[];
   private cardWidth: number;

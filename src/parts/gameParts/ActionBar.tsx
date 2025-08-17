@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { JSX, useState } from "react";
 import liberalPolicy from "../../media/liberal-policy.png";
 import fascistPolicy from "../../media/fascist-policy.png";
 import liberalMembership from "../../media/liberal-membership.png";

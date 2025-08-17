@@ -1,19 +1,17 @@
-import { hot } from "react-hot-loader/root";
 import React from "react";
 
 import Lobby from "./Lobby";
 import MainMenu from "./MainMenu";
-import { useSocketContext } from "./SocketContext";
+import { SocketContext } from "./SocketContext";
 
 /*The main purpose of the App react component is socket room  management.*/
 const App = () => {
-  const { lobbyID } = useSocketContext();
   return (
-    <>
-      {lobbyID === '' && <MainMenu />}
+    <SocketContext>
+      <MainMenu />
       <Lobby />
-    </>
+    </SocketContext>
   )
 }
 
-export default hot(App);
+export default App

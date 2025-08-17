@@ -4,10 +4,14 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+
 process.traceDeprecation = true;
 
-const faviconConfig={
-  icons:{
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+const faviconConfig = {
+  icons: {
     windows: false,
     appleStartup: false,
   }
@@ -15,9 +19,10 @@ const faviconConfig={
 
 module.exports = (env) => {
   let config = {
+    mode: isDevelopment ? "development" : "production",
     devtool: 'eval-cheap-source-map',
     entry: {
-      main: ["react-hot-loader/patch", "./src/index.tsx"], 
+      main: ["./src/index.tsx"],
     },
     output: {
       path: path.resolve(__dirname, "dist/"),
@@ -27,7 +32,16 @@ module.exports = (env) => {
       rules: [
         {
           test: /\.(js|jsx)$/,
-          use: "babel-loader",
+          use: [
+            {
+              loader: "babel-loader",
+              options: {
+                plugins: [
+                  isDevelopment && require.resolve('react-refresh/babel')
+                ].filter(Boolean),
+              }
+            },
+          ],
           exclude: /node_modules/,
         },
         {
@@ -39,46 +53,34 @@ module.exports = (env) => {
           test: /\.scss$/,
           use: ["style-loader", "css-loader", "sass-loader"],
         },
-        {
-          test: /\.(png|jpg|gif)$/,
-          use: [
-            {
-              loader: "url-loader",
-              options: {
-                limit: 8192, //8kb max img size.
-                mimetype: true,
-                fallback: "file-loader",
-                outputPath: "media",
-                name: "[folder]/[name]-[md4:hash:hex:5].[ext]",
-              },
-            },
-          ],
+        // Asset Modules for images
+      {
+          test: /\.(png|jpg|jpeg|gif)$/i,
+          type: 'asset',
+          parser: {
+            dataUrlCondition: {
+              maxSize: 8 * 1024 // 8kb
+            }
+          },
+          generator: {
+            filename: 'media/[name]-[hash][ext][query]'
+          }
         },
+        // Asset Modules for fonts and svg
         {
-          test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-          use: [
-            {
-              loader: "file-loader",
-              options: {
-                outputPath: "fonts",
-                name: "[name].[ext]",
-              },
-            },
-          ],
+          test: /\.(woff(2)?|ttf|eot|svg)$/i,
+          type: 'asset/resource',
+          generator: {
+            filename: 'fonts/[name][ext][query]'
+          }
         },
       ],
     },
-    resolve: {
-      extensions: [".js", ".jsx", ".ts", ".tsx"],
-      alias: {
-        "react-dom": "@hot-loader/react-dom",
-      },
-    },
-    plugins: [
+  plugins: [
       new HtmlWebpackPlugin({
         filename: 'index.html',
         template: './src/index.html',
-      }), 
+      }),
       new FaviconsWebpackPlugin({
         logo: './src/media/fascist-membership-old.png',
         mode: 'auto',
@@ -86,18 +88,25 @@ module.exports = (env) => {
         favicons: faviconConfig,
       }),
       new ESLintPlugin(),
-      new CompressionPlugin(), 
+      new CompressionPlugin(),
       new webpack.EnvironmentPlugin({
-      'DD_SERVER': 'localhost',
-      'PORT': 80,
-      'DD_PORT': 1945})],
-    devServer: {
-      static:{
-        directory: path.join(__dirname, "./dist")
+        'DD_SERVER': 'localhost',
+        'PORT': 80,
+        'DD_PORT': 1945
+      }),
+      ...(isDevelopment ? [new ReactRefreshWebpackPlugin()] : [])
+    ],
+  devServer: {
+      static: {
+        directory: path.join(__dirname, 'dist'),
       },
+      compress: true,
       port: 8000,
-
+      hot: true,
     },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jsx'],
+  },
   };
   return config;
 };

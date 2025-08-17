@@ -7,7 +7,7 @@ import FireBackground from "./rendering/FireBackground";
 import { useSocketContext, getLocalStorage, LOBBY_MAPPING_KEY } from "./SocketContext";
 
 const MainMenu = () => {
-  const { socket, connected, setLobbyID } = useSocketContext();
+  const { socket, connected, setLobbyID, lobbyID } = useSocketContext();
 
   const recentLobbyID: string | undefined = React.useMemo(() => {
     const storedLobbies = Object.keys(getLocalStorage(LOBBY_MAPPING_KEY) || {})
@@ -18,7 +18,7 @@ const MainMenu = () => {
 
   const createLobby = () => socket?.emit("create lobby");
 
-  return (
+  return lobbyID === '' && (
     <div className="menu-window ">
       <FireBackground toggle={connected} />
       <div className="content">

@@ -8,7 +8,7 @@ export const Eye: React.FC<{ toggle: (arg: boolean) => void }> = ({ toggle }) =>
 
   const [pressed, setPressed] = useState(false);
   const [holding, setHolding] = useState(false);
-  const timeout = useRef<NodeJS.Timeout>();
+  const timeout = useRef<NodeJS.Timeout | null>(null);
   const handleMouseDown = React.useCallback(() => {
     setPressed(true);
     timeout.current = setTimeout(() => {
@@ -17,7 +17,7 @@ export const Eye: React.FC<{ toggle: (arg: boolean) => void }> = ({ toggle }) =>
     }, 400);
   }, []);
   const handleMouseUp = React.useCallback(() => {
-    clearTimeout(timeout.current);
+    timeout.current && clearTimeout(timeout.current);
     toggle(false);
     setPressed(false);
     setHolding(false);
@@ -33,7 +33,7 @@ export const Eye: React.FC<{ toggle: (arg: boolean) => void }> = ({ toggle }) =>
       onTouchStart={handleMouseDown}
     >
       <div>
-        <img draggable={false} src={eye} />
+        <img style={{ touchAction: "none" }} draggable={false} src={eye} />
       </div>
     </div>
   );

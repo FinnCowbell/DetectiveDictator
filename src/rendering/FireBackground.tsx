@@ -23,8 +23,8 @@ interface FireBackgroundState {
 
 export default class FireBackground extends React.Component<FireBackgroundProps, FireBackgroundState> {
   request: number | null;
-  container: RefObject<HTMLDivElement>;
-  mainCanvas: RefObject<HTMLCanvasElement>;
+  container: RefObject<HTMLDivElement | null>;
+  mainCanvas: RefObject<HTMLCanvasElement | null>;
   canvasConfig: CanvasRenderingContext2DSettings;
   offScreenCanvas: React.MutableRefObject<HTMLCanvasElement | null>;
 
