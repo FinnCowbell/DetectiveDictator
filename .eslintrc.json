@@ -22,6 +22,6 @@
   "rules": {
     "react-hooks/exhaustive-deps": "error",
     "prefer-const": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "warn"
   }
 }

@@ -17,7 +17,7 @@ function throttle(func: any, limit: number) {
   };
 }
 
-export const ActionBarDrawer: React.FC<{}> = () => {
+export const ActionBarDrawer: React.FC<object> = () => {
   const [isOpened, setIsOpened] = React.useState(false);
   const { playerAction, uiInfo, you, spectating } = useGameDetails();
   const [prevAction, setPrevAction] = React.useState<PlayerAction | null>(null);
@@ -56,9 +56,8 @@ export const ActionBarDrawer: React.FC<{}> = () => {
     }
   }, [prevAction, playerAction, uiInfo.selectedPlayer, uiInfo.voted, you.PID, openDrawer]);
 
-  const debouncedToggleOpen = React.useCallback(throttle((ev: { preventDefault: () => void; }) => {
+  const debouncedToggleOpen = React.useCallback(throttle(() => {
     setIsOpened((isOpened) => !isOpened);
-    ev.preventDefault();
   }, 100), []);
 
   if (!you.alive || spectating) {

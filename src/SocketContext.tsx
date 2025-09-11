@@ -4,16 +4,16 @@ import io, { Socket } from "socket.io-client";
 
 declare global {
   interface Window {
-    GAME_SOCKET?: Socket;
+    GAME_SOCKET: Socket;
   }
 }
 
 /*DD_SERVER and DD_PORT are environmental variables given during compilation.
   They are used if the front-end is being served as static files, 
   and the backend is hosted on some other server. */
-let serverURL = process.env.DD_SERVER !== undefined ? process.env.DD_SERVER : "localhost";
-let port = process.env.DD_PORT !== undefined ? process.env.DD_PORT : "1945";
-let SOCKET_URL = `${serverURL}:${port}`;
+const serverURL = process.env.DD_SERVER !== undefined ? process.env.DD_SERVER : "localhost";
+const port = process.env.DD_PORT !== undefined ? process.env.DD_PORT : "1945";
+const SOCKET_URL = `${serverURL}:${port}`;
 const LOBBY_QSP = "lobby";
 
 export interface ISocketContext {
@@ -35,7 +35,7 @@ const DEFAULT_CONTEXT: Omit<ISocketContext, 'socket'> = {
   setAlertMessage: () => { }
 }
 
-export const setLocalStorage = (key: string, value: any) => {
+export const setLocalStorage = (key: string, value: object) => {
   return window.localStorage.setItem(key, JSON.stringify({ value }));
 }
 
@@ -55,19 +55,19 @@ export const clearLobbyMapping = (lobbyID: string) => {
 function createSocket(
   lobbyID?: string
 ): Socket {
+  window.GAME_SOCKET?.close();
   const isGame = !!lobbyID;
   const path = isGame ? `/${lobbyID.toLowerCase()}` : '/menu';
-  const socket = io(SOCKET_URL + path, {
+  return window.GAME_SOCKET = io(SOCKET_URL + path, {
     reconnection: true,
     reconnectionDelay: 250,
     reconnectionDelayMax: lobbyID ? 2000 : 5000,
     reconnectionAttempts: lobbyID ? Infinity : 10,
   });
-  return socket;
 }
 
 function getQueryStrings() {
-  let queryStrings: { [key: string]: string } = {};
+  const queryStrings: { [key: string]: string } = {};
   window.location.href.replace(
     /[?&]+([^=&]+)=([^&]*)/gi,
     (m, key, value) => (queryStrings[key] = value)
@@ -80,33 +80,30 @@ function getLobbyQSP(): string | undefined {
 }
 
 
-const baseSocket = window.GAME_SOCKET! ||= createSocket(getLobbyQSP());
-
 const ContextObject = React.createContext({
   ...DEFAULT_CONTEXT,
-  socket: baseSocket
+  socket: window.GAME_SOCKET
 });
 
 const useGameSocket = (
   lobbyID?: string,
   eventHandlers?: { [event: string]: (...arg: any[]) => void }
 ) => {
-  const [socket, setSocket] = React.useState<Socket>(baseSocket);
+  const socket = React.useMemo(() => {
+    return createSocket(lobbyID);
+  }, [lobbyID]);
 
   React.useEffect(() => {
-    const newSocket: Socket = createSocket(lobbyID);
-    setSocket(newSocket);
     if (eventHandlers) {
       Object.keys(eventHandlers).forEach(event => {
         socket.on(event, eventHandlers[event]);
       });
     }
-    window.GAME_SOCKET = newSocket;
+    socket.connect();
     return () => {
-      newSocket.close();
       if (eventHandlers) {
         Object.keys(eventHandlers).forEach(event => {
-          newSocket.off(event, eventHandlers[event]);
+          socket.off(event, eventHandlers[event]);
         });
       }
     };
@@ -115,10 +112,11 @@ const useGameSocket = (
   return socket;
 }
 
-export const SocketContext = ({ children }: React.PropsWithChildren<{}>) => {
+export const SocketContext = ({ children }: React.PropsWithChildren<object>) => {
   const [lobbyID, _setLobbyID] = React.useState<string>(getLobbyQSP() || '');
   const [alertMessage, setAlertMessage] = React.useState('');
-  const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
+  const [connected, setConnected] = React.useState(false);
+  const timeoutIdRef: React.MutableRefObject<NodeJS.Timeout | null> = React.useRef(null);
 
   const setLobbyID = React.useCallback((newId: string) => {
     _setLobbyID(newId);
@@ -153,6 +151,12 @@ export const SocketContext = ({ children }: React.PropsWithChildren<{}>) => {
   // Handlers for socket events
   const eventHandlers = React.useMemo(() => {
     return {
+      "connect": () => {
+        setConnected(true);
+      },
+      "disconnect": () => {
+        setConnected(false);
+      },
       "alert": (alert: string) => {
         setAlertMessage(alert);
       },
@@ -166,23 +170,19 @@ export const SocketContext = ({ children }: React.PropsWithChildren<{}>) => {
   }, []);
 
   const socket = useGameSocket(lobbyID, eventHandlers);
-  const connected = !!socket?.connected;
 
   React.useEffect(() => {
     if (connected || !lobbyID) {
-      setTimeoutId((prev) => {
-        if (prev) {
-          clearTimeout(prev);
-        }
-        return null;
-      });
+      clearTimeout(timeoutIdRef.current || -1);
     } else {
-      setTimeoutId(() => setTimeout(() => {
+      clearTimeout(timeoutIdRef.current || -1);
+      timeoutIdRef.current = setTimeout(() => {
         setAlertMessage("Lobby Doesn't Exist!");
         clearLobbyMapping(lobbyID);
         setLobbyID("");
-      }, 5000));
+      }, 5000);
     }
+    return () => clearTimeout(timeoutIdRef.current || -1);
   }, [lobbyID, connected]);
 
 
