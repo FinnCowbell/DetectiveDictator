@@ -28,7 +28,7 @@ export const Alert = () => {
       clearInterval(interval.current);
       interval.current = setTimeout(() => {
         setAlertMessage('');
-      }, 5000)
+      }, 3500)
     }
   }, [isOpen, setIsOpen, setAlertMessage])
 

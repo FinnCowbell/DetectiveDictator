@@ -154,8 +154,11 @@ export const SocketContext = ({ children }: React.PropsWithChildren<object>) => 
       "connect": () => {
         setConnected(true);
       },
+      "reconnect": () => {
+        setAlertMessage("");
+      },
       reconnect_attempt: (attemptNumber: number) => {
-        setAlertMessage(`Attempting to reconnect - #${attemptNumber}`);
+        setAlertMessage(`Attempting to reconnect - try #${attemptNumber}`);
       },
       reconnect_error: (err: Error) => {
         setAlertMessage(`Socket reconnection error: + ${JSON.stringify(err)}`);
