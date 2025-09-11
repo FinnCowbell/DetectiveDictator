@@ -174,8 +174,8 @@ class Lobby {
     //If the game isn't running, disconnects should just kick the player.
     let player = this.getPlayerBySocketID(socket.id);
     let PID = player.PID;
-    // We inform the player they were  disconnected explicitly so they can initiate necessary game reconnect signals. _slight_ spaghetti, I think.
-    player.socket.emit("connection lost");
+    // We inform the player they were  disconnected explicitly so they can initiate necessary game reconnect signals.
+    player.socket.emit("connection_lost");
     // Unlink socketID to playerID.
     //We're not using this socket ID again, so we want to get rid of it.
     delete this._sidpid[socket.id];

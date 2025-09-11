@@ -154,6 +154,16 @@ export const SocketContext = ({ children }: React.PropsWithChildren<object>) => 
       "connect": () => {
         setConnected(true);
       },
+      reconnect_attempt: (attemptNumber: number) => {
+        setAlertMessage(`Attempting to reconnect - #${attemptNumber}`);
+      },
+      reconnect_error: (err: Error) => {
+        setAlertMessage(`Socket reconnection error: + ${JSON.stringify(err)}`);
+      },
+      reconnect_failed: () => {
+        setAlertMessage("Lost Connection!");
+        setLobbyID("");
+      },
       "disconnect": () => {
         setConnected(false);
       },
@@ -162,6 +172,10 @@ export const SocketContext = ({ children }: React.PropsWithChildren<object>) => 
       },
       "connect_error": (err: Error) => {
         setAlertMessage("Connection error: " + err.message);
+        if (err.message.includes("Invalid namespace")) {
+          clearLobbyMapping(lobbyID || '');
+          setLobbyID('');
+        }
       },
       "lobby created": (arg: { ID: string }) => {
         setLobbyID(arg.ID);

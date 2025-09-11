@@ -170,21 +170,8 @@ export const Lobby = () => {
         setAlertMessage("Reconnecting...");
         recoverGameState();
       },
-      reconnect_attempt: (attemptNumber) => {
-        setAlertMessage(`Socket reconnection attempt #${attemptNumber}`);
-      },
-      reconnect_error: (err) => {
-        setAlertMessage(`Socket reconnection error: + ${JSON.stringify(err)}`);
-      },
-      reconnect_failed: () => {
-        setAlertMessage("Socket reconnection failed after all attempts");
-        setAlertMessage("Lost Connection!");
-      },
       disconnect: () => {
-        console.log("Socket disconnected");
-        // Use disconnect instead of connection lost to initiate reconnect
-        setAlertMessage("Connection Lost!");
-        setLobbyID("");
+        // 
       },
       connect: () => {
         socket.emit("connection init request");
