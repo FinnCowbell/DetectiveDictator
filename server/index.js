@@ -11,6 +11,7 @@ const corsOptions = {
 };
 
 var io = socketio(server, {
+  connectionStateRecovery: {},
   cors: corsOptions,
   secure: true,
   transports: ["websocket", "polling"],
@@ -28,6 +29,7 @@ app.use((err, req, res, next) => {
 var { Lobbies, Lobby, Player } = require("./lobby");
 var Game = require("./Game/Hitler");
 var Chat = require("./Game/ChatModule");
+const { connect } = require("http2");
 const LobbyModules = [Game, Chat];
 
 //env.PORT = Heroku. DD_PORT = my implementation.
@@ -59,8 +61,8 @@ if (front) {
 } else {
   // Example route
   app.get('/', (req, res) => {
-  res.send('Server is running');
-});
+    res.send('Server is running');
+  });
 
 }
 

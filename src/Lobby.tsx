@@ -79,7 +79,7 @@ export const Lobby = () => {
   };
 
   const attemptReconnect = (PID: PID) => {
-    setAlertMessage(`Attempting to reconnect with PID: ${PID}`);
+    setAlertMessage(`Reconnecting...: ${PID}`);
     rejoinLobby(PID);
     socket?.emit("connection init request");
   };
@@ -150,6 +150,7 @@ export const Lobby = () => {
           nSpectators: number;
         };
       }) => {
+        setAlertMessage("");
         if (!lobbyExists) {
           document
             .querySelector(".lobby-window .wave-background")

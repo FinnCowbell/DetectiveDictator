@@ -62,7 +62,7 @@ function createSocket(
     reconnection: true,
     reconnectionDelay: 250,
     reconnectionDelayMax: lobbyID ? 2000 : 5000,
-    reconnectionAttempts: lobbyID ? Infinity : 10,
+    reconnectionAttempts: lobbyID ? 20 : 10,
   });
 }
 
