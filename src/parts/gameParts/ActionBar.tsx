@@ -30,6 +30,7 @@ export const ActionBar: React.FC<{
       fasBoard,
       you,
     } = useGameDetails();
+    const [lastCastVote, setLastCastVote] = useState<boolean | null>(null);
 
     const pickChancellor = React.useCallback(() => {
       if (uiInfo.selectedPlayer != null) {
@@ -43,9 +44,10 @@ export const ActionBar: React.FC<{
       if (isJa == undefined) {
         return;
       }
+      setLastCastVote(isJa);
       closeDrawer?.();
       socket.emit("cast vote", { vote: isJa });
-    }, [socket, closeDrawer])
+    }, [socket, closeDrawer, setLastCastVote])
 
     const discardPolicy = React.useCallback((policyIndex: number) => {
       if (policyIndex < 0) {
@@ -128,7 +130,7 @@ export const ActionBar: React.FC<{
           );
         case "chancellor vote":
           return (
-            <JaNein confirm={castVote} voteReceived={uiInfo.voted[you.PID]} />
+            <JaNein confirm={castVote} voteReceived={lastCastVote ?? uiInfo.voted[you.PID]} />
           );
           break;
         case "your president discard":
@@ -230,7 +232,7 @@ function JaNein(props: {
   voteReceived?: boolean;
 }) {
   const [isJa, setIsJa] = useState<boolean | undefined>(undefined);
-  if (props.voteReceived) {
+  if (props.voteReceived != undefined) {
     return (
       <div className="action ja-nein">
         <div className="vote-options">
@@ -238,7 +240,7 @@ function JaNein(props: {
             <img
               width={138}
               className={"selected"}
-              src={isJa === true ? jaPic : neinPic}
+              src={props.voteReceived === true ? jaPic : neinPic}
             />
           </div>
         </div>

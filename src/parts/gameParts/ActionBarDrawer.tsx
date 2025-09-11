@@ -69,9 +69,6 @@ export const ActionBarDrawer: React.FC<object> = () => {
       <div className={css('floating-region', { 'is-opened': isOpened })}>
         <button className="toggle-button"
           onClick={debouncedToggleOpen}
-          onTouchStart={debouncedToggleOpen}
-          // Prevent from accidently triggering a click on inner elements.
-          onTouchEnd={(ev) => ev.preventDefault()}
         >
           ^
         </button>
