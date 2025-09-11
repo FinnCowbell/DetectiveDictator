@@ -3,7 +3,11 @@ yarn-error.log
 package-lock.json
 .cache/
 coverage/
+# everything in dist
 dist/
+#including index.html
+dist/**/*
+# but not the dist directory itself
 *.log
 
 # OS generated files
