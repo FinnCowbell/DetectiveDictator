@@ -171,10 +171,12 @@ export const SocketContext = ({ children }: React.PropsWithChildren<object>) => 
         setAlertMessage(alert);
       },
       "connect_error": (err: Error) => {
-        setAlertMessage("Connection error: " + err.message);
         if (err.message.includes("Invalid namespace")) {
           clearLobbyMapping(lobbyID || '');
+          setAlertMessage(`Lobby ${lobbyID} does not exist`);
           setLobbyID('');
+        } else {
+          setAlertMessage("Connection error -" + err.message);
         }
       },
       "lobby created": (arg: { ID: string }) => {
