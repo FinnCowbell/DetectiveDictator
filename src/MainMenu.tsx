@@ -14,7 +14,7 @@ const MainMenu = () => {
     if (storedLobbies.length > 0) {
       return storedLobbies[0];
     }
-  }, []);
+  }, [lobbyID]);
 
   const createLobby = () => socket?.emit("create lobby");
 
