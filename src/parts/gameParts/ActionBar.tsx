@@ -30,7 +30,7 @@ export const ActionBar: React.FC<{
       fasBoard,
       you,
     } = useGameDetails();
-    const [lastCastVote, setLastCastVote] = useState<boolean | null>(null);
+    const [lastCastVote, setLastCastVote] = useState<boolean | undefined>(undefined);
 
     const pickChancellor = React.useCallback(() => {
       if (uiInfo.selectedPlayer != null) {
@@ -130,9 +130,8 @@ export const ActionBar: React.FC<{
           );
         case "chancellor vote":
           return (
-            <JaNein confirm={castVote} voteReceived={lastCastVote ?? uiInfo.voted[you.PID]} />
+            <JaNein confirm={castVote} voteReceived={uiInfo.voted[you.PID] ? lastCastVote : undefined} />
           );
-          break;
         case "your president discard":
           return (
             <Discard confirm={discardPolicy} policies={you.hand?.policies} />
