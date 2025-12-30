@@ -13,6 +13,7 @@ import { Eye } from "./parts/gameParts/Eye";
 import { ActionBarDrawer } from "./parts/gameParts/ActionBarDrawer";
 import ChatRoom from "./parts/ChatRoom";
 import { GameEvents, PlayerAction } from "./model/GameEvent";
+import { useSocketContext } from "./SocketContext";
 
 
 const Hitler: React.FC = () => {
@@ -57,6 +58,7 @@ const Hitler: React.FC = () => {
 
 const MobileLayout: React.FC = () => {
   const gameDetails = useGameDetails();
+  const { setLobbyID } = useSocketContext();
   const playerScreen = React.useRef<HTMLDivElement>(null);
   const boardScreen = React.useRef<HTMLDivElement>(null);
   const {
@@ -101,6 +103,9 @@ const MobileLayout: React.FC = () => {
       <StatusBar />
       <div className="sliding-screens">
         <div className="screen chat-screen">
+          <button className="back-to-menu" onClick={() => setLobbyID("")}>
+            ← Back to Menu
+          </button>
           <ChatRoom isCard />
         </div>
         <div ref={playerScreen} className="screen player-screen">

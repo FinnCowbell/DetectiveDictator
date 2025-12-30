@@ -69,6 +69,24 @@ $padding5: 50px;
         touch-action: pan-right;
         box-sizing: border-box;
         padding: $padding4 $padding4;
+        flex-direction: column;
+
+        .back-to-menu {
+          flex-shrink: 0;
+          padding: $padding2 $padding3;
+          margin-bottom: $padding2;
+          background: rgba(0, 0, 0, 0.5);
+          border: 1px solid $hitler-red;
+          color: white;
+          font-family: $main-stack;
+          font-size: 1rem;
+          cursor: pointer;
+          text-align: left;
+
+          &:hover {
+            background: rgba(0, 0, 0, 0.7);
+          }
+        }
 
         .sent-messages * {
           user-select: text;

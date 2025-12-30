@@ -13,7 +13,9 @@ const Header: React.FC = () => {
   }, []);
 
   const getLobbyURL = () => {
-    return `${window.location.origin}${window.location.pathname}?lobby=${lobbyID}`;
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('lobby', lobbyID!);
+    return url.toString();
   };
 
   const shareURL = () => {
