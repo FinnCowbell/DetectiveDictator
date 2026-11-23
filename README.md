@@ -28,7 +28,7 @@ Whereas a website such as secrethitler.io was made to provide to a community of 
 
 ## Usage
 
-After running `yarn init` or `npm init`, you can run the following yarn/npm scripts:
+After running `yarn install`, you can run the following yarn/npm scripts:
 
 Run `build` to compile the frontend and then `start` to start the server.
 
@@ -54,3 +54,16 @@ IF you want to host the server and static frontend files on different servers:
    - If a custom port was given, DD_PORT must be set on the server computer as well.
 
 4) Serve the compiled files in './dist' from a seperate computer.
+
+## Hosting the backend
+
+The server listens on `127.0.0.1` unless `DD_HOST` says otherwise, so put a TLS reverse proxy such as nginx in front of it and keep port 1945 closed to the internet. Set `DD_HOST=0.0.0.0` only when nothing sits in front of the server.
+
+`deploy/detectivedictator.service` runs the backend under systemd as an unprivileged throwaway user and restarts it if it exits. It expects the repository at `/opt/detectivedictator` and Node 22 or newer at `/opt/node24/bin/node`:
+
+```sh
+sudo git clone https://github.com/FinnCowbell/DetectiveDictator.git /opt/detectivedictator
+cd /opt/detectivedictator && sudo yarn workspaces focus --production
+sudo cp deploy/detectivedictator.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now detectivedictator
+```

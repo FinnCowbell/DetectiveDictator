@@ -1,0 +1,34 @@
+[Unit]
+Description=Detective Dictator game server
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/detectivedictator
+ExecStart=/opt/node24/bin/node server/index.js -nofront
+Environment=NODE_ENV=production DD_HOST=127.0.0.1 DD_PORT=1945
+Restart=always
+RestartSec=2
+
+# Run as a throwaway unprivileged user that can't write anywhere or escalate.
+DynamicUser=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

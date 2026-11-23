@@ -18,13 +18,18 @@ import { GameContextProvider } from "./GameDetails";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useMobileViewportStyles } from "./hooks/useMobileViewportStyles";
 
-const storeReconnectPID = (lobbyID: string, PID: PID) => {
-  setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: PID });
+interface Seat {
+  PID: PID;
+  token: string;
+}
+
+const storeSeat = (lobbyID: string, seat: Seat) => {
+  setLocalStorage(LOBBY_MAPPING_KEY, { [lobbyID]: seat });
 };
 
-export function getReconnectPID(lobbyID: string): PID | undefined {
-  const lobbyMapping = getLocalStorage(LOBBY_MAPPING_KEY) || {};
-  return lobbyMapping[lobbyID];
+function getSeat(lobbyID: string): Seat | undefined {
+  const seat = (getLocalStorage(LOBBY_MAPPING_KEY) || {})[lobbyID];
+  return typeof seat?.token === "string" ? seat : undefined;
 }
 
 export const Lobby = () => {
@@ -72,24 +77,27 @@ export const Lobby = () => {
       username: username,
     });
 
-  const rejoinLobby = (PID: PID) => {
-    socket?.emit("rejoin lobby", {
-      PID: PID,
-    });
+  const reclaimSeat = (PID: PID) => {
+    const seat = getSeat(lobbyID || "");
+    if (seat?.PID === PID) {
+      socket?.emit("rejoin lobby", seat);
+    } else {
+      setAlertMessage("You can only rejoin as yourself, from the browser you joined with.");
+    }
   };
 
-  const attemptReconnect = (PID: PID) => {
-    setAlertMessage(`Reconnecting...: ${PID}`);
-    rejoinLobby(PID);
+  const attemptReconnect = (seat: Seat) => {
+    setAlertMessage(`Reconnecting...: ${seat.PID}`);
+    socket?.emit("rejoin lobby", seat);
     socket?.emit("connection init request");
   };
 
   // Function to attempt reconnection
   const recoverGameState = React.useCallback(() => {
     if (!connected) {
-      const reconnectPID = getReconnectPID(lobbyID || "");
-      if (lobbyID && reconnectPID) {
-        attemptReconnect(reconnectPID);
+      const seat = getSeat(lobbyID || "");
+      if (lobbyID && seat) {
+        attemptReconnect(seat);
       }
     } else {
       socket?.emit("connection init request");
@@ -129,10 +137,9 @@ export const Lobby = () => {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const messages: { [event: string]: (...args: any[]) => void } = {
-      "lobby joined": ({ PID, isSpectating }) => {
-        // Store PID in local storage
-        if (isSpectating === false) {
-          storeReconnectPID(lobbyID, PID);
+      "lobby joined": ({ PID, isSpectating, token }) => {
+        if (token) {
+          storeSeat(lobbyID, { PID, token });
         }
         setPID(PID);
         setIsSpectating(isSpectating);
@@ -201,26 +208,15 @@ export const Lobby = () => {
 
     if (
       socket &&
-      PID &&
-      lobbyID &&
-      !isSpectating &&
-      joinedBeforeGame &&
-      gameInfo?.gameStatus !== "postgame"
-    ) {
-      storeReconnectPID(lobbyID, PID);
-    }
-
-    if (
-      socket &&
       !PID &&
       lobbyID &&
       lobbyExists &&
       gameInfo?.gameStatus !== "postgame"
     ) {
-      const reconnectPID = getReconnectPID(lobbyID);
-      if (reconnectPID) {
+      const seat = getSeat(lobbyID);
+      if (seat) {
         clearLobbyMapping(lobbyID);
-        rejoinLobby(reconnectPID);
+        socket.emit("rejoin lobby", seat);
       }
     }
   }, [
@@ -283,7 +279,7 @@ export const Lobby = () => {
               <LobbyPlayerList
                 yourPID={PID}
                 players={players}
-                reconnect={rejoinLobby}
+                reconnect={reclaimSeat}
                 kickPlayer={kickPlayer}
               />
             )}
