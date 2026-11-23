@@ -30,6 +30,8 @@ Whereas a website such as secrethitler.io was made to provide to a community of 
 
 After running `yarn install`, you can run the following yarn/npm scripts:
 
+`.yarnrc.yml` blocks dependency install scripts and package versions published less than 7 days ago, so a hijacked release can't run code on your machine before it's caught. If a new dependency needs its install script, allow it with `dependenciesMeta` in `package.json`.
+
 Run `build` to compile the frontend and then `start` to start the server.
 
 `build-dev` builds a development version of the frontend.

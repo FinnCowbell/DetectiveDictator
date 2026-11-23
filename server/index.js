@@ -29,12 +29,9 @@ function guardHandlers(socket) {
       }
     });
 }
-io.on("new_namespace", (nsp) =>
-  nsp.use((socket, next) => {
-    guardHandlers(socket);
-    next();
-  })
-);
+// A connection listener, not middleware: recovered sockets skip middleware. new_namespace fires
+// inside io.of(), so this listener runs before the lobby attaches its handlers.
+io.on("new_namespace", (nsp) => nsp.on("connect", guardHandlers));
 
 var { Lobbies } = require("./lobby");
 var Game = require("./Game/Hitler");

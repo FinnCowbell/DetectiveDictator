@@ -9,7 +9,6 @@ import {
   setLocalStorage,
   getLocalStorage,
   LOBBY_MAPPING_KEY,
-  clearLobbyMapping,
 } from "./SocketContext";
 import presHat from "./media/sidebar/president-hat.png";
 import { PID } from "./model/Player";
@@ -214,8 +213,9 @@ export const Lobby = () => {
       gameInfo?.gameStatus !== "postgame"
     ) {
       const seat = getSeat(lobbyID);
+      // Keep the seat until the server answers: a rejoin sent before it notices the old connection
+      // died is refused, and the token is the only way back in.
       if (seat) {
-        clearLobbyMapping(lobbyID);
         socket.emit("rejoin lobby", seat);
       }
     }

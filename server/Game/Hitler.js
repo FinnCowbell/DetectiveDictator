@@ -80,7 +80,9 @@ class Hitler extends GameModule {
     if (this.gameStatus === "pregame") {
       return;
     }
-    this.activateGameSignals(player);
+    if (this.gameInfo.order.includes(player.PID)) {
+      this.activateGameSignals(player);
+    }
     player.socket.emit("full game info", this.getRoundInfo(player.PID));
     this.io.emit("ui event", { "name": "reconnect", "PID": player.PID });
   }
@@ -369,7 +371,7 @@ class Hitler extends GameModule {
         return this.error("Vote must be true or false!");
       } else if (this.currentEvent != "chancellor vote") {
         return this.error("Vote cast at invalid time!");
-      } else if (!player.alive) {
+      } else if (!player?.alive) {
         return this.error("Dead men tell no tales!");
       }
       if (this.votes[theirPID] == 0 || this.votes[theirPID] == 1) {
