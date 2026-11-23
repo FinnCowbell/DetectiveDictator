@@ -63,9 +63,6 @@ for (let i = 0; i < argv.length; i++) {
 if (front) {
   //if the backend is hosting the front end files,
   app.use("/", express.static(__dirname + "/../dist"));
-  app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/../dist/index.html");
-  });
 } else {
   app.get("/", (req, res) => {
     res.send("Server is running");
