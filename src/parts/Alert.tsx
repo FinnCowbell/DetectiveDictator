@@ -4,7 +4,7 @@ import { useSocketContext } from "../SocketContext";
 export const Alert = () => {
   const { alertMessage, setAlertMessage: _setAlertMessage } = useSocketContext();
   const [isOpen, setIsOpen] = useState(false);
-  const interval = useRef<NodeJS.Timeout | undefined>(undefined);
+  const interval = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const setAlertMessage = React.useCallback((msg: string) => {
     if (msg === '') {

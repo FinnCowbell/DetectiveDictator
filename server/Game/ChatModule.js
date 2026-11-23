@@ -1,5 +1,8 @@
 let GameModule = require("./GameModule");
 
+const MAX_MESSAGE_LENGTH = 300;
+const MAX_HISTORY = 200;
+
 class ChatModule extends GameModule {
   constructor(lobby) {
     super(lobby);
@@ -28,12 +31,19 @@ class ChatModule extends GameModule {
     if (!socket) return;
     
     socket.on("chat send", (arg) => {
+      let message = arg?.message;
+      if (typeof message != "string" || !message.trim() || message.length > MAX_MESSAGE_LENGTH) {
+        return this.error("Rejected invalid chat message.");
+      }
       let chat = {
         username: player.username,
-        message: arg.message,
+        message: message,
       };
       this.io.emit("chat incoming", chat);
       this.chats.push(chat);
+      if (this.chats.length > MAX_HISTORY) {
+        this.chats.shift();
+      }
     });
     socket.on("full chat request", () => {
       this.sendFullChatHistory(player);

@@ -1,3 +1,8 @@
+const MAX_LOBBIES = 1000;
+const MAX_USERNAME_LENGTH = 24;
+const SWEEP_INTERVAL_MS = 5 * 60 * 1000;
+const EMPTY_LOBBY_TTL_MS = 30 * 60 * 1000;
+
 class Lobbies {
   constructor(io, devMode = false, ...GameModules) {
     this.io = io;
@@ -6,12 +11,17 @@ class Lobbies {
     this.devMode = devMode;
     this.lobbies = {};
     this.words = "abcdefghijklmnopqrstuvwxyz0123456789".split("");
+    setInterval(() => this.sweepEmptyLobbies(), SWEEP_INTERVAL_MS).unref();
   }
   createLobby() {
     //LobbyID = what is printed. lobbyKey = an all-lowercase lobbyID.
     let lobbyID, lobbyKey, lobby, nLobbies, maxLobbies;
     //If we're running out of words at our current length, increase the length.
     nLobbies = Object.keys(this.lobbies).length;
+    if (nLobbies >= MAX_LOBBIES) {
+      console.error(`Lobby limit (${MAX_LOBBIES}) reached; refusing to create another.`);
+      return null;
+    }
     maxLobbies = Math.pow(this.words.length, this.idWordLength);
     if (nLobbies >= maxLobbies - 1) {
       this.idWordLength++;
@@ -29,6 +39,19 @@ class Lobbies {
 
   getLobby(lobbyID) {
     return this.lobbies[lobbyID];
+  }
+
+  sweepEmptyLobbies(now = Date.now()) {
+    for (const [key, lobby] of Object.entries(this.lobbies)) {
+      if (lobby.io.sockets.size > 0) {
+        lobby.emptySince = null;
+      } else if (lobby.emptySince === null) {
+        lobby.emptySince = now;
+      } else if (now - lobby.emptySince >= EMPTY_LOBBY_TTL_MS) {
+        lobby.close();
+        delete this.lobbies[key];
+      }
+    }
   }
 
   generateLobbyID(len = 3) {
@@ -57,6 +80,7 @@ class Lobby {
     this.spectators = {};
     this.disconnectedPlayers = {};
     this._sidpid = {};
+    this.emptySince = null;
     this.nextPID = 1;
     this.nPlayers = 0;
     this.nConnected = 0; //We won't start if nConnected != nPlayers.
@@ -73,6 +97,13 @@ class Lobby {
     this.MAX_PLAYERS = gameModules[0].MAX_PLAYERS;
 
     this.log("Lobby Created");
+  }
+  close() {
+    this.io.disconnectSockets(true);
+    this.io.removeAllListeners();
+    // socket.io has no public API to drop a namespace; this mirrors its own cleanupEmptyChildNamespaces.
+    this.lobbies.io._nsps.delete(this.io.name);
+    this.log("Lobby closed after sitting empty");
   }
   error(message) {
     this.log("<ERROR> " + message);
@@ -100,16 +131,16 @@ class Lobby {
       });
       socket.on("connection init request", () => this.emitUpdateLobby(socket));
       socket.on("join lobby", (arg) => {
-        this.connectNewPlayer(arg.username, socket);
+        this.connectNewPlayer(arg?.username, socket);
       });
       socket.on("spectator init", () => {
         this.connectSpectator(socket);
       });
       socket.on("request kick", (arg) => {
-        this.requestKick(arg.kickee, socket);
+        this.requestKick(arg?.kickee, socket);
       });
       socket.on("rejoin lobby", (arg) => {
-        this.reconnectPlayer(arg.PID, socket);
+        this.reconnectPlayer(arg?.PID, socket);
       });
       socket.on("game init", () => this.startGame(socket));
       socket.on("join new lobby", () => this.joinNextLobby(socket));
@@ -137,10 +168,15 @@ class Lobby {
     this.log(`${spectator.username} joined lobby and assigned PID=${PID}`);
     this.gameModules.forEach((m) => m.connectSpectator(spectator));
     this.emitUpdateLobby();
-    socket.emit("lobby joined", { PID: PID });
+    socket.emit("lobby joined", { PID: PID, isSpectating: true });
   }
 
   connectNewPlayer(username, socket) {
+    username = typeof username == "string" ? username.trim() : "";
+    if (!username || username.length > MAX_USERNAME_LENGTH) {
+      socket.emit("alert", `Names must be 1-${MAX_USERNAME_LENGTH} characters.`);
+      return false;
+    }
     if (this.nPlayers >= this.MAX_PLAYERS) {
       this.log(this.nPlayers);
       socket.emit("alert", "Lobby is Full!");
@@ -164,7 +200,7 @@ class Lobby {
     this.log(`${player.username} joined lobby and assigned PID=${PID}`);
     this.gameModules.forEach((m) => m.connectNewPlayer(player));
     this.emitUpdateLobby();
-    socket.emit("lobby joined", { PID: PID });
+    socket.emit("lobby joined", { PID: PID, isSpectating: false });
   }
 
   disconnectPlayer(socket) {
@@ -196,6 +232,9 @@ class Lobby {
 
   reconnectPlayer(PID, socket) {
     //Linking disconnected player PID to socket.
+    if (this._sidpid[socket.id] != undefined) {
+      return this.error("Socket tried to rejoin while already holding a seat.");
+    }
     if (!this.disconnectedPlayers[PID]) {
       this.error(
         "Player tried reconnecting, but not in disconnected list!"
@@ -218,9 +257,13 @@ class Lobby {
     //Reconnect all the gameModules
     this.gameModules.forEach((m) => m.reconnectPlayer(player));
 
-    socket.emit("lobby joined", { PID: PID, isSpectating: player.isSpectating });
+    socket.emit("lobby joined", {
+      PID: PID,
+      isSpectating: player.isSpectating,
+    });
     this.emitUpdateLobby();
   }
+
 
   getPlayerBySocketID(SID) {
     let player = this.players[this._sidpid[SID]];
@@ -267,7 +310,11 @@ class Lobby {
 
   requestKick(kickeePID, socket) {
     let player = this.getPlayerBySocketID(socket.id);
-    if (player.isLeader) {
+    let kickee = this.players[kickeePID];
+    if (kickee && !kickee.isSpectating && this.game.gameStatus == "ingame") {
+      // The game holds this player's seat in its turn order; removing it mid-game breaks every later round.
+      socket.emit("alert", "Players can't be kicked during a game.");
+    } else if (player.isLeader) {
       this.kickPlayer(kickeePID);
     } else {
       this.log("Kick request from non leader! Ignoring.");
@@ -315,7 +362,11 @@ class Lobby {
   }
   joinNextLobby(socket) {
     if (this.nextLobbyID == null) {
-      let lobby = this.lobbies.createLobby(this.devMode);
+      let lobby = this.lobbies.createLobby();
+      if (!lobby) {
+        socket.emit("alert", "The server is full right now. Try again later!");
+        return;
+      }
       this.nextLobbyID = lobby.ID;
     }
     socket.emit("change lobby", { ID: this.nextLobbyID });

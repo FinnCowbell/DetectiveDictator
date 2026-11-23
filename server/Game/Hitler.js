@@ -1,4 +1,3 @@
-const { reduceEachTrailingCommentRange } = require("typescript");
 var CardDeck = require("./CardDeck");
 var GameModule = require("./GameModule");
 //Generally: 0 = Liberal, >0 = Fascist.
@@ -81,7 +80,9 @@ class Hitler extends GameModule {
     if (this.gameStatus === "pregame") {
       return;
     }
-    this.activateGameSignals(player);
+    if (this.gameInfo.order.includes(player.PID)) {
+      this.activateGameSignals(player);
+    }
     player.socket.emit("full game info", this.getRoundInfo(player.PID));
     this.io.emit("ui event", { "name": "reconnect", "PID": player.PID });
   }
@@ -176,6 +177,10 @@ class Hitler extends GameModule {
       });
     }
     return players;
+  }
+
+  isLivingPlayer(PID) {
+    return this.gameInfo.order.includes(PID) && this.players[PID]?.alive === true;
   }
 
   knowsMemberships(player) {
@@ -339,7 +344,7 @@ class Hitler extends GameModule {
     if (!socket) return;
 
     socket.on("chancellor picked", (arg) => {
-      let picked = arg.pickedChancellor;
+      let picked = arg?.pickedChancellor;
       if (this.currentEvent != "chancellor pick") {
         return this.error("Event is not chancellor pick!");
       } else if (this.presidentPID != theirPID) {
@@ -350,7 +355,7 @@ class Hitler extends GameModule {
         theirPID == picked
       ) {
         return this.error("President picked themselves or previous officer!");
-      } else if (!this.players[picked].alive) {
+      } else if (!this.isLivingPlayer(picked)) {
         return this.error("Dead men tell no tales!");
       }
       this.chancellorPID = picked;
@@ -359,11 +364,14 @@ class Hitler extends GameModule {
       this.sendLatestState();
     });
 
-    socket.on("cast vote", ({ vote }) => {
+    socket.on("cast vote", (arg) => {
+      let vote = arg?.vote;
       let player = this.players[theirPID];
-      if (this.currentEvent != "chancellor vote") {
+      if (typeof vote != "boolean") {
+        return this.error("Vote must be true or false!");
+      } else if (this.currentEvent != "chancellor vote") {
         return this.error("Vote cast at invalid time!");
-      } else if (!player.alive) {
+      } else if (!player?.alive) {
         return this.error("Dead men tell no tales!");
       }
       if (this.votes[theirPID] == 0 || this.votes[theirPID] == 1) {
@@ -418,6 +426,8 @@ class Hitler extends GameModule {
         return this.error("Non-president trying to discard");
       } else if (this.currentEvent != "president discard") {
         return this.error("president discarding during invalid event!");
+      } else if (!isPolicyIndex(arg?.policyIndex, this.players[theirPID].hand.policies)) {
+        return this.error("Incorrect Policy Index!");
       }
       let president = this.players[theirPID];
       let chancellor = this.players[this.chancellorPID];
@@ -436,7 +446,7 @@ class Hitler extends GameModule {
         return this.error("Non-chancellor trying to discard");
       } else if (this.currentEvent != "chancellor discard") {
         return this.error("chancellor discarding during invalid event!");
-      } else if (arg.policyIndex > 1) {
+      } else if (!isPolicyIndex(arg?.policyIndex, this.players[theirPID].hand.policies)) {
         return this.error("Incorrect Policy Index!");
       }
       let chancellor = this.players[this.chancellorPID];
@@ -466,6 +476,8 @@ class Hitler extends GameModule {
         this.presidentPID != theirPID
       ) {
         return this.error("Cannot pick president!");
+      } else if (arg?.pickedPresident == theirPID || !this.isLivingPlayer(arg?.pickedPresident)) {
+        return this.error("Picked president must be another living player!");
       } else {
         this.newRound(arg.pickedPresident, true);
       }
@@ -476,6 +488,8 @@ class Hitler extends GameModule {
         return this.error("Event isn't Investigate!");
       } else if (this.presidentPID != theirPID) {
         return this.error("Non-president sent 'investigate request'");
+      } else if (arg?.investigated == theirPID || !this.isLivingPlayer(arg?.investigated)) {
+        return this.error("Investigated player must be another living player!");
       }
       let president = this.players[this.presidentPID];
       this.investigatedName = this.players[arg.investigated].username;
@@ -491,6 +505,8 @@ class Hitler extends GameModule {
         return this.error("Event isn't Kill!");
       } else if (this.presidentPID != theirPID) {
         return this.error("Non-president sent 'kill request'");
+      } else if (arg?.victim == theirPID || !this.isLivingPlayer(arg?.victim)) {
+        return this.error("Victim must be another living player!");
       }
       this.victim = arg.victim;
       let player = this.players[arg.victim];
@@ -514,6 +530,8 @@ class Hitler extends GameModule {
         this.fasBoard != 5
       ) {
         return this.error("This player cannot veto now!");
+      } else if (!isPolicyIndex(arg?.policyIndex, this.players[theirPID].hand.policies)) {
+        return this.error("Incorrect Policy Index!");
       }
       let chancellor = this.players[this.chancellorPID];
       let policies = [...chancellor.hand.policies];
@@ -535,7 +553,7 @@ class Hitler extends GameModule {
         return this.error("This player cannot confirm veto now!");
       }
       let remainingPolicy = this.remainingPolicy;
-      if (arg.isJa) {
+      if (arg?.isJa === true) {
         this.currentEvent = "veto accepted";
         this.policies.discard(remainingPolicy);
         setTimeout(() => {
@@ -556,36 +574,27 @@ class Hitler extends GameModule {
   }
 
   sendUIEvent(arg, theirPID, socket) {
-    //Required UI arguments for each UI event.
-    //If an event is missing any of their arguments, then shoot an error.
-    const uiArgs = {
-      "select player": ["PID"],
-      "player voted": ["PID"],
-    };
     const uiReqs = {
       "select player": this.presidentPID == theirPID,
-      "player voted": true, //Only called when allowed.
+      "player voted": arg?.PID == theirPID && this.votes[theirPID] !== undefined,
     };
-    if (!arg || !arg.name) {
-      return this.error("arg or arg name is undefined.");
+    if (!Object.hasOwn(uiReqs, arg?.name) || !Number.isInteger(arg.PID)) {
+      return this.error("Malformed ui info.");
     }
-    let requiredArgs = uiArgs[arg.name];
-    let givenArgs = new Set(Object.keys(arg));
-    let canSendEvent = uiReqs[arg.name];
-    for (let arg of requiredArgs) {
-      if (!givenArgs.has(arg)) {
-        return this.error(`Missing arg in ui info: ${arg}`);
-      }
-    }
-    if (!canSendEvent) {
+    if (!uiReqs[arg.name]) {
       return this.error("Ui info requirements not met!");
     }
-    socket.broadcast.emit("ui event", arg);
+    // Rebuild rather than forward, so clients can't relay arbitrary payloads to each other.
+    let event = { name: arg.name, PID: arg.PID };
+    socket.broadcast.emit("ui event", event);
 
-    // Also store ui info in the round.
+    // Also store ui info in the round. Only the latest selection matters, so it replaces earlier ones.
     let round = this.latestRound();
     if (!round.uiEvents) round.uiEvents = [];
-    round.uiEvents.push(arg);
+    if (event.name == "select player") {
+      round.uiEvents = round.uiEvents.filter((e) => e.name != "select player");
+    }
+    round.uiEvents.push(event);
   }
 
   enactPolicy(value) {
@@ -707,6 +716,10 @@ class Hitler extends GameModule {
     this.gameStatus = "postgame";
     this.io.emit("end game", { endState: this.latestRound() });
   }
+}
+
+function isPolicyIndex(index, policies) {
+  return Number.isInteger(index) && Array.isArray(policies) && index >= 0 && index < policies.length;
 }
 
 function shuffle(a) {
