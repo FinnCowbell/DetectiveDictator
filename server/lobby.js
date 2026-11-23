@@ -1,5 +1,3 @@
-const crypto = require("crypto");
-
 const MAX_LOBBIES = 1000;
 const MAX_USERNAME_LENGTH = 24;
 const SWEEP_INTERVAL_MS = 5 * 60 * 1000;
@@ -82,8 +80,6 @@ class Lobby {
     this.spectators = {};
     this.disconnectedPlayers = {};
     this._sidpid = {};
-    // Secret per seated player, required to reclaim a seat. Kept off Player so it never rides along in player info.
-    this._rejoinTokens = new Map();
     this.emptySince = null;
     this.nextPID = 1;
     this.nPlayers = 0;
@@ -144,7 +140,7 @@ class Lobby {
         this.requestKick(arg?.kickee, socket);
       });
       socket.on("rejoin lobby", (arg) => {
-        this.reconnectPlayer(arg?.PID, arg?.token, socket);
+        this.reconnectPlayer(arg?.PID, socket);
       });
       socket.on("game init", () => this.startGame(socket));
       socket.on("join new lobby", () => this.joinNextLobby(socket));
@@ -199,14 +195,12 @@ class Lobby {
     }
     this._sidpid[socket.id] = PID;
     this.players[PID] = player;
-    const token = crypto.randomBytes(16).toString("hex");
-    this._rejoinTokens.set(PID, token);
 
     this.nPlayers++;
     this.log(`${player.username} joined lobby and assigned PID=${PID}`);
     this.gameModules.forEach((m) => m.connectNewPlayer(player));
     this.emitUpdateLobby();
-    socket.emit("lobby joined", { PID: PID, isSpectating: false, token });
+    socket.emit("lobby joined", { PID: PID, isSpectating: false });
   }
 
   disconnectPlayer(socket) {
@@ -236,7 +230,7 @@ class Lobby {
 
   }
 
-  reconnectPlayer(PID, token, socket) {
+  reconnectPlayer(PID, socket) {
     //Linking disconnected player PID to socket.
     if (this._sidpid[socket.id] != undefined) {
       return this.error("Socket tried to rejoin while already holding a seat.");
@@ -250,9 +244,6 @@ class Lobby {
       return -1
     }
     let player = this.disconnectedPlayers[PID];
-    if (!player.isSpectating && !this.isRejoinToken(PID, token)) {
-      return this.error(`Rejected rejoin for PID ${PID}: bad token.`);
-    }
     delete this.disconnectedPlayers[PID];
     if (player.isSpectating) {
       this.spectators[PID] = player;
@@ -269,18 +260,10 @@ class Lobby {
     socket.emit("lobby joined", {
       PID: PID,
       isSpectating: player.isSpectating,
-      token: this._rejoinTokens.get(PID),
     });
     this.emitUpdateLobby();
   }
 
-  isRejoinToken(PID, token) {
-    const expected = this._rejoinTokens.get(PID);
-    if (typeof token != "string" || !expected || token.length != expected.length) {
-      return false;
-    }
-    return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected));
-  }
 
   getPlayerBySocketID(SID) {
     let player = this.players[this._sidpid[SID]];
@@ -306,7 +289,6 @@ class Lobby {
     let SID = player.socket?.id;
     delete this._sidpid[SID];
     delete this.players[PID];
-    this._rejoinTokens.delete(PID);
     if (player.connected) {
       this.nConnected--;
     } else {
