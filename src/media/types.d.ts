@@ -22,3 +22,7 @@ declare module "*.svg" {
   const value: string;
   export default value;
 }
+declare module "*.scss";
+
+// Replaced at build time by webpack's EnvironmentPlugin.
+declare const process: { env: Record<string, string | undefined> };

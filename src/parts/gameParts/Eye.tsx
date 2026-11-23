@@ -8,7 +8,7 @@ export const Eye: React.FC<{ toggle: (arg: boolean) => void }> = ({ toggle }) =>
 
   const [pressed, setPressed] = useState(false);
   const [holding, setHolding] = useState(false);
-  const timeout = useRef<NodeJS.Timeout | null>(null);
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleMouseDown = React.useCallback(() => {
     setPressed(true);
     timeout.current = setTimeout(() => {

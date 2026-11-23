@@ -116,7 +116,7 @@ export const SocketContext = ({ children }: React.PropsWithChildren<object>) => 
   const [lobbyID, _setLobbyID] = React.useState<string>(getLobbyQSP() || '');
   const [alertMessage, setAlertMessage] = React.useState('');
   const [connected, setConnected] = React.useState(false);
-  const timeoutIdRef: React.MutableRefObject<NodeJS.Timeout | null> = React.useRef(null);
+  const timeoutIdRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null> = React.useRef(null);
 
   const setLobbyID = React.useCallback((newId: string) => {
     _setLobbyID(newId);
